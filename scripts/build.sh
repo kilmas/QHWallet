@@ -1,0 +1,210 @@
+#!/bin/bash
+
+set -o pipefail
+
+readonly __DIRNAME__="$( cd "${BASH_SOURCE[0]%/*}" && pwd )"
+readonly REPO_ROOT_DIR="$(dirname "${__DIRNAME__}")"
+
+PLATFORM=$1
+MODE=$2
+TARGET=$3
+RUN_DEVICE=false
+PRE_RELEASE=false
+JS_ENV_FILE=".js.env"
+ANDROID_ENV_FILE=".android.env"
+IOS_ENV_FILE=".ios.env"
+
+envFileMissing() {
+	FILE="$1"
+	echo "'$FILE' is missing, you'll need to add it to the root of the project."
+	echo "For convenience you can rename '$FILE.example' and fill in the parameters."
+	echo ""
+	exit 1
+}
+
+displayHelp() {
+	echo ''
+	echo "Usage: $0 {platform} ${--device}" >&2
+	echo ''
+	echo "Platform is required. Can be android or ios"
+	echo ''
+	echo "Mode is required. Can be debug or release"
+	echo ''
+	echo "Target is optional and valid for iOS only"
+	echo ''
+	echo "examples: $0 ios debug"
+	echo ''
+	echo "          $0 ios debug --device"
+	echo ''
+	echo "          $0 android debug"
+	echo ''
+	echo "          $0 android release"
+	echo ''
+	exit 1
+}
+
+printTitle(){
+	echo ''
+	echo '-------------------------------------------'
+	echo ''
+	echo "  🚀 BUILDING $PLATFORM in $MODE mode $TARGET" | tr [a-z] [A-Z]
+	echo ''
+	echo '-------------------------------------------'
+	echo ''
+}
+
+
+printError(){
+	ERROR_ICON=$'\342\235\214'
+	echo ''
+	echo "  $ERROR_ICON   $1"
+	echo ''
+}
+
+checkParameters(){
+	if [ "$#" -eq  "0" ]
+	then
+		printError 'Platform is a required parameter'
+		displayHelp
+		exit 0;
+	elif [ "$1"  == "--help" ]
+	then
+		displayHelp
+		exit 0;
+	elif [ "$1" == "-h" ]
+	then
+		displayHelp
+		exit 0;
+	elif [ -z "$1" ]
+	then
+		displayHelp
+		exit 0;
+	elif [ -z "$1" ]
+	then
+		printError 'No platform supplied'
+		displayHelp
+		exit 0;
+	fi
+
+	if [[ $# -gt 2 ]] ; then
+		if [ "$3"  == "--device" ] ; then
+			RUN_DEVICE=true
+
+		   if [ "$#" -gt  "3" ] ; then
+				printError "Incorrect number of arguments"
+				displayHelp
+				exit 0;
+			fi
+		elif [ "$3"  == "--pre" ] ; then
+			PRE_RELEASE=true
+		else
+			printError "Unknown argument: $4"
+			displayHelp
+			exit 0;
+		fi
+	fi
+}
+
+
+prebuild(){
+	# Import provider
+	cp node_modules/@metamask/mobile-provider/dist/index.js src/modules/metamask/core/InpageBridgeWeb3.js
+
+	# Load JS specific env variables
+	if [ "$PRE_RELEASE" = false ] ; then
+		if [ -e $JS_ENV_FILE ]
+		then
+			source $JS_ENV_FILE
+		fi
+	fi
+}
+
+prebuild_ios(){
+	prebuild
+	# Generate xcconfig files for CircleCI
+	if [ "$PRE_RELEASE" = true ] ; then
+		echo "" > ios/debug.xcconfig
+		echo "" > ios/release.xcconfig
+	fi
+	# Required to install mixpanel dep
+	git submodule update --init --recursive
+}
+
+prebuild_android(){
+	adb kill-server
+	adb start-server
+	prebuild
+	# Copy JS files for injection
+	yes | cp -rf src/modules/metamask/core/InpageBridgeWeb3.js android/app/src/main/assets/.
+
+	if [ "$PRE_RELEASE" = false ] ; then
+		if [ -e $ANDROID_ENV_FILE ]
+		then
+			source $ANDROID_ENV_FILE
+		fi
+	fi
+}
+
+buildAndroidRun(){
+	prebuild_android
+	react-native run-android
+}
+
+buildIosSimulator(){
+	prebuild_ios
+	react-native run-ios --simulator "iPhone 11 Pro"
+}
+
+buildIosDevice(){
+	prebuild_ios
+	react-native run-ios --device
+}
+
+buildAndroid() {
+	if [ "$MODE" == "release" ] ; then
+		buildAndroidRelease
+	else
+		buildAndroidRun
+	fi
+}
+
+buildIos() {
+	if [ "$MODE" == "release" ] ; then
+		buildIosRelease
+	else
+		if [ "$RUN_DEVICE" = true ] ; then
+			buildIosDevice
+		else
+			buildIosSimulator
+		fi
+	fi
+}
+
+checkParameters "$@"
+
+printTitle
+
+if [ "$MODE" == "release" ] || [ "$MODE" == "releaseE2E" ] ; then
+	checkAuthToken 'sentry.release.properties'
+	export SENTRY_PROPERTIES="${REPO_ROOT_DIR}/sentry.release.properties"
+	if [ -z "$METAMASK_ENVIRONMENT" ]; then
+		printError "Missing METAMASK_ENVIRONMENT; set to 'production' for a production release, 'prerelease' for a pre-release, or 'local' otherwise"
+		exit 1
+	fi
+fi
+
+if [ "$PLATFORM" == "ios" ]; then
+	# we don't care about env file in CI
+	if [ -f "$IOS_ENV_FILE" ] || [ "$CI" = true ]; then
+		buildIos
+	else
+		envFileMissing $IOS_ENV_FILE
+	fi
+else
+	# we don't care about env file in CI
+	if [ -f "$ANDROID_ENV_FILE" ] || [ "$CI" = true ]; then
+		buildAndroid
+	else
+		envFileMissing $ANDROID_ENV_FILE
+	fi
+fi
