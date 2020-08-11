@@ -25,6 +25,8 @@ class AccountStore {
   @persist @observable isHiddenPrice = false;
   @observable showDefaultIndex = true;
 
+  @observable isInit = false;
+
   /**
  *
  * @type { Account }
@@ -76,7 +78,10 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get defaultHDAccount() {
-    return this.HDAccounts[0];
+    if (this.HDAccounts.length) {
+      return this.HDAccounts[0]
+    }
+    return  undefined
   }
 
   /**
@@ -215,6 +220,7 @@ class AccountStore {
       console.error(error);
       alert(error);
     }
+    this.isInit = true
   }
 
   setOKClient = async () => {

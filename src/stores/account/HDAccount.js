@@ -85,7 +85,7 @@ class HDAccount extends Account {
    * @type { OKTWallet }
    * @memberof HDAccount
    */
-  @persist('object', OKTWallet) @observable OKTWallet = new OKTWallet();
+  @persist('object', OKTWallet) @observable OKTWallet;
 
 
   /**
@@ -184,7 +184,6 @@ class HDAccount extends Account {
     // AccountStore.currentETHID = account.id;
     // AccountStore.showDefaultIndex = false;
     // AccountStorage.insert(account);
-    console.log(hdId, pwd, mnemonicStr)
     AccountStorage.setDataByID(hdId, {
       type: 'HD',
       mnemonic: mnemonicStr

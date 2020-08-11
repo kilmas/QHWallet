@@ -1,13 +1,12 @@
 import React from 'react';
-import { Image, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Flex, Icon } from '@ant-design/react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import BigNumber from 'bignumber.js';
 import { inject, observer } from 'mobx-react'
-import { computed, observable } from "mobx";
+import { computed } from "mobx";
 import CoinImage from './CoinImage';
 import ClearTitleBar from './ClearTitleBar';
-import { styles as themeStyles } from '../theme';
 import { BTCCoin, ETH } from '../stores/wallet/Coin';
 import { toFixedLocaleString } from '../utils/NumberUtil';
 import CoinStore from '../stores/wallet/CoinStore';
@@ -105,7 +104,6 @@ class CoinHeader extends React.Component {
       title,
       onLeftPress,
       renderRight = () => null,
-      hasArc,
       coin
     } = this.props;
     return (

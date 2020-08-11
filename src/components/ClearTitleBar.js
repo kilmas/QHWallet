@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Flex, Icon } from '@ant-design/react-native';
 import { withNavigation } from 'react-navigation';
 import { styles } from '../theme';
@@ -45,10 +44,10 @@ class ClearTitleBar extends React.PureComponent {
             {this.props.title}
           </Text>
         </View>
-        <View style={{ position: 'absolute', left: 0, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ position: 'absolute', left: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
           {this.props.renderLeft()}
         </View>
-        <View style={{ position: 'absolute', right: 0, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ position: 'absolute', right: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
           {this.props.renderRight()}
         </View>
       </Flex>

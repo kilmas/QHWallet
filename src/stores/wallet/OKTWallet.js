@@ -1,57 +1,86 @@
-import {  DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter } from 'react-native'
 import { persist } from 'mobx-persist'
-import { observable, computed, action } from "mobx";
-import CryptoJS from 'crypto-js';
-import { crypto } from '@okchain/javascript-sdk';
-import Wallet from "./Wallet";
-import {
-  WALLET_SOURCE_PK,
-  WALLET_SOURCE_MW,
-  COIN_TYPE_OKT,
-  COIN_ID_OKT,
-} from "../../config/const";
-import { OKT } from "./Coin";
+import { observable, computed, action, reaction } from 'mobx'
+import _ from 'lodash'
+import CryptoJS from 'crypto-js'
+import { crypto } from '@okchain/javascript-sdk'
+import Wallet from './Wallet'
+import { WALLET_SOURCE_PK, WALLET_SOURCE_MW, COIN_TYPE_OKT, COIN_ID_OKT } from '../../config/const'
+import { OKT } from './Coin'
+import OKClient from '../../modules/okchain'
 
 export default class OKTWallet extends Wallet {
-
-  @persist @observable index = 0;
-  lastNonce = -1;
-  OKT = new OKT();
+  @persist @observable index = 0
+  lastNonce = -1
+  OKT = new OKT()
 
   @computed get hasCreated() {
-    return !!this.id;
+    return !!this.id
   }
 
-  @persist @observable account = '';
+  @persist @observable account = ''
 
   get defaultCoin() {
-    return this.coins[0];
+    return this.coins[0]
   }
 
   constructor(obj) {
-    super(obj);
+    super(obj)
     this.coins = [this.OKT]
     if (!obj) {
       // this.recoverWallet()
     }
+    setTimeout(() => {
+      this.getBalance()
+    }, 3000)
   }
 
-  recoverWallet = (mnemonic) => {
+
+  startObserve = () => {
+    super.startObserve();
+  };
+
+  @action
+  getBalance = async () => {
+    const { oKClient } = OKClient
+    if (this.address && oKClient) {
+      const balances = await oKClient.getBalance(this.address)
+      if (_.isArray(balances)) {
+        balances.forEach(item => {
+          if (item.denom === 'tokt') {
+            this.OKT.balance = Number(item.amount)
+          }
+        })
+      }
+    }
+    setTimeout(() => {
+      this.getBalance()
+    }, 30000)
+  }
+
+  @action
+  getPrice = async () => {
+    setTimeout(() => {
+      this.getPrice()
+    }, 30000)
+  }
+
+  recoverWallet = mnemonic => {
     crypto.getPrivateKeyFromMnemonic(mnemonic)
   }
 
-  exportPKByMnemonic = (mnemonic) => {
-    const privateKey = crypto.getPrivateKeyFromMnemonic(mnemonic);
-    return privateKey;
+  exportPKByMnemonic = mnemonic => {
+    const privateKey = crypto.getPrivateKeyFromMnemonic(mnemonic)
+    return privateKey
   }
-  static import(mnemonic, pwd, name = "") {
+  static import(mnemonic, pwd, name = '') {
     this.pwd = pwd
     return new Promise(async (resolve, reject) => {
       try {
         const path = `m/44'/${COIN_ID_OKT}'/0'/0/0`
-        const privateKey = crypto.getPrivateKeyFromMnemonic(mnemonic);
-        const pubkey = crypto.getPubKeyHexFromPrivateKey(privateKey); // 公钥
-        const address = crypto.getAddressFromPubKey(pubkey);
+        const privateKey = crypto.getPrivateKeyFromMnemonic(mnemonic)
+        const pubkey = crypto.getPubKeyHexFromPrivateKey(privateKey) // 公钥
+        const address = crypto.getAddressFromPubKey(pubkey)
         const obj = {
           id: CryptoJS.MD5(address).toString(),
           source: WALLET_SOURCE_MW,
@@ -60,22 +89,22 @@ export default class OKTWallet extends Wallet {
           type: COIN_TYPE_OKT,
           name,
           pwd,
-          path
-        };
+          path,
+        }
 
-        const act = new OKTWallet(obj);
-        resolve(act);
+        const act = new OKTWallet(obj)
+        resolve(act)
       } catch (error) {
-        reject(error);
+        reject(error)
       }
-    });
+    })
   }
 
   static importPK(pk, pwd, name, note) {
     return new Promise(async (resolve, reject) => {
       try {
-        const pubkey = crypto.getPubKeyFromPrivateKey(pk); // 公钥
-        const address = crypto.getPubKeyHexFromPrivateKey(pubkey);
+        const pubkey = crypto.getPubKeyFromPrivateKey(pk) // 公钥
+        const address = crypto.getPubKeyHexFromPrivateKey(pubkey)
         const obj = {
           id: CryptoJS.MD5(address).toString(),
           name,
@@ -85,21 +114,21 @@ export default class OKTWallet extends Wallet {
           isBackup: true,
           pubkey: address,
           type: COIN_TYPE_OKT,
-          source: WALLET_SOURCE_PK
-        };
-        let act = new OKTWallet(obj);
-        DeviceEventEmitter.emit("accountOnChange");
-        resolve(act);
+          source: WALLET_SOURCE_PK,
+        }
+        let act = new OKTWallet(obj)
+        DeviceEventEmitter.emit('accountOnChange')
+        resolve(act)
       } catch (error) {
-        reject(error);
+        reject(error)
       }
-    });
+    })
   }
 
-  static importKS(ks, pwd, name, note) {}
-  static backupMnemonic(mnemonic) {};
-  drop = text => {};
+  static importKS(ks, pwd, name, note) { }
+  static backupMnemonic(mnemonic) { }
+  drop = text => { }
   async isVaildPassword(pwd) {
-    return true;
+    return true
   }
 }

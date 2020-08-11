@@ -2,7 +2,6 @@ import React from 'react';
 import {
   Image,
 } from 'react-native';
-import CoinStore from '../stores/wallet/CoinStore';
 import { FO_ICON } from '../stores/wallet/Coin';
 import { OKT_ICON } from '../stores/wallet/Coin';
 import { Icon } from '@ant-design/react-native';

@@ -69,19 +69,15 @@ export const baseStyles = {
  */
 export const fontStyles = {
   normal: {
-    fontFamily: 'CircularStd-Medium',
     fontWeight: '400'
   },
   light: {
-    fontFamily: 'CircularStd-Medium',
     fontWeight: '300'
   },
   thin: {
-    fontFamily: 'CircularStd-Medium',
     fontWeight: '100'
   },
   bold: {
-    fontFamily: 'CircularStd-Medium',
     fontWeight: '600'
   }
 };

@@ -1,7 +1,7 @@
 import { observable, reaction, computed } from "mobx";
 import network, { EXCHANGE_RATE_API } from "../../modules/common/network";
 import { toSignificanceNumber } from "../../utils/NumberUtil";
-import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD } from "../../config/const";
+import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT } from "../../config/const";
 import storage from "../../utils/Storage";
 
 const COINSTORE_PRICE_STORAGE_KEY = "COINSTORE-PRICE-STORAGE-KEY";
@@ -53,6 +53,8 @@ class CoinStore {
     this.map.set(COIN_ID_BTC, new CoinPrice({ tokenId: COIN_ID_BTC }));
     this.map.set(COIN_ID_USDT, new CoinPrice({ tokenId: COIN_ID_USDT }));
     this.map.set(COIN_ID_ETH, new CoinPrice({ tokenId: COIN_ID_ETH }));
+    this.map.set(COIN_ID_FO, new CoinPrice({ tokenId: COIN_ID_FO }));
+    this.map.set(COIN_ID_OKT, new CoinPrice({ tokenId: COIN_ID_OKT }));
   }
 
   get BTCPrice() {

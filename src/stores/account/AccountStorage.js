@@ -73,7 +73,6 @@ class AccountStorage {
   }
   setDataByID = async (id, data, pwd) => {
     try {
-      console.log(id, data, pwd)
       const dataText = await encryptor.encrypt(id + pwd, data);
       return await AsyncStorage.setItem(id, dataText);
     } catch (error) {

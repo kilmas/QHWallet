@@ -43,7 +43,7 @@ export default {
   },
 
   "welcome": {
-    "step1": "'Open sources, Safety.",
+    "step1": "Open sources, Safety.",
     "step2": "decentralized, DApp.",
     "step3": "Simple, found value anywhere.",
   },

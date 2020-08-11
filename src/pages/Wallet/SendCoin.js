@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import _ from 'lodash'
 import { inject, observer, Observer } from "mobx-react";
@@ -229,7 +228,7 @@ class SendCoin extends React.Component {
     const { oKClient } = OKClient
     const { receiver, memo, amount } = this.state
     // (this.address, receiver, `${Number(amount).toFixed(4)} ${coin.name}`, memo);
-    const transactionId = await oKClient.sendSendTransaction(receiver, amount, 'TOKT', memo)
+    const transactionId = await oKClient.sendSendTransaction(receiver, amount, 'tokt', memo)
     if (transactionId) {
       Toast.success(strings('transfer successfully'));
     }
@@ -409,6 +408,7 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: '#C4CAD2',
     paddingRight: 10,
+    height: 44
   },
   amountInput: {
     flex: 1,
