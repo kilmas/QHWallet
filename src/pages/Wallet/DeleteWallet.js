@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TextInput } from 'react-native';
-import { Flex, Portal, Toast, Button } from '@ant-design/react-native';
+import { Flex, Toast, Button } from '@ant-design/react-native';
 import { computed } from 'mobx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { inject, observer } from 'mobx-react';
@@ -118,16 +118,17 @@ class DeleteWallet extends React.Component {
             {strings('wallet.deleteNote')}
           </Text>
           <Button
+            loading={this.state.loading}
+            disabled={this.state.loading}
             type="warning"
             onPress={async () => {
-              const deleting = Toast.loading('Deleting...', 0);
+              this.setState({ loading: true })
               try {
                 if (this.mnemonics) {
                   const mnemonics = this.state.list.join(' ').toLowerCase();
                   if (this.mnemonics === mnemonics) {
                     const { accountStore } = this.props.store
-                    const success = await accountStore.drop(account.id)
-                    Portal.remove(deleting)
+                    const success = await accountStore.drop(this.account)
                     if (success) {
                       Toast.success('Delete successfully', 1, () => {
                         GlobalNavigation.reset('TabDrawer')
@@ -136,13 +137,12 @@ class DeleteWallet extends React.Component {
                       Toast.fail('Delete fail')
                     }
                   } else {
-                    Portal.remove(deleting)
                     Toast.fail('Mnemonics incorrect');
                   }
                 } else if (this.privateKey) {
                   if (this.privateKey === this.state.prikey) {
-                    const success = await this.account.drop()
-                    Portal.remove(deleting)
+                    const { accountStore } = this.props.store
+                    const success = await accountStore.drop(this.account)
                     if (success) {
                       Toast.success('Delete successfully', 1, () => {
                         GlobalNavigation.reset('TabDrawer')
@@ -151,18 +151,16 @@ class DeleteWallet extends React.Component {
                       Toast.fail('Delete fail')
                     }
                   } else {
-                    Portal.remove(deleting)
                     Toast.fail('privateKey incorrect');
                   }
                 }
               } catch (e) {
-                Portal.remove(deleting)
                 Toast.info('Delete failed');
               } finally {
-                window.hideLoading();
+                this.setState({ loading: false })
               }
             }}>
-              Delete Wallet
+            Delete Wallet
           </Button>
         </KeyboardAwareScrollView>
       </Container>

@@ -45,6 +45,8 @@ class Coin {
         return `${DEFAULT_ICON_URL}/BTC.png`;
       case 'ETH':
         return `${DEFAULT_ICON_URL}/ETH.png`;
+      case 'OKT':
+          return OKT_ICON;
       default:
         return '';
     }

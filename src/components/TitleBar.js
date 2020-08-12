@@ -49,6 +49,7 @@ class TitleBar extends React.PureComponent {
               style={{
                 fontSize: 16,
                 color: '#fff',
+                maxWidth: '65%'
               }}>
               {this.props.title}
             </Text>

@@ -18,6 +18,8 @@ export default class OKTWallet extends Wallet {
     return !!this.id
   }
 
+  browserRecord = 'https://www.oklink.com/okchain-test/address/'
+
   @persist @observable account = ''
 
   get defaultCoin() {
@@ -31,7 +33,7 @@ export default class OKTWallet extends Wallet {
       // this.recoverWallet()
     }
     setTimeout(() => {
-      this.getBalance()
+      this.getBalanceTime()
     }, 3000)
   }
 
@@ -39,6 +41,13 @@ export default class OKTWallet extends Wallet {
   startObserve = () => {
     super.startObserve();
   };
+
+  getBalanceTime = async () => {
+    await this.getBalance()
+    setTimeout(() => {
+      this.getBalanceTime()
+    }, 30000)
+  }
 
   @action
   getBalance = async () => {
@@ -49,13 +58,11 @@ export default class OKTWallet extends Wallet {
         balances.forEach(item => {
           if (item.denom === 'tokt') {
             this.OKT.balance = Number(item.amount)
+            this.coins = [this.OKT]
           }
         })
       }
     }
-    setTimeout(() => {
-      this.getBalance()
-    }, 30000)
   }
 
   @action
@@ -103,8 +110,8 @@ export default class OKTWallet extends Wallet {
   static importPK(pk, pwd, name, note) {
     return new Promise(async (resolve, reject) => {
       try {
-        const pubkey = crypto.getPubKeyFromPrivateKey(pk) // 公钥
-        const address = crypto.getPubKeyHexFromPrivateKey(pubkey)
+        const pubkey = crypto.getPubKeyHexFromPrivateKey(pk) // 公钥
+        const address = crypto.getAddressFromPubKey(pubkey)
         const obj = {
           id: CryptoJS.MD5(address).toString(),
           name,
@@ -112,7 +119,7 @@ export default class OKTWallet extends Wallet {
           pwd,
           pwdnote: note,
           isBackup: true,
-          pubkey: address,
+          pubkey,
           type: COIN_TYPE_OKT,
           source: WALLET_SOURCE_PK,
         }

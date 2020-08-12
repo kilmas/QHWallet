@@ -3,25 +3,26 @@ import { TouchableOpacity, StyleSheet, Text, View } from 'react-native'
 import { Flex, Radio, List, Icon, Modal, Tabs, Button, InputItem, Picker, Toast } from '@ant-design/react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { inject, observer } from 'mobx-react'
-import { computed, observable } from "mobx";
-import { styles as themeStyles, BGGray } from '../../theme'
+import { computed, observable } from 'mobx'
 import Container from '../../components/Container'
 import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import CoinHeader from '../../components/CoinHeader'
 import AssetsAction from './components/AssetsAction'
-import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
+// import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
 import { weiToFiat, hexToBN, renderFromWei, toTokenMinimalUnit, BNToHex, toWei } from '../../utils/number'
 import Tokens from '../../components/UI/Tokens'
 import { getTicker, generateTransferData } from '../../utils/transactions'
-import { TextInput } from 'react-native-gesture-handler'
-import { colors } from '../../styles/common'
 import Ironman from '../../modules/ironman'
 import resolveRegister, { contractRegister } from '../../modules/metamask/cross'
 import Engine from '../../modules/metamask/core/Engine'
+import CommonAccount from '../../stores/account/CommonAccount'
+import WebView from 'react-native-webview'
+import { isNull } from 'lodash'
+import { FO, BTCCoin } from '../../stores/wallet/Coin'
 
 const RadioItem = Radio.RadioItem
 
@@ -34,45 +35,53 @@ const seasons = [
     label: '2014',
     value: '2014',
   },
-];
+]
 
-const crossTokens = [{
-  address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-  decimals: 6,
-  symbol: "USDT",
-}, {
-  address: "0x31406738536309754f39E4A80E3d6A321a01568C",
-  decimals: 18,
-  symbol: "ETH",
-  isETH: true,
-}, {
-  address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-  decimals: 18,
-  symbol: "DAI",
-}, {
-  address: "0x1c48f86ae57291f7686349f12601910bd8d470bb",
-  decimals: 18,
-  symbol: "USDK",
-}]
+const crossTokens = [
+  {
+    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+    decimals: 6,
+    symbol: 'USDT',
+  },
+  {
+    address: '0x31406738536309754f39E4A80E3d6A321a01568C',
+    decimals: 18,
+    symbol: 'ETH',
+    isETH: true,
+  },
+  {
+    address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+    decimals: 18,
+    symbol: 'DAI',
+  },
+  {
+    address: '0x1c48f86ae57291f7686349f12601910bd8d470bb',
+    decimals: 18,
+    symbol: 'USDK',
+  },
+]
 class History extends React.Component {
-
   constructor(props) {
     super(props)
     this.state = {
       crossToken: 0,
-      fibosAccount: ''
+      fibosAccount: '',
     }
   }
 
-  @observable selectedCoinID = this.props.navigation.state.params.coinID;
+  @observable selectedCoinID = this.props.navigation.state.params.coinID
   /**
    * @type {HDAccount}
    *
    * @memberof CoinDetailScreen
    */
   @computed get account() {
+    if (this.accounts.length) {
+      return this.accounts[0]
+    }
     const { accountID } = this.props.navigation.state.params
-    return this.props.accountStore.match(accountID);
+    const { accountStore } = this.props
+    return this.props.accountStore.match(accountID)
   }
   /**
    *
@@ -80,11 +89,29 @@ class History extends React.Component {
    * @memberof CoinDetailScreen
    */
   @computed get wallet() {
+    let account
     if (this.account instanceof HDAccount) {
-      return this.account.findWallet(this.selectedCoinID, HDACCOUNT_FIND_WALELT_TYPE_COINID);
+      account = this.account.findWallet(this.selectedCoinID, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     } else if (this.account instanceof MultiSigAccount) {
-      return this.account.findWallet(this.props.walletID);
+      account = this.account.findWallet(this.props.walletID)
+    } else if (this.account instanceof CommonAccount) {
+      account = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     }
+    return account
+  }
+
+  @computed get browserRecord() {
+    if (this.wallet) return this.wallet.browserRecord
+    return 'https://cn.etherscan.com/'
+  }
+
+  @computed get address() {
+    if (this.coin instanceof BTCCoin) {
+      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
+    } else if (this.coin instanceof FO) {
+      return (this.wallet && this.wallet.name) || (this.account && this.account.name)
+    }
+    return this.wallet && this.wallet.address
   }
   /**
    * @type {Coin}
@@ -92,25 +119,27 @@ class History extends React.Component {
    * @memberof CoinDetailScreen
    */
   @computed get coin() {
-    let coin;
+    let coin
     if (this.account instanceof HDAccount) {
-      coin = this.account.findCoin(this.selectedCoinID);
+      coin = this.account.findCoin(this.selectedCoinID)
     } else if (this.account instanceof MultiSigAccount) {
-      coin = this.wallet.findCoin(this.selectedCoinID);
+      coin = this.account.findCoin(this.selectedCoinID)
+    } else if (this.account instanceof CommonAccount) {
+      coin = this.account.findCoin(this.selectedCoinID)
     }
-    return coin;
+    return coin
   }
 
   @computed get txStore() {
-    return this.wallet.txStore;
+    return this.wallet.txStore
   }
 
   @computed get txSet() {
-    return this.txStore.coinTxSet(this.coin.id);
+    return this.txStore.coinTxSet(this.coin.id)
   }
 
-  @observable isRefreshing = false;
-  @observable isLoadingMore = false;
+  @observable isRefreshing = false
+  @observable isLoadingMore = false
 
   /**
    * 0: 全部
@@ -120,28 +149,28 @@ class History extends React.Component {
    *
    * @memberof CoinDetailScreen
    */
-  @observable txType = 0;
+  @observable txType = 0
 
   @computed get txs() {
-    let txs;
+    let txs
     switch (this.txType) {
       case 0:
-        txs = this.txSet.allTxs;
-        break;
+        txs = this.txSet.allTxs
+        break
       case 1:
-        txs = this.txSet.inTxs;
-        break;
+        txs = this.txSet.inTxs
+        break
       case 2:
-        txs = this.txSet.outTxs;
-        break;
+        txs = this.txSet.outTxs
+        break
       case 3:
-        txs = this.txSet.failedTxs;
-        break;
+        txs = this.txSet.failedTxs
+        break
     }
-    return txs;
+    return txs
   }
   @computed get title() {
-    return `${this.coin.name}`;
+    return `${this.coin.name}`
   }
 
   @computed get accounts() {
@@ -149,10 +178,12 @@ class History extends React.Component {
     const { accountStore } = this.props
     if (coin.name === 'FO') {
       return accountStore.FOAccounts
-    } else if (coin.name === 'ETH') {
+    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
       return accountStore.HDAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
     }
-    return [];
+    return []
   }
 
   onSave = () => { }
@@ -166,7 +197,7 @@ class History extends React.Component {
     this.props.setTransactionObject({
       ...transation,
       from: this.props.selectedAddress,
-      value: '0x0'
+      value: '0x0',
     })
     this.setState({ showCross: false }, () => {
       this.props.navigation.navigate('Confirm')
@@ -174,7 +205,7 @@ class History extends React.Component {
   }
 
   registerApprove = async () => {
-    const { provider } = Engine.context.NetworkController;
+    const { provider } = Engine.context.NetworkController
     contractRegister({
       provider,
       account: this.state.fibosAccount,
@@ -183,8 +214,8 @@ class History extends React.Component {
     this.setState({ showCross: false })
   }
 
-  checkFibosAccount = async (account) => {
-    const fibos = Ironman.fibos;
+  checkFibosAccount = async account => {
+    const fibos = Ironman.fibos
     if (fibos) {
       try {
         const reponse = await fibos.getAccount(account)
@@ -204,11 +235,11 @@ class History extends React.Component {
 
   checkMapState = async fibosaccount => {
     const { changeFieldValue } = this.props
-    const fibos = Ironman.fibos;
+    const fibos = Ironman.fibos
 
     if (fibos) {
       try {
-        const reponse = await fibos.getTableRows({ json: true, code: "eosio.cross", scope: "eosio.cross", table: 'accountmap', limit: 5000 })
+        const reponse = await fibos.getTableRows({ json: true, code: 'eosio.cross', scope: 'eosio.cross', table: 'accountmap', limit: 5000 })
         const { rows } = reponse
 
         let tmp_isFibosAccountValid = false
@@ -231,26 +262,16 @@ class History extends React.Component {
 
   render() {
     const coin = this.props.navigation.getParam('coin')
-    const { name = "", icon } = coin
+    const { name = '', icon } = coin
     const availiableBalance = 100
     const btcPrice = 10000
 
-    const {
-      accounts,
-      conversionRate,
-      currentCurrency,
-      identities,
-      selectedAddress,
-      tokens,
-      collectibles,
-      navigation,
-      ticker
-    } = this.props;
+    const { accounts, conversionRate, currentCurrency, identities, selectedAddress, tokens, collectibles, navigation, ticker } = this.props
 
-    let balance = 0;
-    let assets = tokens;
+    let balance = 0
+    let assets = tokens
     if (accounts[selectedAddress]) {
-      balance = renderFromWei(accounts[selectedAddress].balance);
+      balance = renderFromWei(accounts[selectedAddress].balance)
       assets = [
         {
           name: 'Ether',
@@ -258,60 +279,63 @@ class History extends React.Component {
           isETH: true,
           balance,
           balanceFiat: weiToFiat(hexToBN(accounts[selectedAddress].balance), conversionRate, currentCurrency),
-          logo: '../../images/eth-logo.png'
+          logo: '../../images/eth-logo.png',
         },
-        ...tokens
-      ];
+        ...tokens,
+      ]
     } else {
-      assets = tokens;
+      assets = tokens
     }
-    const account = { address: selectedAddress, ...identities[selectedAddress], ...accounts[selectedAddress] };
+    // const account = { address: selectedAddress, ...identities[selectedAddress], ...accounts[selectedAddress] }
 
-    const actions = coin.name !== 'ETH' ? {
-      onTransfer: () => {
-        let accountID = this.account.id;
-        if (this.accounts[0]) {
-          accountID = this.accounts[0].id
+    const actions =
+      coin.name !== 'ETH'
+        ? {
+          onTransfer: () => {
+            let accountID = this.account.id
+            if (this.accounts[0]) {
+              accountID = this.accounts[0].id
+            }
+            GlobalNavigation.navigate('SendCoin', {
+              coin: this.coin,
+              onSave: this.onSave,
+              walletID: this.props.walletID,
+              accountID,
+              coinID: this.coin.id,
+            })
+          },
+          onReceive: () => {
+            let accountID = this.account.id
+            if (this.accounts[0]) {
+              accountID = this.accounts[0].id
+            }
+            GlobalNavigation.navigate('Receive', {
+              coin: this.coin,
+              walletID: this.props.walletID,
+              accountID,
+              coinID: this.coin.id,
+            })
+          },
         }
-        GlobalNavigation.navigate('SendCoin', {
-          coin: this.coin,
-          onSave: this.onSave,
-          walletID: this.props.walletID,
-          accountID,
-          coinID: this.coin.id,
-        })
-      },
-      onReceive: () => {
-        let accountID = this.account.id;
-        if (this.accounts[0]) {
-          accountID = this.accounts[0].id
-        }
-        GlobalNavigation.navigate('Receive', {
-          coin: this.coin,
-          walletID: this.props.walletID,
-          accountID,
-          coinID: this.coin.id,
-        })
-      }
-    } : {
-        onCross: () => {
-          this.setState(state => {
-            const { accountStore: { FOAccounts } } = this.props
-            if (state.fibosAccount === '' && FOAccounts.length) {
-              return {
-                fibosAccount: FOAccounts[0].name,
-                showCross: true
+        : {
+          onCross: () => {
+            this.setState(state => {
+              const {
+                accountStore: { FOAccounts },
+              } = this.props
+              if (state.fibosAccount === '' && FOAccounts.length) {
+                return {
+                  fibosAccount: FOAccounts[0].name,
+                  showCross: true,
+                }
               }
-            }
-            return {
-              showCross: true
-            }
-          })
-        },
-        onCrossOKT: () => {
-
+              return {
+                showCross: true,
+              }
+            })
+          },
+          onCrossOKT: () => { },
         }
-      }
     return (
       <Container>
         <CoinHeader
@@ -326,23 +350,52 @@ class History extends React.Component {
             GlobalNavigation.goBack()
           }}
           renderRight={() => (
-            <TouchableOpacity onPress={() => {
-              this.setState({ visible: true })
-            }}>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({ visible: true })
+              }}>
               <Icon name="ellipsis" />
             </TouchableOpacity>
           )}
         />
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
           <AssetsAction {...actions} />
-          <Tabs tabs={[
-            { title: 'TOKENS' },
-            { title: 'COLLECTIBLES' },
-          ]}>
+          <Tabs tabs={[{ title: 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]} swipeable={false} useOnPan={false}>
             <View>
               {coin.name === 'ETH' && <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />}
+              {coin.name === 'OKT' && (
+                <List>
+                  {this.wallet &&
+                    this.wallet.coins.map((item, index) => (
+                      <List.Item
+                        key={item.id}
+                        checked={index === 0}
+                        onPress={() => {
+                          console.log(item)
+                        }}>
+                        {item.name}
+                        <List.Item.Brief>{item.balance}</List.Item.Brief>
+                      </List.Item>
+                    ))}
+                </List>
+              )}
             </View>
-            <View>
+            <View style={styles.tabView}>
+              {coin.name === 'ETH' ? (
+                null
+              ) : (
+                  <WebView
+                    bounces={false}
+                    directionalLockEnabled
+                    source={{ uri: `${this.browserRecord}${this.address}` }}
+                    scrollEnabled={false}
+                    overScrollMode={'never'}
+                    sendCookies
+                    javascriptEnabled
+                    allowsInlineMediaPlayback
+                    useWebkit
+                  />
+                )}
             </View>
           </Tabs>
         </KeyboardAwareScrollView>
@@ -353,25 +406,25 @@ class History extends React.Component {
           maskClosable
           onClose={() => {
             this.setState({ visible: false })
-          }}
-        >
+          }}>
           <List style={{ minHeight: 300 }} renderHeader={`${name} accounts List.`}>
-            {
-              this.accounts.map((item, index) => (
-                <RadioItem
-                  key={item.id}
-                  checked={index === 0}
-                  onChange={event => {
-                    if (event.target.checked) {
-                      const { accountStore } = this.props
+            {this.accounts.map((item, index) => (
+              <RadioItem
+                key={item.id}
+                // checked={index === 0}
+                onChange={event => {
+                  if (event.target.checked) {
+                    const { accountStore } = this.props
+                    if (coin.name === 'FO') {
                       accountStore.setCurrentFOID(item.id)
+                    } else if (coin.name === 'OKT') {
+                      accountStore.setCurrentOKTID(item.id)
                     }
-                  }}
-                >
-                  {item.name}
-                </RadioItem>
-              ))
-            }
+                  }
+                }}>
+                {item.name}
+              </RadioItem>
+            ))}
           </List>
         </Modal>
 
@@ -382,16 +435,11 @@ class History extends React.Component {
           maskClosable
           onClose={() => {
             this.setState({ showCross: false })
-          }}
-        >
-
+          }}>
           <List renderHeader={'Cross to Fibos'}>
-            <InputItem
-              error={false}
-              value={this.props.selectedAddress}
-            >
+            <InputItem error={false} value={this.props.selectedAddress}>
               From:
-          </InputItem>
+            </InputItem>
             <InputItem
               clear
               error={this.state.accountError}
@@ -399,23 +447,22 @@ class History extends React.Component {
               onChange={value => {
                 this.setState({
                   fibosAccount: value,
-                });
+                })
               }}
               placeholder={strings('Please input fibos account')}
               onBlur={() => {
                 const { fibosAccount } = this.state
                 if (!/^[a-z1-5.]{5,12}$/.test(fibosAccount)) {
                   this.setState({
-                    accountError: true
+                    accountError: true,
                   })
                   Toast.fail(strings('Account format error'))
                 } else {
                   this.checkFibosAccount(fibosAccount)
                 }
-              }}
-            >
+              }}>
               To:
-          </InputItem>
+            </InputItem>
             <InputItem
               clear
               type="number"
@@ -423,72 +470,72 @@ class History extends React.Component {
               onChange={value => {
                 this.setState({
                   crossAmount: value,
-                });
+                })
               }}
-              extra={<Picker
-                title="Cross Token"
-                data={crossTokens.map((item, index) => ({
-                  value: index,
-                  label: item.symbol
-                }))}
-                cols={1}
-                value={this.state.crossToken}
-                // onChange={v => {
-                //   this.setState({ crossToken: v })
-                // }}
-                onOk={v => {
-                  this.setState({ crossToken: v })
-                  // this.props.newAssetTransaction(crossTokens[v])
-                }}
-              >
-                <Flex>
-                  <Text>{crossTokens[this.state.crossToken].symbol}</Text>
-                  <Icon name="caret-down" />
-                </Flex>
-              </Picker>}
+              extra={
+                <Picker
+                  title="Cross Token"
+                  data={crossTokens.map((item, index) => ({
+                    value: index,
+                    label: item.symbol,
+                  }))}
+                  cols={1}
+                  value={this.state.crossToken}
+                  // onChange={v => {
+                  //   this.setState({ crossToken: v })
+                  // }}
+                  onOk={v => {
+                    this.setState({ crossToken: v })
+                    // this.props.newAssetTransaction(crossTokens[v])
+                  }}>
+                  <Flex>
+                    <Text>{crossTokens[this.state.crossToken].symbol}</Text>
+                    <Icon name="caret-down" />
+                  </Flex>
+                </Picker>
+              }
               placeholder={strings('Please input crosss amount')}
-              onBlur={() => {
-
-              }}
-            >
+              onBlur={() => { }}>
               Amount:
-          </InputItem>
+            </InputItem>
           </List>
-          <Button type="primary" style={{ margin: 20 }} onPress={async () => {
+          <Button
+            type="primary"
+            style={{ margin: 20 }}
+            onPress={async () => {
+              if (!this.state.isFibosAccountValid) {
+                await this.registerApprove()
+                return
+              }
 
-            if (!this.state.isFibosAccountValid) {
-              await this.registerApprove()
-              return
-            }
+              const { number: value } = this.state
+              const {
+                selectedAsset,
+                transactionState: { transaction },
+                setTransactionObject,
+                selectedAddress,
+              } = this.props
 
-            const { number: value } = this.state
-            const {
-              selectedAsset,
-              transactionState: { transaction },
-              setTransactionObject,
-              selectedAddress,
-            } = this.props
+              const transactionTo = ''
 
-            const transactionTo = ''
+              const transactionObject = {
+                ...transaction,
+                value: BNToHex(toWei(value)),
+                selectedAsset,
+                from: selectedAddress,
+              }
 
-            const transactionObject = {
-              ...transaction,
-              value: BNToHex(toWei(value)),
-              selectedAsset,
-              from: selectedAddress,
-            }
+              if (selectedAsset.erc20) {
+                const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals)
+                transactionObject.data = generateTransferData('transfer', {
+                  toAddress: transactionTo,
+                  amount: BNToHex(tokenAmount),
+                })
+                transactionObject.value = '0x0'
+              }
 
-            if (selectedAsset.erc20) {
-              const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals)
-              transactionObject.data = generateTransferData('transfer', {
-                toAddress: transactionTo,
-                amount: BNToHex(tokenAmount),
-              })
-              transactionObject.value = '0x0'
-            }
-
-            setTransactionObject(transactionObject)
-          }}>
+              setTransactionObject(transactionObject)
+            }}>
             Confirm
           </Button>
         </Modal>
@@ -499,19 +546,11 @@ class History extends React.Component {
 
 const styles = StyleSheet.create({
   container: { backgroundColor: '#F7F7F7', marginBottom: 0 },
-  textInput: {
-    fontSize: 13,
-    borderRadius: 8,
-    padding: 8,
-    backgroundColor: BGGray,
-    borderWidth: 1,
-    borderRadius: 4,
-    borderColor: colors.grey100,
-    margin: 8,
-    flex: 1
-  }
+  tabView: {
+    flex: 1,
+    backgroundColor: '#ddd',
+  },
 })
-
 
 export default inject(({ store: state }) => ({
   settings: state.settings,
@@ -533,5 +572,4 @@ export default inject(({ store: state }) => ({
   newAssetTransaction: selectedAsset => state.transaction.newAssetTransaction(selectedAsset),
   // showTransactionNotification: args => state.transaction.showTransactionNotification(args),
   // hideTransactionNotification: state.transaction.hideTransactionNotification
-
 }))(observer(History))

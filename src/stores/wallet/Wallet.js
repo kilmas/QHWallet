@@ -100,7 +100,7 @@ export default class Wallet {
       this.path = obj.path;
       this.pwdnote = obj.pwdnote;
       this.source = obj.source;
-      this.coins = obj.coins || [];
+      // this.coins = obj.coins || [];
       this.isBackup = obj.isBackup || false;
       if (this.source !== WALLET_SOURCE_MW) {
         this.isBackup = true;

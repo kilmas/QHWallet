@@ -19,8 +19,10 @@ export default class Browser {
   }
 
   @action
-  createNewTab = ({ url, id = Date.now() }) => {
-    this.tabs.push({ url, id })
+  createNewTab = (url, id = Date.now()) => {
+    const tab = { url, id }
+    this.tabs.push(tab)
+    return tab
   }
 
   @action

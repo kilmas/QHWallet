@@ -9,7 +9,8 @@ import {
   ACCOUNT_TYPE_MULTISIG,
   ACCOUNT_TYPE_COMMON,
   ACCOUNT_DEFAULT_ID_MULTISIG,
-  NETWORK_ENV_MAINNET, } from "../config/const";
+  NETWORK_ENV_MAINNET,
+} from "../config/const";
 import Account from "./account/Account";
 import network from "../modules/common/network";
 import HDAccount from "./account/HDAccount";
@@ -64,11 +65,11 @@ class AccountStore {
   @persist @observable currentBTCID = null;
 
 
-    /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
+  /**
+ *
+ * @type { Account }
+ * @memberof AccountStore
+ */
   @persist @observable currentOKTID = null;
 
   /**
@@ -81,7 +82,7 @@ class AccountStore {
     if (this.HDAccounts.length) {
       return this.HDAccounts[0]
     }
-    return  undefined
+    return undefined
   }
 
   /**
@@ -106,14 +107,14 @@ class AccountStore {
 
   @persist('list', CommonAccount) @observable CommonAccounts = [];
 
-    /**
-   *
-   * @type { Array.<Account> }
-   * @memberof AccountStore
-   */
+  /**
+ *
+ * @type { Array.<Account> }
+ * @memberof AccountStore
+ */
   @computed get FOAccounts() {
     let currentFO
-    const CommonFO = this.CommonAccounts.filter(item=>{
+    const CommonFO = this.CommonAccounts.filter(item => {
       if (item.id === this.currentFOID) {
         currentFO = item
         return false
@@ -123,7 +124,7 @@ class AccountStore {
       }
       return false
     })
-    const HDFO = this.HDAccounts.filter(item=>{
+    const HDFO = this.HDAccounts.filter(item => {
       if (item.id === this.currentFOID) {
         currentFO = item
         return false
@@ -137,14 +138,14 @@ class AccountStore {
   }
 
 
-      /**
-   *
-   * @type { Array.<Account> }
-   * @memberof AccountStore
-   */
+  /**
+*
+* @type { Array.<Account> }
+* @memberof AccountStore
+*/
   @computed get OKTAccounts() {
     let currentOKT
-    const CommonOKT = this.CommonAccounts.filter(item=>{
+    const CommonOKT = this.CommonAccounts.filter(item => {
       if (item.id === this.currentOKTID) {
         currentOKT = item
         return false
@@ -154,7 +155,7 @@ class AccountStore {
       }
       return false
     })
-    const HDOKT = this.HDAccounts.filter(item=>{
+    const HDOKT = this.HDAccounts.filter(item => {
       if (item.id === this.currentOKTID) {
         currentOKT = item
         return false
@@ -189,6 +190,9 @@ class AccountStore {
         }
         if (!this.currentFOID) {
           this.currentFOID = this.currentAccountID
+        }
+        if (!this.currentOKTID) {
+          this.currentOKTID = this.currentAccountID
         }
       }
 
@@ -226,23 +230,26 @@ class AccountStore {
   setOKClient = async () => {
     const keychain = await SecureKeychain.getGenericPassword()
     if (keychain && this.OKTAccounts.length) {
-      const currentOKT =  this.OKTAccounts[0]
-      const keyObj = await AccountStorage.getDataByID(currentOKT.hdId, keychain.password)
-
+      const keyObj = await AccountStorage.getDataByID(this.currentOKTID, keychain.password)
+      const currentOKT = this.OKTAccounts[0]
       if (keyObj.type === 'HD') {
         const privateKey = currentOKT.OKTWallet.exportPKByMnemonic(keyObj.mnemonic)
         OKClient.init({
           privateKey: privateKey,
         })
+      } else if (keyObj.type === 'OKT') {
+        const privateKey = keyObj.privateKey
+        OKClient.init({
+          privateKey: privateKey,
+        })
       }
-
     }
   }
 
-  @action 
+  @action
   insert = (account) => {
     if (this.match(account.id)) {
-      return 
+      return
     }
     if (account.type === ACCOUNT_TYPE_HD) {
       this.HDAccounts = [
@@ -252,7 +259,7 @@ class AccountStore {
       this.currentAccount = account;
       this.currentETHID = account.id;
       this.showDefaultIndex = false;
-      this.currentAccountID = account.id 
+      this.currentAccountID = account.id
       // this.defaultMultiSigAccount.wallets = [];
       // this.defaultMultiSigAccount.pendingTxs = [];
     } else if (account.type === ACCOUNT_TYPE_COMMON) {
@@ -275,21 +282,26 @@ class AccountStore {
     AccountStorage.insert(account)
   }
 
-  @action 
-  drop = async id => {
-    if (account.type === ACCOUNT_TYPE_HD) {
-      this.HDAccounts = this.HDAccounts.filter(account => account.id === id)
-    } else if (account.type === ACCOUNT_TYPE_COMMON) {
-      this.CommonAccounts = this.CommonAccounts.filter(account => account.id === id)
+  @action
+  drop = async (acc) => {
+    if (acc.type === ACCOUNT_TYPE_HD) {
+      this.HDAccounts = this.HDAccounts.filter(account => account.id !== acc.id)
+    } else if (acc.type === ACCOUNT_TYPE_COMMON) {
+      this.CommonAccounts = this.CommonAccounts.filter(account => account.id !== acc.id)
     }
-    await AccountStorage.drop({
-      id: account.id,
-      type: account.type
-    })
+    // await AccountStorage.drop({
+    //   id: acc.id,
+    //   type: acc.type
+    // })
+    return true
   };
 
   @action setCurrentFOID = (currentFOID) => {
     this.currentFOID = currentFOID
+  }
+
+  @action setCurrentOKTID = (currentOKTID) => {
+    this.currentOKTID = currentOKTID
   }
   @action setHiddenPrice = (isHiddenPrice) => {
     this.isHiddenPrice = isHiddenPrice

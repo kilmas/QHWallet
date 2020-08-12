@@ -40,6 +40,7 @@ class ClearTitleBar extends React.PureComponent {
             style={{
               fontSize: 19,
               color: '#FFF',
+              maxWidth: '65%'
             }}>
             {this.props.title}
           </Text>

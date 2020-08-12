@@ -52,40 +52,41 @@ class SelectTypes extends React.Component {
         <KeyboardAwareScrollView style={themeStyle.pt26}>
           {btns.map(
             ({ icon, name, type, backgroundColor, width, height }, index) => (
-              <Flex
-                key={index.toString()}
-                onPress={() =>
-                  GlobalNavigation.navigate('InputPrivateKey', {
-                    type,
-                    name: this.props.navigation.state.params.name,
-                  })
-                }
-                style={{
-                  backgroundColor,
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 20,
-                  marginBottom: 26,
-                }}>
-                <Image
-                  source={icon}
-                  resizeMode={'contain'}
+              <TouchableOpacity key={index.toString()} onPress={() =>
+                GlobalNavigation.navigate('InputPrivateKey', {
+                  type,
+                  name: this.props.navigation.state.params.name,
+                })
+              }>
+                <Flex
                   style={{
-                    width: 25,
-                    height: 25,
-                    marginHorizontal: 25,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: '#4a4a4a',
-                    flex: 1,
+                    backgroundColor,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 20,
+                    marginBottom: 26,
                   }}>
-                  {name}
-                </Text>
-                <Icon name="right" />
-              </Flex>
+                  <Image
+                    source={icon}
+                    resizeMode={'contain'}
+                    style={{
+                      width: 25,
+                      height: 25,
+                      marginHorizontal: 25,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: '#4a4a4a',
+                      flex: 1,
+                    }}>
+                    {name}
+                  </Text>
+                  <Icon name="right" />
+                </Flex>
+              </TouchableOpacity>
+
             ),
           )}
         </KeyboardAwareScrollView>

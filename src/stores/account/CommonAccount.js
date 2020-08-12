@@ -90,7 +90,7 @@ class CommonAccount extends Account {
    * @memberof CommonAccount
    */
   @computed get wallets() {
-    return _.compact([this.FOWallet, this.BTCWallet, this.ETHWallet, ])
+    return _.compact([this.FOWallet, this.BTCWallet, this.ETHWallet, this.OKTWallet])
   }
 
   @computed get totalAsset() {
@@ -131,6 +131,10 @@ class CommonAccount extends Account {
     } else if (this.walletType === 'FO') {
       return _.compact([
         this.FOWallet && this.FOWallet.FO,
+      ]);
+    } else if (this.walletType === 'OKT') {
+      return _.compact([
+        this.OKTWallet && this.OKTWallet.OKT,
       ]);
     }
     return _.compact([
@@ -175,7 +179,7 @@ class CommonAccount extends Account {
         account.ETHWallet = await ETHWallet.importPK(pk, pwd, name);
         break;
       case 'OKT':
-          account.ETHWallet = await OKTWallet.importPK(pk, pwd, name);
+          account.OKTWallet = await OKTWallet.importPK(pk, pwd, name);
           break;
       default:
         return null;

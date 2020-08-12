@@ -42,6 +42,7 @@ export default class BTCWallet extends Wallet {
   BTC = new BTCCoin();
   USDT = new USDT();
 
+  browserRecord = 'https://btc.com/'
   /**
    *
    * @type {BTCExtendedKey}

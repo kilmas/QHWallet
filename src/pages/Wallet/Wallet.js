@@ -92,7 +92,10 @@ class CoinCell extends React.Component {
     if (this.props.store.accountStore.isHiddenPrice) {
       return "*****";
     }
-    const bigNumber = new BigNumber(this.props.coin.balance + "");
+    if (this.props.coin.name === 'OKT') {
+      // todo
+    }
+    const bigNumber = new BigNumber(`${this.props.coin.balance}`);
     if (bigNumber.isLessThan(0)) {
       return "-";
     }
@@ -102,6 +105,7 @@ class CoinCell extends React.Component {
       true
     );
   }
+
   @computed get totalPrice() {
     if (this.props.store.accountStore.isHiddenPrice) {
       return "*****";
@@ -218,7 +222,7 @@ class Wallet extends React.Component {
   };
 
   _renderItem = ({ item }) => (
-    <Observer>{() => <CoinCell coin={item} navigator={this.props.navigator} account={this.account} />}</Observer>
+    <Observer>{() => <CoinCell coin={item} account={this.account} />}</Observer>
   );
 
   onNetworksModalClose = async manualClose => {

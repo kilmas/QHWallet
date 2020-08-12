@@ -20,11 +20,11 @@ export default class  FOWallet extends Wallet {
   lastNonce = -1;
   FO = new FO();
 
+  browserRecord = 'https://see.fo/accounts/'
+
   @computed get hasCreated() {
     return !!this.id;
   }
-
-  @persist @observable account = '';
 
   get defaultCoin() {
     return this.coins[0];

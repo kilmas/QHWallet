@@ -106,17 +106,20 @@ class WalletSetting extends React.Component {
               </List.Item>
             )}
           </List>
-          <Button type="primary" style={{ marginVertical: 50, marginHorizontal: 20 }} onPress={async () => {
+          <Button type="primary" disabled={this.state.loading} loading={this.state.loading} style={{ marginVertical: 50, marginHorizontal: 20 }} onPress={async () => {
             try {
-              await window.showLoading(true)
+              this.setState({loading: true})
               const account = this.state.account
               if (account.walletType === 'FO') {
                 this.props.store.accountStore.setCurrentFOID(account.id)
+              } else if (account.walletType === 'OKT') {
+                this.props.store.accountStore.setCurrentOKTID(account.id)
               }
               GlobalNavigation.reset('TabDrawer')
             } catch (error) {
+              console.warn(error)
             } finally {
-              window.hideLoading()
+              this.setState({loading: false})
             }
           }}>
             Set as Primary Wallet
