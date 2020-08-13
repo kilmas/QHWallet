@@ -3,7 +3,7 @@ import { TouchableOpacity, View, StyleSheet, Text, BackHandler } from 'react-nat
 import URL from 'url-parse'
 import { inject, observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import { Icon, Toast, Modal } from '@ant-design/react-native'
+import { Icon, Toast, Modal, Flex } from '@ant-design/react-native'
 import { computed } from 'mobx'
 import WebView from 'react-native-webview'
 import TitleBar from '../../components/TitleBar'
@@ -83,6 +83,7 @@ class Defi extends React.Component {
       suggestedAssetMeta: undefined,
       lastError: null,
       lastUrlBeforeHome: null,
+      webUri: 'https://www.okex.me/dex-test/spot/trade'
     }
   }
 
@@ -139,7 +140,7 @@ class Defi extends React.Component {
           publicKey = item.FOWallet.address
         }
         return {
-          name:  item.FOWallet.name || item.name,
+          name: item.FOWallet.name || item.name,
           blockchain: 'fibos',
           authority: `active`,
         }
@@ -369,26 +370,41 @@ class Defi extends React.Component {
   }
 
   render() {
-    const { entryScriptjs } = this.state
+    const { entryScriptjs, webUri } = this.state
     return (
       <Container>
         <TitleBar
-          title="Defi"
+          title={this.state.title || 'OpenDex'}
           renderLeft={() => <DrawerIcon dot={this.props.store.common.newVersion} />}
           renderRight={() => (
-            <TouchableOpacity
-              onPress={() => {
-                this.reload()
-              }}>
-              <Icon name="reload" />
-            </TouchableOpacity>
+            <Flex>
+              <TouchableOpacity
+                onPress={() => {
+                  this.setState({
+                    webUri: 'https://dex.fo/mobile',
+                    title: 'Defi'
+                  })
+                }}>
+                <Text style={{marginRight: 8, color: '#fff'}}>Defi</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  this.setState({
+                    webUri: 'https://www.okex.me/dex-test/spot/trade',
+                    title: 'OpenDex'
+                  })
+                  this.reload()
+                }}>
+                <Icon name="reload" />
+              </TouchableOpacity>
+            </Flex>
           )}
         />
-        <View style={{ flex: 1 }}>{entryScriptjs &&
+        <View style={{ flex: 1 }}>{!!entryScriptjs &&
           <WebView
             bounces={false}
             directionalLockEnabled
-            source={{ uri: "https://dex.fo/mobile" }}
+            source={{ uri: webUri }}
             scrollEnabled={false}
             overScrollMode={'never'}
             ref={r => {

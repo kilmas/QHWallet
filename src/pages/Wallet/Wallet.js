@@ -129,7 +129,7 @@ class CoinCell extends React.Component {
         <Flex justify="between" style={cellStyles.cellFlex}>
           <Flex>
             <Image
-              source={{ uri: this.props.coin.icon }}
+              source={{ uri: coin.icon }}
               resizeMode="contain"
               style={cellStyles.cellCoin}
             />
@@ -249,9 +249,7 @@ class Wallet extends React.Component {
               <DrawerIcon dot={this.props.store.common.newVersion} />
             )}
             renderRight={() => (
-              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {
-                this.props.store.modals.toggleNetworkModal()
-              }}><Icon name="ellipsis" /></TouchableOpacity>
+              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {}}><Icon name="ellipsis" /></TouchableOpacity>
             )}
           />
           <AssetsHeader account={this.account} />

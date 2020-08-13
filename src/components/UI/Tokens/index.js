@@ -159,7 +159,9 @@ class Tokens extends React.Component {
       <List.Item
         key={asset.address || '0x'}
         arrow="horizontal"
-        onLongPress={asset.isETH ? null : this.showRemoveMenu}
+        onLongPress={asset.isETH ? null : () => {
+          this.showRemoveMenu(asset)
+        }}
         thumb={asset.isETH ? (
           <FadeIn placeholderStyle={{ backgroundColor: colors.white }}>
             <Image source={ethLogo} resizeMode="contain" style={styles.ethLogo} />
@@ -168,7 +170,7 @@ class Tokens extends React.Component {
             <TokenImage asset={asset} containerStyle={styles.ethLogo} />
           )}
         extra=""
-        onPress={()=>{
+        onPress={() => {
           this.onItemPress(asset)
         }}>
         {mainBalance}

@@ -21,7 +21,6 @@ import resolveRegister, { contractRegister } from '../../modules/metamask/cross'
 import Engine from '../../modules/metamask/core/Engine'
 import CommonAccount from '../../stores/account/CommonAccount'
 import WebView from 'react-native-webview'
-import { isNull } from 'lodash'
 import { FO, BTCCoin } from '../../stores/wallet/Coin'
 
 const RadioItem = Radio.RadioItem
@@ -59,6 +58,11 @@ const crossTokens = [
     decimals: 18,
     symbol: 'USDK',
   },
+  {
+    address: '0x75231F58b43240C9718Dd58B4967c5114342a86c',
+    decimals: 18,
+    symbol: 'OKB',
+  },
 ]
 class History extends React.Component {
   constructor(props) {
@@ -66,6 +70,7 @@ class History extends React.Component {
     this.state = {
       crossToken: 0,
       fibosAccount: '',
+      oktAccount: ''
     }
   }
 
@@ -81,7 +86,7 @@ class History extends React.Component {
     }
     const { accountID } = this.props.navigation.state.params
     const { accountStore } = this.props
-    return this.props.accountStore.match(accountID)
+    return accountStore.match(accountID)
   }
   /**
    *
@@ -327,14 +332,36 @@ class History extends React.Component {
                 return {
                   fibosAccount: FOAccounts[0].name,
                   showCross: true,
+                  crossType: 'FO'
                 }
               }
               return {
                 showCross: true,
+                crossType: 'FO'
               }
             })
           },
-          onCrossOKT: () => { },
+          onSwapNetwork: () => {
+            this.props.toggleNetworkModal()
+          },
+          onCrossOKT: () => {
+            this.setState(state => {
+              const {
+                accountStore: { OKTAccounts },
+              } = this.props
+              if (state.fibosAccount === '' && OKTAccounts.length) {
+                return {
+                  oktAccount: OKTAccounts[0].OKTWallet.address,
+                  showCross: true,
+                  crossType: 'OKT'
+                }
+              }
+              return {
+                showCross: true,
+                crossType: 'OKT'
+              }
+            })
+          },
         }
     return (
       <Container>
@@ -381,21 +408,19 @@ class History extends React.Component {
               )}
             </View>
             <View style={styles.tabView}>
-              {coin.name === 'ETH' ? (
-                null
-              ) : (
-                  <WebView
-                    bounces={false}
-                    directionalLockEnabled
-                    source={{ uri: `${this.browserRecord}${this.address}` }}
-                    scrollEnabled={false}
-                    overScrollMode={'never'}
-                    sendCookies
-                    javascriptEnabled
-                    allowsInlineMediaPlayback
-                    useWebkit
-                  />
-                )}
+              {coin.name === 'ETH' ? null : (
+                <WebView
+                  bounces={false}
+                  directionalLockEnabled
+                  source={{ uri: `${this.browserRecord}${this.address}` }}
+                  scrollEnabled={false}
+                  overScrollMode={'never'}
+                  sendCookies
+                  javascriptEnabled
+                  allowsInlineMediaPlayback
+                  useWebkit
+                />
+              )}
             </View>
           </Tabs>
         </KeyboardAwareScrollView>
@@ -440,7 +465,7 @@ class History extends React.Component {
             <InputItem error={false} value={this.props.selectedAddress}>
               From:
             </InputItem>
-            <InputItem
+            {this.state.crossType === 'FO' && <InputItem
               clear
               error={this.state.accountError}
               value={this.state.fibosAccount}
@@ -462,7 +487,22 @@ class History extends React.Component {
                 }
               }}>
               To:
-            </InputItem>
+              </InputItem>
+            }
+            {
+              this.state.crossType === 'OKT' && <InputItem
+                clear
+                error={this.state.accountError}
+                value={this.state.oktAccount}
+                onChange={value => {
+                  this.setState({
+                    oktAccount: value,
+                  })
+                }}
+                placeholder={strings('Please input OKChain account')}>
+                To:
+              </InputItem>
+            }
             <InputItem
               clear
               type="number"
@@ -570,6 +610,7 @@ export default inject(({ store: state }) => ({
   resetTransaction: state.transaction.resetTransaction,
   setTransactionObject: state.transaction.setTransactionObject,
   newAssetTransaction: selectedAsset => state.transaction.newAssetTransaction(selectedAsset),
+  toggleNetworkModal: state.modals.toggleNetworkModal,
   // showTransactionNotification: args => state.transaction.showTransactionNotification(args),
   // hideTransactionNotification: state.transaction.hideTransactionNotification
 }))(observer(History))

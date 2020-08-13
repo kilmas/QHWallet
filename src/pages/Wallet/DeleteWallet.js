@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, TextInput } from 'react-native';
+import _ from 'lodash'
 import { Flex, Toast, Button } from '@ant-design/react-native';
 import { computed } from 'mobx';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -104,9 +105,10 @@ class DeleteWallet extends React.Component {
                   backgroundColor: '#e0e0e0',
                 }}
                 multiline
+                value={this.state.prikey}
                 numberOfLines={4}
                 onChangeText={text => {
-                  this.setState({ prikey: text });
+                  this.setState({ prikey: _.trim(text) });
                 }}
               />
             </>}

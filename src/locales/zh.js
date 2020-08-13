@@ -188,7 +188,10 @@ export default {
     "phone": '手机号码',
     "email": '邮箱',
     "ss": '服务及隐私条款',
-    "security": '安全'
+    "security": '安全',
+    "aboutDesc": 'Qingah钱包是一款去中心化应用 (DApp) 可以在手机和Web浏览器上使用。',
+    "newVersion": "有新版本更新",
+    "noVersion": "现版本最新"
   },
   "authentication": {
     "auth_prompt_title": "请求授权",
@@ -521,4 +524,10 @@ export default {
     "status_ok": "All Systems Operational",
     "status_not_ok": "The network is having some issues"
   },
+  "webview_error": {
+		"title": "Ooops! something went wrong...",
+		"message": "We weren't able to load that page.",
+		"reason": "Reason",
+		"try_again": "Try again"
+	},
 };

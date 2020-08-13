@@ -8,7 +8,6 @@ import { withNavigation } from 'react-navigation'
 import { util } from '@metamask/controllers'
 import { inject, observer } from 'mobx-react';
 
-// import { getApproveNavbar } from '../../../UI/Navbar'
 import { colors, fontStyles, baseStyles } from '../../../styles/common'
 import WebsiteIcon from '../../../components/UI/WebsiteIcon'
 import { getHost } from '../../../utils/browser'
@@ -285,7 +284,6 @@ const styles = StyleSheet.create({
  * Component that manages ERC20 approve from the dapp browser
  */
 class Approve extends React.Component {
-  // static navigationOptions = ({ navigation }) => getApproveNavbar('approve.title', navigation)
 
   static propTypes = {
     /**

@@ -207,14 +207,15 @@ class SendCoin extends React.Component {
     const coin = this.props.navigation.getParam('coin')
     const fibos = Ironman.fibos
     const { receiver, memo, amount } = this.state
-    const transactionId = await fibos.transfer(this.address, receiver, `${Number(amount).toFixed(4)} ${coin.name}`, memo)
+    const transaction = await fibos.transfer(this.address, receiver, `${Number(amount).toFixed(4)} ${coin.name}`, memo)
+    const { transaction_id: transactionId = '' } = transaction
     if (transactionId) {
+      this.setState({ transactionId, sending: false })
       Toast.success(strings('transfer successfully'))
     }
   }, 10000)
 
   transferOKT = _.throttle(async () => {
-    // const coin = this.props.navigation.getParam('coin')
     const { oKClient } = OKClient
     const { receiver, memo, amount } = this.state
     const transaction = await oKClient.sendSendTransaction(receiver, Number(amount).toFixed(8), 'tokt', memo)
@@ -233,13 +234,22 @@ class SendCoin extends React.Component {
   }, 10000)
 
   gotoTxHash = _.throttle(async ()=> {
-    const tab = this.props.createNewTab(`https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`)
-    this.props.setActiveTab(tab.id)
-    InteractionManager.runAfterInteractions(() => {
-      setTimeout(() => {
-        this.props.navigation.navigate('DApp');
-      }, 300);
-    });
+    const coin = this.props.navigation.getParam('coin')
+    let browserUrl
+    if (coin.name === 'FO') {
+      browserUrl = `https://see.fo/transactions/${this.state.transactionId}`
+    } else if (coin.name === 'OKT') {
+      browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
+    }
+    if (browserUrl) {
+      const tab = this.props.createNewTab(browserUrl)
+      this.props.setActiveTab(tab.id)
+      InteractionManager.runAfterInteractions(() => {
+        setTimeout(() => {
+          this.props.navigation.navigate('DApp');
+        }, 300);
+      });
+    }
   }, 10000)
 
   render() {

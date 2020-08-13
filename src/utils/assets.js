@@ -5,7 +5,9 @@
  */
 export default function getAssetLogoPath(logo) {
   if (!logo) return;
-  const path = 'https://raw.githubusercontent.com/metamask/eth-contract-metadata/v1.12.1/images/';
-  const uri = path + logo;
+  let uri = logo
+  if (!/^http(s)?/.test(logo)) {
+    uri = `https://raw.githubusercontent.com/metamask/eth-contract-metadata/v1.12.1/images/${logo}`;
+  }
   return uri;
 }

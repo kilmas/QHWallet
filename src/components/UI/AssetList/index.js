@@ -69,11 +69,11 @@ export default class AssetList extends PureComponent {
           <Text style={styles.normalText}>{strings('token.no_tokens_found')}</Text>
         ) : null}
         {searchResults.slice(0, 6).map((_, i) => {
-          const { symbol, name, address, logo } = searchResults[i] || {};
+          const { symbol, name, address, logo, image } = searchResults[i] || {};
           const isSelected = selectedAsset && selectedAsset.address === address;
           return (
             <Flex key={i} justify="between">
-              <AssetIcon logo={logo} />
+              <AssetIcon logo={image || logo} />
               <Button
                 type={isSelected ? 'primary' : 'ghost'}
                 onPress={() => handleSelectAsset(searchResults[i])} // eslint-disable-line

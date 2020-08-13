@@ -15,7 +15,7 @@ import { string } from "prop-types";
 class AssetsAction extends Component {
   render() {
     const { accountStore } = this.props.store
-    const { onSave, onTransfer,  onReceive, onScan, onCross, onCrossOKT  } = this.props;
+    const { onSave, onSwapNetwork, onTransfer,  onReceive, onScan, onCross, onCrossOKT  } = this.props;
     return (
       <Flex justify="around" style={styles.sendView}>
         {[{
@@ -34,6 +34,10 @@ class AssetsAction extends Component {
           onPress: onCrossOKT,
           img: <Icon name="transaction" />,
           text: strings('Cross OKT')
+        }, {
+          onPress: onSwapNetwork, 
+          img: <Icon name="swap" />,
+          text: strings('Switch Network')
         }, {
           onPress: onCross,
           img: <Icon name="retweet" />,

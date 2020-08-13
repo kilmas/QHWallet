@@ -19,11 +19,11 @@ import network from "../../modules/common/network";
 
 const OMNI_PROPERTY_ID_USDT = "1f";
 const OMNI_PROPERTY_ID_OMNI_TEST = "2";
-const DEFAULT_ICON_URL = "https://dapp.qingah.com/images";
+const DEFAULT_ICON_URL = "https://dapp.qingah.com";
 
 export const FO_ICON = `https://fibos.io/imgs/854ad1ae16cb585bf1f37691616bcbe3.png`;
 
-export const OKT_ICON = 'https://oss.bafang.com/blockchain/icon/eth/ETH_OKB.jpg'
+export const OKT_ICON = `${DEFAULT_ICON_URL}/OKB.jpg`
 class Coin {
   id = 0;
   @observable display = true;
@@ -46,7 +46,7 @@ class Coin {
       case 'ETH':
         return `${DEFAULT_ICON_URL}/ETH.png`;
       case 'OKT':
-          return OKT_ICON;
+        return OKT_ICON;
       default:
         return '';
     }

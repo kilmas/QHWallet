@@ -108,7 +108,7 @@ export default class OKTWallet extends Wallet {
   }
 
   static importPK(pk, pwd, name, note) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       try {
         const pubkey = crypto.getPubKeyHexFromPrivateKey(pk) // 公钥
         const address = crypto.getAddressFromPubKey(pubkey)

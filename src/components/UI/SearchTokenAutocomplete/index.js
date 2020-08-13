@@ -46,8 +46,8 @@ export default class SearchTokenAutocomplete extends PureComponent {
 
   addToken = async () => {
     const { AssetsController } = Engine.context;
-    const { address, symbol, decimals } = this.state.selectedAsset;
-    await AssetsController.addToken(address, symbol, decimals);
+    const { address, symbol, decimals, image } = this.state.selectedAsset;
+    await AssetsController.addToken(address, symbol, decimals, image);
     // Clear state before closing
     this.setState(
       {
@@ -67,6 +67,16 @@ export default class SearchTokenAutocomplete extends PureComponent {
     const { searchResults, selectedAsset, searchQuery } = this.state;
     const { address, symbol, decimals } = selectedAsset;
 
+    // add OKB USDK
+    let results = []
+    if (searchQuery.toUpperCase()  === 'OKB') {
+      results = [{ "address": "0x75231f58b43240c9718dd58b4967c5114342a86c", "decimals": 18, "erc20": true, "image": "https://cn.etherscan.com/token/images/okex_28.png", "name": "OK OKB", "symbol": "OKB" }, ...searchResults]
+    } else if (searchQuery.toUpperCase() === 'USDK') {
+      results = [{ "address": "0x1c48f86ae57291f7686349f12601910bd8d470bb", "decimals": 18, "erc20": true, "image": "https://cn.etherscan.com/token/images/usdk_32.png", "name": "OK USDK", "symbol": "USDK" }, ...searchResults]
+    } else {
+      results = searchResults
+    }
+
     return (
       <View style={styles.wrapper}>
         <ActionView
@@ -76,10 +86,10 @@ export default class SearchTokenAutocomplete extends PureComponent {
           onConfirmPress={this.addToken}
           confirmDisabled={!(address && symbol && decimals)}
         >
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <AssetSearch onSearch={this.handleSearch} />
             <AssetList
-              searchResults={searchResults}
+              searchResults={results}
               handleSelectAsset={this.handleSelectAsset}
               selectedAsset={selectedAsset}
               searchQuery={searchQuery}

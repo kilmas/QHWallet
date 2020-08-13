@@ -339,7 +339,7 @@ class Drawer extends React.Component {
   onNetworksModalClose = async manualClose => {
     this.toggleNetworksModal();
     if (!manualClose) {
-      await this.hideDrawer();
+      console.log(manualClose)
     }
   };
 

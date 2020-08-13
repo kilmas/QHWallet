@@ -40,16 +40,13 @@ class AboutUs extends React.Component {
             Qingah Wallet
           </Text>
           <Text style={styles.descText}>
-            {strings(
-              'Qingah Wallet is a decentralized application (DApp) that’s available on both mobile phones and web browsers.',
-              'Qingah钱包是一款去中心化应用 (DApp) 可以在手机和Web浏览器上使用。',
-            )}
+            {strings('settings.aboutDesc')}
           </Text>
           <Button
             type={newVersion ? "warning" : "primary"}
             onPress={() => { }}
-          >{newVersion ? strings('New Update Available', '有新版本更新')
-            : strings('No Update Available', '现版本最新')}</Button>
+          >{newVersion ? strings('settings.newVersion')
+            : strings('settings.noVersion')}</Button>
         </KeyboardAwareScrollView>
       </Container>
     );

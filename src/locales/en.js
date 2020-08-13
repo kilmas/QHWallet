@@ -189,7 +189,10 @@ export default {
     "phone": 'Phone number',
     "email": 'Email',
     "servicePrivacy": 'Terms of service and privacy',
-    "security": 'Security'
+    "security": 'Security',
+    "aboutDesc": 'Qingah Wallet is a decentralized application (DApp) that’s available on both mobile phones and web browsers.',
+    "newVersion": "New Update Available",
+    "noVersion": "No Update Available"
   },
   "authentication": {
     "auth_prompt_title": "Authentication required",
@@ -522,5 +525,11 @@ export default {
 		"close": "Close",
 		"status_ok": "All Systems Operational",
 		"status_not_ok": "The network is having some issues"
+  },
+  "webview_error": {
+		"title": "Ooops! something went wrong...",
+		"message": "We weren't able to load that page.",
+		"reason": "Reason",
+		"try_again": "Try again"
 	},
 };

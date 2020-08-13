@@ -375,7 +375,7 @@ class TransactionEdit extends React.Component {
           confirmText={
             paymentChannelTransaction ? strings('transaction.confirm') : strings('transaction.next')
           }
-          confirmButtonMode={paymentChannelTransaction ? 'confirm' : 'normal'}
+          confirmButtonMode={paymentChannelTransaction ? 'primary' : 'ghost'}
           onCancelPress={this.props.onCancel}
           showCancelButton={!paymentChannelTransaction}
           onConfirmPress={this.review}
