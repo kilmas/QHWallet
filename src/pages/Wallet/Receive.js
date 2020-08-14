@@ -8,14 +8,14 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 import Clipboard from '@react-native-community/clipboard'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { observable, computed, reaction, autorun, toJS } from "mobx";
+import { observable, computed } from "mobx";
 import { inject, observer, Observer } from "mobx-react";
 import { Flex, Icon } from '@ant-design/react-native';
 import GlobalNavigation from '../../utils/GlobalNavigation';
 import { Toast } from '@ant-design/react-native';
 import Container from '../../components/Container';
 import { strings } from '../../locales/i18n';
-import { styles as themeStyles, LGColor, BGGray } from '../../theme';
+import { styles as themeStyles, BGGray } from '../../theme';
 import CoinHeader from '../../components/CoinHeader';
 import HDAccount from '../../stores/account/HDAccount';
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const';
@@ -23,15 +23,15 @@ import { BTCCoin, FO } from '../../stores/wallet/Coin';
 import CommonAccount from '../../stores/account/CommonAccount';
 
 
-@inject('store')
-@observer
 class Receive extends React.Component {
 
   @computed get account() {
+    if (this.accounts.length) {
+      return this.accounts[0]
+    }
     const accountID = this.props.navigation.getParam('accountID')
-    const { accountStore } = this.props.store;
-    const account = accountStore.match(accountID);
-    return account
+    const { accountStore } = this.props
+    return accountStore.match(accountID)
   }
 
   @observable amount = -1;
@@ -72,7 +72,20 @@ class Receive extends React.Component {
     } else if(this.coin instanceof FO) {
       return this.wallet.name || this.account.name;
     }
-    return this.wallet.address;
+    return this.wallet && this.wallet.address;
+  }
+
+  @computed get accounts() {
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.FOAccounts
+    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
+      return accountStore.HDAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
+    }
+    return []
   }
 
   get sheetOptions() {
@@ -181,4 +194,10 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Receive;
+
+export default inject(({ store: state }) => ({
+  settings: state.settings,
+  accountStore: state.accountStore,
+
+
+}))(observer(Receive))

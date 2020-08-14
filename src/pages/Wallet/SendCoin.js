@@ -14,17 +14,17 @@ import { BTCCoin, FO } from '../../stores/wallet/Coin'
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
 // import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
-import MultiSigAccount from '../../stores/account/MultiSigAccount'
+// import MultiSigAccount from '../../stores/account/MultiSigAccount'
 import Engine from '../../modules/metamask/core/Engine'
 
 import {
-  renderFromWei,
-  renderFromTokenMinimalUnit,
-  weiToFiat,
-  balanceToFiat,
-  weiToFiatNumber,
-  balanceToFiatNumber,
-  renderFiatAddition,
+  // renderFromWei,
+  // renderFromTokenMinimalUnit,
+  // weiToFiat,
+  // balanceToFiat,
+  // weiToFiatNumber,
+  // balanceToFiatNumber,
+  // renderFiatAddition,
   toWei,
   isDecimal,
   toBN,
@@ -51,8 +51,10 @@ class SendCoin extends React.Component {
   }
 
   @computed get account() {
-    const { accountID } = this.props.navigation.state.params
-
+    if (this.accounts.length) {
+      return this.accounts[0]
+    }
+    const accountID = this.props.navigation.getParam('accountID')
     const { accountStore } = this.props
     return accountStore.match(accountID)
   }
@@ -96,6 +98,20 @@ class SendCoin extends React.Component {
     //   coin = this.wallet.findCoin(this.selectedCoinID);
     // }
     return coin
+  }
+
+
+  @computed get accounts() {
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.FOAccounts
+    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
+      return accountStore.HDAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
+    }
+    return []
   }
 
   prepareTransactionToSend = () => {
@@ -354,6 +370,7 @@ class SendCoin extends React.Component {
           <Button
             type="primary"
             loading={this.state.sending}
+            disabled={this.state.sending}
             onPress={() => {
               Modal.prompt(
                 'Please Confirm your transation password',

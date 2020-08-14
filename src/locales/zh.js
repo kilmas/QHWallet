@@ -49,6 +49,7 @@ export default {
 
   // wallet
   "wallet": {
+    "skip": "跳过备份",
     "dapp": 'Dapp',
     "Defi": 'Defi',
     "management": "钱包管理",

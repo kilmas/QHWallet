@@ -52,7 +52,7 @@ class Settings extends React.Component {
   render() {
     return (
       <Container>
-        <TitleBar title={strings('tab.Settings')}/>
+        <TitleBar title={strings('drawer.settings')}/>
         <ScrollView contentContainerStyle={styles.content}>
           <LinearGradient
             colors={LGColor}

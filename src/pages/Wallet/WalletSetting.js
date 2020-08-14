@@ -10,6 +10,7 @@ import Container from '../../components/Container'
 import Engine from '../../modules/metamask/core/Engine'
 import AccountStorage from '../../stores/account/AccountStorage'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
+import { ACCOUNT_TYPE_HD, ACCOUNT_TYPE_COMMON } from '../../config/const'
 
 @inject('store')
 @observer
@@ -18,6 +19,7 @@ class WalletSetting extends React.Component {
     super(props)
     this.state = {
       wallet: null,
+      // mnemonics: []
     }
   }
 
@@ -27,13 +29,18 @@ class WalletSetting extends React.Component {
 
   _refresh = async () => {
     const account = this.props.navigation.getParam('account')
-    const { password } = await SecureKeychain.getGenericPassword();
-    if (account.type === 7) {
+    const { password } = await SecureKeychain.getGenericPassword()
+    if (account.type === ACCOUNT_TYPE_COMMON) {
       const data = await AccountStorage.getDataByID(account.id, password)
       this.setState({ account, privateKey: data.privateKey })
     } else {
-      const mnemonics = await this.tryExportSeedPhrase(password)
-      this.setState({ account, mnemonics })
+      const data = await AccountStorage.getDataByID(account.id, password)
+      this.setState({
+        account,
+        mnemonics: JSON.stringify(data.mnemonic)
+          .replace(/"/g, '')
+          .split(' '),
+      })
     }
   }
 
@@ -73,12 +80,7 @@ class WalletSetting extends React.Component {
         />
         <KeyboardAwareScrollView>
           <List renderHeader={this.state.account.name}>
-            <List.Item
-              arrow="horizontal"
-              extra=""
-              onPress={() => {
-
-              }}>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
               {strings('wallet.changeWalletName')}
             </List.Item>
             <List.Item
@@ -106,22 +108,33 @@ class WalletSetting extends React.Component {
               </List.Item>
             )}
           </List>
-          <Button type="primary" disabled={this.state.loading} loading={this.state.loading} style={{ marginVertical: 50, marginHorizontal: 20 }} onPress={async () => {
-            try {
-              this.setState({loading: true})
-              const account = this.state.account
-              if (account.walletType === 'FO') {
-                this.props.store.accountStore.setCurrentFOID(account.id)
-              } else if (account.walletType === 'OKT') {
-                this.props.store.accountStore.setCurrentOKTID(account.id)
+          <Button
+            type="primary"
+            disabled={this.state.loading}
+            loading={this.state.loading}
+            style={{ marginVertical: 50, marginHorizontal: 20 }}
+            onPress={async () => {
+              try {
+                this.setState({ loading: true })
+                const { accountStore } = this.props.store
+                const account = this.state.account
+                if (account.walletType === 'FO') {
+                  accountStore.setCurrentFOID(account.id)
+                } else if (account.walletType === 'OKT') {
+                  accountStore.setCurrentOKTID(account.id)
+                } else if (account.type === ACCOUNT_TYPE_HD) {
+                  accountStore.setCurrentID(account.id)
+                  const { password } = await SecureKeychain.getGenericPassword()
+                  // console.log(this.state.mnemonics.join(' '))
+                  this.props.store.engine.importMetamask(password, this.state.mnemonics.join(' '))
+                }
+                GlobalNavigation.reset('TabDrawer')
+              } catch (error) {
+                console.warn(error)
+              } finally {
+                this.setState({ loading: false })
               }
-              GlobalNavigation.reset('TabDrawer')
-            } catch (error) {
-              console.warn(error)
-            } finally {
-              this.setState({loading: false})
-            }
-          }}>
+            }}>
             Set as Primary Wallet
           </Button>
         </KeyboardAwareScrollView>

@@ -461,7 +461,7 @@ class History extends React.Component {
           onClose={() => {
             this.setState({ showCross: false })
           }}>
-          <List renderHeader={'Cross to Fibos'}>
+          <List renderHeader={`Cross to ${this.state.crossType}`}>
             <InputItem error={false} value={this.props.selectedAddress}>
               From:
             </InputItem>

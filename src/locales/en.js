@@ -37,7 +37,6 @@ export default {
 
   "drawer": {
     "wallet": 'Wallet',
-    "notifications": 'Notifications',
     "messages": 'Messages',
     "settings": 'Settings',
   },
@@ -49,6 +48,7 @@ export default {
   },
 
   "wallet": {
+    "skip": "Skip Backup",
     "dapp": 'Dapp',
     "Defi": 'Defi',
     "management": "Wallet Management",

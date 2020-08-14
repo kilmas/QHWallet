@@ -171,6 +171,23 @@ class AccountStore {
     )
 
     reaction(
+      () => this.currentAccountID,
+      currentAccountID => {
+        this.currentAccount = this.match(this.currentAccountID)
+        console.log(currentAccountID)
+        if (!this.currentETHID) {
+          this.currentETHID = currentAccountID
+        }
+        if (!this.currentFOID) {
+          this.currentFOID = currentAccountID
+        }
+        if (!this.currentOKTID) {
+          this.currentOKTID = currentAccountID
+        }
+      }
+    )
+
+    reaction(
       () => this.currentFOID,
       currentFOID => {
         console.log(currentFOID)
@@ -199,20 +216,11 @@ class AccountStore {
 
       if (this.currentAccountID) {
         this.currentAccount = this.match(this.currentAccountID)
-        if (!this.currentETHID) {
-          this.currentETHID = this.currentAccountID
-        }
-        if (!this.currentFOID) {
-          this.currentFOID = this.currentAccountID
-        }
-        if (!this.currentOKTID) {
-          this.currentOKTID = this.currentAccountID
-        }
       }
 
-      if (this.defaultHDAccount && this.defaultHDAccount.hasCreated) {
-        this.currentAccount = this.defaultHDAccount
-      }
+      // if (this.defaultHDAccount && this.defaultHDAccount.hasCreated) {
+      //   this.currentAccount = this.defaultHDAccount
+      // }
 
       if (!this.currentAccount) {
         this.currentAccount = this.accounts.length > 0 && this.accounts[0]
@@ -269,7 +277,6 @@ class AccountStore {
     if (account.type === ACCOUNT_TYPE_HD) {
       this.HDAccounts = [...this.HDAccounts, account]
       this.currentAccount = account
-      this.currentETHID = account.id
       this.showDefaultIndex = false
       this.currentAccountID = account.id
       // this.defaultMultiSigAccount.wallets = [];
@@ -311,6 +318,10 @@ class AccountStore {
     return true
   }
 
+  @action setCurrentID = currentID => {
+    this.currentAccountID = currentID
+  }
+
   @action setCurrentFOID = currentFOID => {
     this.currentFOID = currentFOID
   }
@@ -337,13 +348,21 @@ class AccountStore {
       return null
     }
 
-    let account = this.accounts.find(account => `${account.id}`.toUpperCase() === id.toUpperCase())
+    let account = this.HDAccounts.find(hdaccount => hdaccount.id === id)
     if (account) {
       return account
     }
 
-    account = this.HDAccounts.find(hdaccount => !!hdaccount.findWallet(id))
+    account = this.CommonAccounts.find(cmaccount => cmaccount.id === id)
+    if (account) {
+      return account
+    }
     return account
+
+    // account = this.accounts.find(account => `${account.id}`.toUpperCase() === id.toUpperCase())
+    // if (account) {
+    //   return account
+    // }
   }
 }
 

@@ -1,13 +1,15 @@
 import OKChainClient from '@okchain/javascript-sdk';
 
-let instance;
+let instance = new OKChainClient('https://www.okex.me');
 
 const OKClient = {
   get oKClient() {
     return instance;
   },
   init(config = {}) {
-    instance = new OKChainClient(config.url || 'https://www.okex.me');
+    if (config.url) {
+      instance = new OKChainClient(config.url);
+    }
     instance.setAccountInfo(config.privateKey)
     return instance;
   },

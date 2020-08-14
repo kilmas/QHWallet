@@ -1,18 +1,12 @@
-import React from 'react';
-import {
-  Image,
-  Text,
-  ImageBackground,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { inject, observer } from 'mobx-react';
-import { Icon, Flex } from '@ant-design/react-native';
+import React from 'react'
+import { Text, TouchableOpacity } from 'react-native'
+import { inject, observer } from 'mobx-react'
+import { Icon, Flex } from '@ant-design/react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import Container from '../../components/Container';
-import { styles, LGColor, BDCoLor, SecondaryColor } from '../../theme';
-import { strings } from '../../locales/i18n';
-import GlobalNavigation from '../../utils/GlobalNavigation';
+import Container from '../../components/Container'
+import { LGColor, BDCoLor, SecondaryColor } from '../../theme'
+import { strings } from '../../locales/i18n'
+import GlobalNavigation from '../../utils/GlobalNavigation'
 
 @inject('store')
 @observer
@@ -33,7 +27,7 @@ class CreateImportWallet extends React.Component {
             <TouchableOpacity
               style={{ alignItems: 'center' }}
               onPress={() => {
-                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'create' });
+                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'create' })
               }}>
               <Icon name="credit-card" size={50} />
               <Text
@@ -49,7 +43,7 @@ class CreateImportWallet extends React.Component {
             <TouchableOpacity
               style={{ alignItems: 'center' }}
               onPress={() => {
-                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'import' });
+                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'import' })
               }}>
               <Icon name="import" size={50} />
               <Text
@@ -62,11 +56,10 @@ class CreateImportWallet extends React.Component {
               </Text>
             </TouchableOpacity>
           </Flex>
-
         </LinearGradient>
       </Container>
-    );
+    )
   }
 }
 
-export default CreateImportWallet;
+export default CreateImportWallet

@@ -11,6 +11,7 @@ import TitleBar from '../../components/TitleBar';
 import GlobalNavigation from '../../utils/GlobalNavigation';
 import HDAccount from '../../stores/account/HDAccount';
 import setKeyChain from '../../utils/keychain';
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
 
 @inject('store')
 @observer
@@ -22,7 +23,8 @@ class NameWallet extends React.Component {
     this.state = {
       name: '',
       password: '',
-      mode: props.navigation.getParam('mode')
+      mode: props.navigation.getParam('mode'),
+      loading: false,
     };
   }
 
@@ -34,8 +36,8 @@ class NameWallet extends React.Component {
     } = this.state;
 
     if (mode === 'create') {
+      this.setState({loading: true})
       try {
-        await window.showLoading(true);
         const { account, mnemonics } = await HDAccount.create(name, password);
         const keychain = await setKeyChain(name, password);
         if (!keychain) {
@@ -52,13 +54,22 @@ class NameWallet extends React.Component {
         console.warn(e)
         Toast.info(strings('Create failed'));
       } finally {
-        window.hideLoading();
+        this.setState({loading: false})
       }
     } else {
       GlobalNavigation.navigate('InputPhrases', {
         name,
         password,
       });
+    }
+  }
+
+  getPassword = async () => {
+    const keychain = await SecureKeychain.getGenericPassword()
+    if (keychain && keychain.password) {
+      this.setState({password: keychain.password}, this.handleClickThrottled)
+    } else {
+      this.setPassword()
     }
   }
 
@@ -115,6 +126,8 @@ class NameWallet extends React.Component {
           />
           <Button
             type="primary"
+            loading={this.state.loading}
+            disabled={this.state.loading}
             onPress={() => {
               if (this.state.name === '') {
                 return;
@@ -130,7 +143,7 @@ class NameWallet extends React.Component {
                 }
                 this.setPassword()
               } else if (mode === 'create') {
-                this.setPassword()
+                this.getPassword()
               }
             }}
           >{strings('next')}</Button>

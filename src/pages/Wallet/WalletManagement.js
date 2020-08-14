@@ -2,7 +2,6 @@ import React from 'react'
 import { ScrollView, TouchableOpacity } from 'react-native'
 import { Icon, List } from '@ant-design/react-native'
 import { inject, observer } from 'mobx-react'
-import { computed } from 'mobx'
 import TitleBar from '../../components/TitleBar'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import { strings } from '../../locales/i18n'
@@ -31,6 +30,24 @@ class WalletManagement extends React.Component {
     })
   }
 
+  extraAccount = (walletType, id) => {
+    const { accountStore } = this.props.store
+    if (walletType === 'FO') {
+      if (id === accountStore.currentFOID) {
+        return `Current ${walletType}`
+      }
+    } else if ((walletType === 'OKT')) {
+      if (id === accountStore.currentOKTID) {
+        return `Current ${walletType}`
+      }
+    } else if ((walletType === 'ETH')) {
+      if (id === accountStore.currentETHID) {
+        return `Current ${walletType}`
+      }
+    }
+    return walletType || 'HD'
+  }
+
   render() {
     const { accountStore } = this.props.store
     return (
@@ -47,19 +64,19 @@ class WalletManagement extends React.Component {
           <List renderHeader={strings('wallet.settings')} renderFooter={`Current Wallet:  ${accountStore.currentAccount.name}`}>
             <List.Item
               arrow="horizontal"
-              extra=""
+              extra="Current HD"
               onPress={() => {
                 this._setPress('current', accountStore.currentAccount)
               }}>
               {accountStore.currentAccount.name}
             </List.Item>
             {accountStore.accounts
-              .filter(account => account.id !== accountStore.currentAccount.id)
+              .filter(account => account.id !== accountStore.currentAccountID)
               .map((account, index) => (
                 <List.Item
                   key={index.toString()}
                   arrow="horizontal"
-                  extra={account.walletType || ''}
+                  extra={this.extraAccount(account.walletType, account.id)}
                   onPress={() => {
                     this._setPress('other', account)
                   }}>

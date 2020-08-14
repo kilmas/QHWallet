@@ -100,6 +100,7 @@ export default class OKTWallet extends Wallet {
         }
 
         const act = new OKTWallet(obj)
+        act.getBalance()
         resolve(act)
       } catch (error) {
         reject(error)
@@ -124,6 +125,7 @@ export default class OKTWallet extends Wallet {
           source: WALLET_SOURCE_PK,
         }
         let act = new OKTWallet(obj)
+        act.getBalance()
         DeviceEventEmitter.emit('accountOnChange')
         resolve(act)
       } catch (error) {

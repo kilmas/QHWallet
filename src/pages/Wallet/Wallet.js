@@ -8,7 +8,8 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import { Flex, Icon, Modal } from '@ant-design/react-native';
+import { Flex, Icon } from '@ant-design/react-native';
+import _ from 'lodash'
 import BigNumber from "bignumber.js";
 import { observable, computed } from "mobx";
 import { inject, observer, Observer } from 'mobx-react';
@@ -89,19 +90,28 @@ const cellStyles = StyleSheet.create({
 @observer
 class CoinCell extends React.Component {
   @computed get balance() {
-    if (this.props.store.accountStore.isHiddenPrice) {
+    const { store: { accountStore }, coin  } = this.props
+    if (accountStore.isHiddenPrice) {
       return "*****";
     }
-    if (this.props.coin.name === 'OKT') {
+
+    let balance = 0
+    if (coin.name === 'OKT') {
+      const { OKTAccounts } = accountStore
       // todo
+      OKTAccounts.forEach(account => {
+        balance += _.get(account, 'OKTWallet.OKT.balance', 0)
+      });
+    } else {
+      balance = coin.balance
     }
-    const bigNumber = new BigNumber(`${this.props.coin.balance}`);
+    const bigNumber = new BigNumber(`${balance}`);
     if (bigNumber.isLessThan(0)) {
       return "-";
     }
     return toFixedLocaleString(
       bigNumber,
-      this.props.coin instanceof BTCCoin || this.props.coin instanceof ETH ? 8 : 4,
+      coin instanceof BTCCoin || coin instanceof ETH ? 8 : 4,
       true
     );
   }
@@ -191,7 +201,8 @@ class Wallet extends React.Component {
 
   @computed get account() {
     const { accountStore } = this.props.store
-    return accountStore.defaultHDAccount;
+    return accountStore.currentAccount;
+    // return accountStore.defaultHDAccount;
   }
 
   @computed get username() {
@@ -224,11 +235,6 @@ class Wallet extends React.Component {
   _renderItem = ({ item }) => (
     <Observer>{() => <CoinCell coin={item} account={this.account} />}</Observer>
   );
-
-  onNetworksModalClose = async manualClose => {
-    this.props.store.modals.toggleNetworkModal()
-    // this.setState({ showModal: false })
-  };
 
   render() {
     return (

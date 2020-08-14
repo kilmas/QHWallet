@@ -130,10 +130,10 @@ class Defi extends React.Component {
 	  `
     let publicKey
     let accounts = []
-    const { FOAccounts } = this.props.store.accountStore
+    const { FOAccounts, OKTAccounts } = this.props.store.accountStore
 
-    if (!FOAccounts.length) {
-      Toast.info('please import FO account')
+    if (!FOAccounts.length || !OKTAccounts.length) {
+      Toast.info('please import account')
     } else {
       accounts = FOAccounts.map((item, index) => {
         if (index === 0) {
