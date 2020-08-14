@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { observable, computed, action, reaction } from 'mobx'
-import { persist, create } from 'mobx-persist'
+import { persist } from 'mobx-persist'
 import AsyncStorage from '@react-native-community/async-storage'
 import {
   ACCOUNT_TYPE_HD,
@@ -165,7 +165,6 @@ class AccountStore {
     reaction(
       () => this.currentOKTID,
       currentOKTID => {
-        console.log(currentOKTID)
         this.setOKClient()
       }
     )
@@ -174,7 +173,6 @@ class AccountStore {
       () => this.currentAccountID,
       currentAccountID => {
         this.currentAccount = this.match(this.currentAccountID)
-        console.log(currentAccountID)
         if (!this.currentETHID) {
           this.currentETHID = currentAccountID
         }
@@ -190,41 +188,34 @@ class AccountStore {
     reaction(
       () => this.currentFOID,
       currentFOID => {
-        console.log(currentFOID)
         this.setIronman()
       }
     )
   }
 
   @action
-  init = async env => {
+  init = env => {
     try {
-      network.setRPCURLs()
-      network.fetchRPCURLs()
-      await CoinStore.start()
-      if (!this.defaultMultiSigAccount) {
-        // const multiSig = new MultiSigAccount({
-        //   id: ACCOUNT_DEFAULT_ID_MULTISIG,
-        //   name: "多签钱包",
-        //   type: ACCOUNT_TYPE_MULTISIG,
-        // });
-        // this.accounts.splice(2, 0, multiSig);
-      }
-      if (this.accounts.find(account => !!account.hasCreated)) {
-        this.showDefaultIndex = false
-      }
+      // network.setRPCURLs()
+      // network.fetchRPCURLs()
+      // CoinStore.start()
+      // if (!this.defaultMultiSigAccount) {
+      //   const multiSig = new MultiSigAccount({
+      //     id: ACCOUNT_DEFAULT_ID_MULTISIG,
+      //     name: "多签钱包",
+      //     type: ACCOUNT_TYPE_MULTISIG,
+      //   });
+      //   this.accounts.splice(2, 0, multiSig);
+      // }
+      // if (this.accounts.find(account => !!account.hasCreated)) {
+      //   this.showDefaultIndex = false
+      // }
 
-      if (this.currentAccountID) {
+      if (this.currentAccountID && !this.currentAccount) {
+        console.log('testest')
         this.currentAccount = this.match(this.currentAccountID)
       }
 
-      // if (this.defaultHDAccount && this.defaultHDAccount.hasCreated) {
-      //   this.currentAccount = this.defaultHDAccount
-      // }
-
-      if (!this.currentAccount) {
-        this.currentAccount = this.accounts.length > 0 && this.accounts[0]
-      }
       // this.HDAccounts.observe(this.onAccountsChange);
       // this.CommonAccounts.observe(this.onAccountsChange);
     } catch (error) {
@@ -366,12 +357,4 @@ class AccountStore {
   }
 }
 
-const hydrate = create({ storage: AsyncStorage, jsonify: true })
-
-const accountStore = new AccountStore()
-hydrate('accounts', accountStore).then(async store => {
-  store.init(NETWORK_ENV_MAINNET)
-  console.log('accounts has been hydrated')
-})
-
-export default accountStore
+export default AccountStore

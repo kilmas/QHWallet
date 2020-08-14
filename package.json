@@ -117,6 +117,7 @@
     "babel-jest": "^24.9.0",
     "babel-plugin-rewrite-require": "^1.14.5",
     "babel-plugin-transform-inline-environment-variables": "0.4.3",
+    "babel-plugin-transform-remove-console": "6.9.4",
     "eslint": "^6.5.1",
     "jest": "^24.9.0",
     "jetifier": "^1.6.4",
@@ -124,7 +125,8 @@
     "react-test-renderer": "16.9.0"
   },
   "resolutions": {
-    "@metamask/controllers/ethereumjs-wallet/aes-js": "3.1.2"
+    "@metamask/controllers/ethereumjs-wallet/aes-js": "3.1.2",
+    "@metamask/controllers/ethereumjs-wallet/scrypt.js": "0.3.0"
   },
   "jest": {
     "preset": "react-native"

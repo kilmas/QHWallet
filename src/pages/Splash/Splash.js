@@ -11,23 +11,30 @@ import Engine from '../../modules/metamask/core/Engine';
 @inject('store')
 @observer
 class Splash extends React.Component {
-  async componentDidMount() {
-    const credentials = await SecureKeychain.getGenericPassword();
+
+  componentDidMount() {
     // SecureKeychain.resetGenericPassword()
+    const { accountStore } = this.props.store
     reaction(
-      () => this.props.store.accountStore.isInit,
+      () => accountStore.isInit,
       isInit => {
-        if (isInit) {
-          if (credentials && this.props.store.accountStore.HDAccounts.length) {
-            const { KeyringController } = Engine.context;
-            KeyringController.submitPassword(credentials.password);
-            GlobalNavigation.reset('TabDrawer');
-          } else {
-            GlobalNavigation.reset('Welcome');
-          }
-        }
+        this.goNext(isInit, accountStore.currentAccount)
       }
-    );
+    )
+    this.goNext(accountStore.isInit, accountStore.currentAccount)
+  }
+
+  goNext = async (isInit, currentAccount) => {
+    const credentials = await SecureKeychain.getGenericPassword();
+    if (isInit) {
+      if (credentials && currentAccount) {
+        const { KeyringController } = Engine.context;
+        KeyringController.submitPassword(credentials.password);
+        GlobalNavigation.reset('TabDrawer');
+      } else {
+        GlobalNavigation.reset('Welcome');
+      }
+    }
   }
 
   render() {

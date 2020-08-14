@@ -1,11 +1,10 @@
 import 'react-native-gesture-handler'
 import React, { Component } from 'react'
-import { Provider } from '@ant-design/react-native'
+import { Provider, ActivityIndicator } from '@ant-design/react-native'
 import { inject, observer } from 'mobx-react'
-import { Alert, StatusBar, InteractionManager } from 'react-native'
+import { Alert, StatusBar, InteractionManager, View } from 'react-native'
 import routerFun from './router'
 import GlobalNavigation from './utils/GlobalNavigation'
-import LoadingIndicator from './components/LoadingIndicator'
 import SecureKeychain from './modules/metamask/core/SecureKeychain'
 import EntryScriptWeb3 from './modules/metamask/core/EntryScriptWeb3'
 import { strings } from './locales/i18n'
@@ -36,24 +35,9 @@ class Entry extends Component {
   routerContainer = () => null
 
 
-  componentDidMount() {
-    window.showLoading = async mask => {
-      let showMask = false
-      if (mask) {
-        showMask = mask
-      }
-      try {
-        return await this.refs.loading.showLoading(showMask)
-      } catch (e) { }
-    }
-    window.hideLoading = async () => {
-      try {
-        return await this.refs.loading.hideLoading()
-      } catch (e) { }
-    }
-  }
+  componentDidMount() { }
 
-  componentWillUnmount() {}
+  componentWillUnmount() { }
 
   getCurrentRouteName = navigationState => {
     if (!navigationState) {
@@ -71,7 +55,7 @@ class Entry extends Component {
     const previousScene = this.getCurrentRouteName(prevState)
 
     if (previousScene !== currentScene) {
-      window.hideLoading()
+      // window.hideLoading()
     }
   }
 
@@ -81,13 +65,13 @@ class Entry extends Component {
     return (
       <Provider>
         <StatusBar animated translucent barStyle="dark-content" backgroundColor="rgba(0,0,0,0)" />
-        {RouterContainer && <RouterContainer
+        {!!RouterContainer ? <RouterContainer
           ref={navigatorRef => {
             GlobalNavigation.setTopLevelNavigator(navigatorRef)
           }}
           onNavigationStateChange={this.onNavigationStateChange}
-        />}
-        <LoadingIndicator ref={'loading'} />
+        /> : <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator /></View>
+        }
       </Provider>
     )
   }

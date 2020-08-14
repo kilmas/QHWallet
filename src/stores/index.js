@@ -9,17 +9,15 @@ import Wizard from './wizard'
 import Bookmarks from './bookmarks'
 import Browser from './browser'
 import Privacy from './privacy'
-import Account from './account'
+import AccountStore from './account'
 
 import EngineStore from './engine'
 import SettingStore from './settings'
 import Modals from './modals'
 import MetaMask from '../modules/metamask'
+import { NETWORK_ENV_MAINNET } from '../config/const'
 
 const hydrate = create({ storage: AsyncStorage, jsonify: true })
-
-const walletStore =  new WalletStore();
-hydrate('walletStore', walletStore).then(() => console.log('walletStore has been hydrated'));
 
 const settingStore = new SettingStore();
 hydrate('settingStore', settingStore).then((store) => {
@@ -27,6 +25,15 @@ hydrate('settingStore', settingStore).then((store) => {
     store.setInitialRouteName()
   console.log('settingStore has been hydrated')
 });
+
+const accountStore = new AccountStore()
+hydrate('accounts', accountStore).then(store => {
+  store.init(NETWORK_ENV_MAINNET)
+  console.log('accounts has been hydrated')
+})
+
+const walletStore =  new WalletStore();
+hydrate('walletStore', walletStore).then(() => console.log('walletStore has been hydrated'));
 
 const engineStore = new EngineStore();
 hydrate('engineStore', engineStore).then((store) => {
@@ -56,11 +63,11 @@ const modalsStore = new Modals()
 hydrate('modalsStore', modalsStore).then(() => console.log('modalsStore has been hydrated'));
 
 const rootStore = observable({
-  accountStore: Account,
+  settings: settingStore,
+  accountStore,
   wallet: walletStore,
   price,
   common,
-  settings: settingStore,
   engine: engineStore,
   transaction: transactionStore,
   wizard: wizardStore,
