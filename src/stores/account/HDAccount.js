@@ -240,10 +240,13 @@ class HDAccount extends Account {
 
     return success;
   };
+
   exportMnemonic = async pwd => {
     if (!this.wallets.length) {
       throw new Error("请先创建钱包");
     }
+    const { mnemonic } = await AccountStorage.getDataByID(this.hdId, pwd)
+    return mnemonic
   };
 
   /**

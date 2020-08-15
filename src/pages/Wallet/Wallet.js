@@ -211,6 +211,14 @@ class Wallet extends React.Component {
   }
 
   @computed get coins() {
+    const { accountStore } = this.props.store
+    let coins = []
+    accountStore.accounts.forEach(
+      account => {
+
+      }
+    )
+
     if (this.account && this.account.displayChange) {
       return this.account.coins;
     }

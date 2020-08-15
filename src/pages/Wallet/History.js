@@ -1,9 +1,11 @@
 import React from 'react'
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native'
+import { TouchableOpacity, StyleSheet, Text, View, InteractionManager } from 'react-native'
 import { Flex, Radio, List, Icon, Modal, Tabs, Button, InputItem, Picker, Toast } from '@ant-design/react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import Clipboard from '@react-native-community/clipboard'
 import { inject, observer } from 'mobx-react'
 import { computed, observable } from 'mobx'
+import WebView from 'react-native-webview'
 import Container from '../../components/Container'
 import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
@@ -20,21 +22,10 @@ import Ironman from '../../modules/ironman'
 import resolveRegister, { contractRegister } from '../../modules/metamask/cross'
 import Engine from '../../modules/metamask/core/Engine'
 import CommonAccount from '../../stores/account/CommonAccount'
-import WebView from 'react-native-webview'
 import { FO, BTCCoin } from '../../stores/wallet/Coin'
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 
 const RadioItem = Radio.RadioItem
-
-const seasons = [
-  {
-    label: '2013',
-    value: '2013',
-  },
-  {
-    label: '2014',
-    value: '2014',
-  },
-]
 
 const crossTokens = [
   {
@@ -74,19 +65,49 @@ class History extends React.Component {
     }
   }
 
-  @observable selectedCoinID = this.props.navigation.state.params.coinID
+  @observable selectedCoinID = this.props.navigation.getParam('coinID')
+
+  @computed get accounts() {
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.FOAccounts
+    } else if (coin.name === 'ETH') {
+      return accountStore.ETHAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+      return accountStore.HDAccounts
+    }
+    return []
+  }
+
+  @computed get accountID() {
+    // const accountID = this.props.navigation.getParam('accountID')
+    // if (accountID) return accountID
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.currentFOID
+    } else if (coin.name === 'ETH') {
+      return accountStore.currentETHID
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+      return accountStore.currentAccountID
+    } else if (coin.name === 'OKT') {
+      return accountStore.currentOKTID
+    }
+    return null
+  }
+
   /**
    * @type {HDAccount}
    *
    * @memberof CoinDetailScreen
    */
   @computed get account() {
-    if (this.accounts.length) {
-      return this.accounts[0]
-    }
-    const { accountID } = this.props.navigation.state.params
-    const { accountStore } = this.props
-    return accountStore.match(accountID)
+    return this.accounts.find(item => item.id === this.accountID)
+    // const { accountStore } = this.props
+    // return accountStore.match(this.accountID)
   }
   /**
    *
@@ -94,15 +115,15 @@ class History extends React.Component {
    * @memberof CoinDetailScreen
    */
   @computed get wallet() {
-    let account
+    let wallet
     if (this.account instanceof HDAccount) {
-      account = this.account.findWallet(this.selectedCoinID, HDACCOUNT_FIND_WALELT_TYPE_COINID)
-    } else if (this.account instanceof MultiSigAccount) {
-      account = this.account.findWallet(this.props.walletID)
+      wallet = this.account.findWallet(this.selectedCoinID, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     } else if (this.account instanceof CommonAccount) {
-      account = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
+      wallet = this.account.findWallet(this.selectedCoinID, HDACCOUNT_FIND_WALELT_TYPE_COINID)
+    } else if (this.account instanceof MultiSigAccount) {
+      wallet = this.account.findWallet(this.props.walletID)
     }
-    return account
+    return wallet
   }
 
   @computed get browserRecord() {
@@ -140,7 +161,7 @@ class History extends React.Component {
   }
 
   @computed get txSet() {
-    return this.txStore.coinTxSet(this.coin.id)
+    return this.txStore.coinTxSet(this.selectedCoinID)
   }
 
   @observable isRefreshing = false
@@ -176,19 +197,6 @@ class History extends React.Component {
   }
   @computed get title() {
     return `${this.coin.name}`
-  }
-
-  @computed get accounts() {
-    const coin = this.props.navigation.getParam('coin')
-    const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
-      return accountStore.HDAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    }
-    return []
   }
 
   onSave = () => { }
@@ -265,6 +273,24 @@ class History extends React.Component {
     }
   }
 
+  goBrowser = (browserUrl) => {
+    const tab = this.props.createNewTab(browserUrl)
+    this.props.setActiveTab(tab.id)
+    InteractionManager.runAfterInteractions(() => {
+      setTimeout(() => {
+        this.props.navigation.navigate('DApp');
+      }, 300);
+    });
+  }
+
+  onCopyPubKey = async () => {
+    const { password } = await SecureKeychain.getGenericPassword()
+    const mnemonic = await this.account.exportMnemonic(password);
+    const publicKey = this.wallet.getPublicKey(mnemonic)
+    Clipboard.setString(publicKey);
+    Toast.info(publicKey);
+  }
+
   render() {
     const coin = this.props.navigation.getParam('coin')
     const { name = '', icon } = coin
@@ -293,76 +319,93 @@ class History extends React.Component {
     }
     // const account = { address: selectedAddress, ...identities[selectedAddress], ...accounts[selectedAddress] }
 
-    const actions =
-      coin.name !== 'ETH'
-        ? {
-          onTransfer: () => {
-            let accountID = this.account.id
-            if (this.accounts[0]) {
-              accountID = this.accounts[0].id
-            }
-            GlobalNavigation.navigate('SendCoin', {
-              coin: this.coin,
-              onSave: this.onSave,
-              walletID: this.props.walletID,
-              accountID,
-              coinID: this.coin.id,
-            })
-          },
-          onReceive: () => {
-            let accountID = this.account.id
-            if (this.accounts[0]) {
-              accountID = this.accounts[0].id
-            }
-            GlobalNavigation.navigate('Receive', {
-              coin: this.coin,
-              walletID: this.props.walletID,
-              accountID,
-              coinID: this.coin.id,
-            })
-          },
+    let actions = {
+      onTransfer: () => {
+        let accountID = this.account.id
+        if (this.accounts[0]) {
+          accountID = this.accounts[0].id
         }
-        : {
-          onCross: () => {
-            this.setState(state => {
-              const {
-                accountStore: { FOAccounts },
-              } = this.props
-              if (state.fibosAccount === '' && FOAccounts.length) {
-                return {
-                  fibosAccount: FOAccounts[0].name,
-                  showCross: true,
-                  crossType: 'FO'
-                }
-              }
+        GlobalNavigation.navigate('SendCoin', {
+          coin: this.coin,
+          onSave: this.onSave,
+          walletID: this.props.walletID,
+          accountID,
+          coinID: this.selectedCoinID,
+        })
+      },
+      onReceive: () => {
+        let accountID = this.account.id
+        if (this.accounts[0]) {
+          accountID = this.accounts[0].id
+        }
+        GlobalNavigation.navigate('Receive', {
+          coin: this.coin,
+          walletID: this.props.walletID,
+          accountID,
+          coinID: this.selectedCoinID,
+        })
+      },
+    }
+
+    if (coin.name === 'ETH') {
+      actions = {
+        onCross: () => {
+          this.setState(state => {
+            const {
+              accountStore: { FOAccounts, currentFOID },
+            } = this.props
+            if (state.fibosAccount === '' && FOAccounts.length) {
+              const account = FOAccounts.find(item => item.id === currentFOID)
               return {
+                fibosAccount: account.FOWallet.name,
                 showCross: true,
                 crossType: 'FO'
               }
-            })
-          },
-          onSwapNetwork: () => {
-            this.props.toggleNetworkModal()
-          },
-          onCrossOKT: () => {
-            this.setState(state => {
-              const {
-                accountStore: { OKTAccounts },
-              } = this.props
-              if (state.fibosAccount === '' && OKTAccounts.length) {
-                return {
-                  oktAccount: OKTAccounts[0].OKTWallet.address,
-                  showCross: true,
-                  crossType: 'OKT'
-                }
-              }
+            }
+            return {
+              showCross: true,
+              crossType: 'FO'
+            }
+          })
+        },
+        onSwapNetwork: () => {
+          this.props.toggleNetworkModal()
+        },
+        onCrossOKT: () => {
+          this.setState(state => {
+            const {
+              accountStore: { OKTAccounts, currentOKTID },
+            } = this.props
+            if (state.oktAccount === '' && OKTAccounts.length) {
+              const account = OKTAccounts.find(item => item.id === currentOKTID)
               return {
+                oktAccount: account.OKTWallet.address,
                 showCross: true,
                 crossType: 'OKT'
               }
-            })
-          },
-        }
+            }
+            return {
+              showCross: true,
+              crossType: 'OKT'
+            }
+          })
+        },
+      }
+    } else if (!this.wallet.hasCreated) {
+      actions = {
+        onCopyPubKey: this.onCopyPubKey,
+        onCreate: () => {
+          this.goBrowser(`https://see.fo/tools/create`)
+        },
+      }
+    } else if (coin.name === 'FO') {
+      actions = {
+        ...actions,
+        onTools: () => {
+          this.goBrowser(`https://see.fo/tools`)
+        },
+      }
+    }
     return (
       <Container>
         <CoinHeader
@@ -436,7 +479,7 @@ class History extends React.Component {
             {this.accounts.map((item, index) => (
               <RadioItem
                 key={item.id}
-                // checked={index === 0}
+                checked={item.id === this.accountID}
                 onChange={event => {
                   if (event.target.checked) {
                     const { accountStore } = this.props
@@ -613,4 +656,8 @@ export default inject(({ store: state }) => ({
   toggleNetworkModal: state.modals.toggleNetworkModal,
   // showTransactionNotification: args => state.transaction.showTransactionNotification(args),
   // hideTransactionNotification: state.transaction.hideTransactionNotification
+
+  createNewTab: url => state.browser.createNewTab(url),
+  setActiveTab: id => state.browser.setActiveTab(id),
+
 }))(observer(History))

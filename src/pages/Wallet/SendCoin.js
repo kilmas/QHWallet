@@ -14,7 +14,7 @@ import { BTCCoin, FO } from '../../stores/wallet/Coin'
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
 // import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
-// import MultiSigAccount from '../../stores/account/MultiSigAccount'
+import MultiSigAccount from '../../stores/account/MultiSigAccount'
 import Engine from '../../modules/metamask/core/Engine'
 
 import {
@@ -50,13 +50,40 @@ class SendCoin extends React.Component {
     }
   }
 
-  @computed get account() {
-    if (this.accounts.length) {
-      return this.accounts[0]
-    }
-    const accountID = this.props.navigation.getParam('accountID')
+  @computed get accounts() {
+    const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    return accountStore.match(accountID)
+    if (coin.name === 'FO') {
+      return accountStore.FOAccounts
+    } else if (coin.name === 'ETH') {
+      return accountStore.ETHAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
+    } else if (coin.name === 'BTC') {
+      return accountStore.HDAccounts
+    }
+    return []
+  }
+
+  @computed get accountID() {
+    // const accountID = this.props.navigation.getParam('accountID')
+    // if (accountID) return accountID
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.currentFOID
+    } else if (coin.name === 'ETH') {
+      return accountStore.currentETHID
+    } else if (coin.name === 'BTC') {
+      return accountStore.currentAccountID
+    } else if (coin.name === 'OKT') {
+      return accountStore.currentOKTID
+    }
+    return null
+  }
+
+  @computed get account() {
+    return this.accounts.find(item => item.id === this.accountID)
   }
 
   @observable amount = -1
@@ -64,17 +91,15 @@ class SendCoin extends React.Component {
   @observable selectedCoinID = this.props.navigation.state.params.coinID !== undefined ? this.props.navigation.state.params.coinID : this.wallet.defaultCoin.id
 
   @computed get wallet() {
-    const walletID = this.props.navigation.getParam('walletID')
-
     let wallet
     if (this.account instanceof HDAccount) {
       wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     } else if (this.account instanceof CommonAccount) {
       wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
+    } else if (this.account instanceof MultiSigAccount) {
+      const walletID = this.props.navigation.getParam('walletID')
+      return this.account.findWallet(walletID);
     }
-    // else if (this.account instanceof MultiSigAccount) {
-    //   return this.account.findWallet(walletID);
-    // }
     return wallet
   }
 
@@ -84,7 +109,7 @@ class SendCoin extends React.Component {
     } else if (this.coin instanceof FO) {
       return this.wallet.name || this.account.name
     }
-    return this.wallet.address
+    return this.wallet && this.wallet.address
   }
 
   @computed get coin() {
@@ -93,25 +118,10 @@ class SendCoin extends React.Component {
       coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0]
     } else if (this.account instanceof CommonAccount) {
       coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0]
+    } else if (this.account instanceof MultiSigAccount) {
+      coin = this.wallet.findCoin(this.selectedCoinID);
     }
-    // else if (this.account instanceof MultiSigAccount) {
-    //   coin = this.wallet.findCoin(this.selectedCoinID);
-    // }
     return coin
-  }
-
-
-  @computed get accounts() {
-    const coin = this.props.navigation.getParam('coin')
-    const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
-      return accountStore.HDAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    }
-    return []
   }
 
   prepareTransactionToSend = () => {

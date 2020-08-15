@@ -139,6 +139,7 @@ export default {
     "inputKeySuccess": 'Private key are imported successfully.',
     "verifyFail": 'Verify fail.',
     "importFailTip": "Input failed, please repeat",
+    "tools": "Tools",
 
     "title": "Wallet",
     "tokens": "TOKENS",

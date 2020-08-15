@@ -76,10 +76,6 @@ export default class OKTWallet extends Wallet {
     crypto.getPrivateKeyFromMnemonic(mnemonic)
   }
 
-  exportPKByMnemonic = mnemonic => {
-    const privateKey = crypto.getPrivateKeyFromMnemonic(mnemonic)
-    return privateKey
-  }
   static import(mnemonic, pwd, name = '') {
     this.pwd = pwd
     return new Promise(async (resolve, reject) => {

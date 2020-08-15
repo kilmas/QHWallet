@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { observable, computed, action, reaction } from 'mobx'
 import { persist } from 'mobx-persist'
 import AsyncStorage from '@react-native-community/async-storage'
+import { crypto } from '@okchain/javascript-sdk'
 import {
   ACCOUNT_TYPE_HD,
   ACCOUNT_TYPE_MULTISIG,
@@ -27,12 +28,7 @@ class AccountStore {
   @observable showDefaultIndex = true
 
   @observable isInit = false
-
-  /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
+  
   @persist @observable currentAccountID = null
   /**
    *
@@ -41,32 +37,12 @@ class AccountStore {
    */
   @observable currentAccount = null
 
-  /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
   @persist @observable currentFOID = null
 
-  /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
   @persist @observable currentETHID = null
 
-  /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
   @persist @observable currentBTCID = null
 
-  /**
-   *
-   * @type { Account }
-   * @memberof AccountStore
-   */
   @persist @observable currentOKTID = null
 
   /**
@@ -110,28 +86,30 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get FOAccounts() {
-    let currentFO
-    const CommonFO = this.CommonAccounts.filter(item => {
-      if (item.id === this.currentFOID) {
-        currentFO = item
-        return false
-      }
-      if (item.walletType === 'FO') {
-        return true
-      }
-      return false
-    })
-    const HDFO = this.HDAccounts.filter(item => {
-      if (item.id === this.currentFOID) {
-        currentFO = item
-        return false
-      }
-      if (item.FOWallet.hasCreated) {
-        return true
-      }
-      return false
-    })
-    return _.compact([currentFO, ...HDFO, ...CommonFO])
+    // let currentFO
+    // const CommonFO = this.CommonAccounts.filter(item => {
+    //   if (item.id === this.currentFOID) {
+    //     currentFO = item
+    //     return false
+    //   }
+    //   if (item.walletType === 'FO') {
+    //     return true
+    //   }
+    //   return false
+    // })
+    // const HDFO = this.HDAccounts.filter(item => {
+    //   if (item.id === this.currentFOID) {
+    //     currentFO = item
+    //     return false
+    //   }
+    //   if (item.FOWallet.hasCreated) {
+    //     return true
+    //   }
+    //   return false
+    // })
+    const CommonFO = this.CommonAccounts.filter(item => item.walletType === 'FO')
+    return _.compact([...this.HDAccounts, ...CommonFO])
+    // return _.compact([currentFO, ...HDFO, ...CommonFO])
   }
 
   /**
@@ -140,25 +118,37 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get OKTAccounts() {
-    let currentOKT
-    const CommonOKT = this.CommonAccounts.filter(item => {
-      if (item.id === this.currentOKTID) {
-        currentOKT = item
-        return false
-      }
-      if (item.walletType === 'OKT') {
-        return true
-      }
-      return false
-    })
-    const HDOKT = this.HDAccounts.filter(item => {
-      if (item.id === this.currentOKTID) {
-        currentOKT = item
-        return false
-      }
-      return true
-    })
-    return _.compact([currentOKT, ...HDOKT, ...CommonOKT])
+    // let currentOKT
+    // const CommonOKT = this.CommonAccounts.filter(item => {
+    //   // if (item.id === this.currentOKTID) {
+    //   //   currentOKT = item
+    //   //   return false
+    //   // }
+    //   if (item.walletType === 'OKT') {
+    //     return true
+    //   }
+    //   return false
+    // })
+    // const HDOKT = this.HDAccounts.filter(item => {
+    //   if (item.id === this.currentOKTID) {
+    //     currentOKT = item
+    //     return false
+    //   }
+    //   return true
+    // })
+    const CommonOKT = this.CommonAccounts.filter(item => item.walletType === 'OKT')
+    return _.compact([...this.HDAccounts, ...CommonOKT])
+  }
+
+
+    /**
+   *
+   * @type { Array.<Account> }
+   * @memberof AccountStore
+   */
+  @computed get ETHAccounts() {
+    const CommonOKT = this.CommonAccounts.filter(item => item.walletType === 'ETH')
+    return _.compact([...this.HDAccounts, ...CommonOKT])
   }
 
   constructor() {
@@ -245,18 +235,18 @@ class AccountStore {
     const keychain = await SecureKeychain.getGenericPassword()
     if (keychain && this.OKTAccounts.length) {
       const keyObj = await AccountStorage.getDataByID(this.currentOKTID, keychain.password)
-      const currentOKT = this.OKTAccounts[0]
+      let privateKey
       if (keyObj.type === 'HD') {
-        const privateKey = currentOKT.OKTWallet.exportPKByMnemonic(keyObj.mnemonic)
-        OKClient.init({
-          privateKey: privateKey,
-        })
+        privateKey = crypto.getPrivateKeyFromMnemonic(keyObj.mnemonic)
       } else if (keyObj.type === 'OKT') {
-        const privateKey = keyObj.privateKey
-        OKClient.init({
-          privateKey: privateKey,
-        })
+        privateKey = keyObj.privateKey
+      } else {
+        console.warn('error')
+        return
       }
+      OKClient.init({
+        privateKey,
+      })
     }
   }
 

@@ -720,21 +720,29 @@ export class BrowserTab extends React.Component {
 
     let publicKey
     let accounts = []
-    const { FOAccounts } = this.props.accountStore
+    const { FOAccounts, currentFOID } = this.props.accountStore
 
     if (FOAccounts.length) {
-      accounts = FOAccounts.map((item, index) => {
-        if (index === 0) {
-          publicKey = item.FOWallet.address
-        }
-        return {
-          name:  item.FOWallet.name || item.name,
-          blockchain: 'fibos',
-          authority: `active`,
+      FOAccounts.forEach((item) => {
+        if (item.FOWallet.hasCreated) {
+          if (currentFOID === item.id) {
+            publicKey = item.FOWallet.address
+            accounts = [{
+              name: item.FOWallet.name || item.name,
+              blockchain: 'fibos',
+              authority: `active`,
+            }, ...accounts]
+          } else {
+            accounts.push({
+              name: item.FOWallet.name || item.name,
+              blockchain: 'fibos',
+              authority: `active`,
+            })
+          }
         }
       })
       const entryScriptjs = RenderIronman(accounts, publicKey)
-      this.setState({entryScriptjs})
+      this.setState({ entryScriptjs })
     }
     await this.setState({ entryScriptWeb3: entryScriptWeb3 + SPA_urlChangeListener, homepageScripts });
     Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
@@ -1857,7 +1865,7 @@ export class BrowserTab extends React.Component {
   };
 
   render() {
-    const { entryScriptWeb3, entryScriptjs , url, forceReload, activated } = this.state;
+    const { entryScriptWeb3, entryScriptjs, url, forceReload, activated } = this.state;
     const isHidden = !this.isTabActive();
 
     return (

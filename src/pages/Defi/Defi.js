@@ -130,19 +130,27 @@ class Defi extends React.Component {
 	  `
     let publicKey
     let accounts = []
-    const { FOAccounts, OKTAccounts } = this.props.store.accountStore
+    const { FOAccounts, OKTAccounts, currentFOID } = this.props.store.accountStore
 
     if (!FOAccounts.length || !OKTAccounts.length) {
       Toast.info('please import account')
     } else {
-      accounts = FOAccounts.map((item, index) => {
-        if (index === 0) {
-          publicKey = item.FOWallet.address
-        }
-        return {
-          name: item.FOWallet.name || item.name,
-          blockchain: 'fibos',
-          authority: `active`,
+      FOAccounts.forEach((item) => {
+        if (item.FOWallet.hasCreated) {
+          if (currentFOID === item.id) {
+            publicKey = item.FOWallet.address
+            accounts = [{
+              name: item.FOWallet.name || item.name,
+              blockchain: 'fibos',
+              authority: `active`,
+            }, ...accounts]
+          } else {
+            accounts.push({
+              name: item.FOWallet.name || item.name,
+              blockchain: 'fibos',
+              authority: `active`,
+            })
+          }
         }
       })
     }
@@ -385,7 +393,7 @@ class Defi extends React.Component {
                     title: 'Defi'
                   })
                 }}>
-                <Text style={{marginRight: 8, color: '#fff'}}>Defi</Text>
+                <Text style={{ marginRight: 8, color: '#fff' }}>Defi</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {

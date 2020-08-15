@@ -21,17 +21,43 @@ import HDAccount from '../../stores/account/HDAccount';
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const';
 import { BTCCoin, FO } from '../../stores/wallet/Coin';
 import CommonAccount from '../../stores/account/CommonAccount';
+import MultiSigAccount from '../../stores/account/MultiSigAccount';
 
 
 class Receive extends React.Component {
 
-  @computed get account() {
-    if (this.accounts.length) {
-      return this.accounts[0]
-    }
-    const accountID = this.props.navigation.getParam('accountID')
+  @computed get accounts() {
+    const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    return accountStore.match(accountID)
+    if (coin.name === 'FO') {
+      return accountStore.FOAccounts
+    } else if (coin.name === 'ETH') {
+      return accountStore.ETHAccounts
+    } else if (coin.name === 'OKT') {
+      return accountStore.OKTAccounts
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+      return accountStore.HDAccounts
+    }
+    return []
+  }
+
+  @computed get accountID() {
+    const coin = this.props.navigation.getParam('coin')
+    const { accountStore } = this.props
+    if (coin.name === 'FO') {
+      return accountStore.currentFOID
+    } else if (coin.name === 'ETH') {
+      return accountStore.currentETHID
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+      return accountStore.currentAccountID
+    } else if (coin.name === 'OKT') {
+      return accountStore.currentOKTID
+    }
+    return null
+  }
+
+  @computed get account() {
+    return this.accounts.find(item => item.id === this.accountID)
   }
 
   @observable amount = -1;
@@ -46,10 +72,9 @@ class Receive extends React.Component {
       wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID);
     } else if (this.account instanceof CommonAccount) {
       wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID);
+    } else if (this.account instanceof MultiSigAccount) {
+      return this.account.findWallet(walletID);
     }
-    // else if (this.account instanceof MultiSigAccount) {
-    //   return this.account.findWallet(walletID);
-    // }
     return wallet
   }
 
@@ -59,10 +84,9 @@ class Receive extends React.Component {
       coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0];
     } else if (this.account instanceof CommonAccount) {
       coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0];
+    } else if (this.account instanceof MultiSigAccount) {
+      return this.wallet.findCoin(this.selectedCoinID);
     }
-    // else if (this.account instanceof MultiSigAccount) {
-    //   return this.wallet.findCoin(this.selectedCoinID);
-    // }
     return coin
   }
 
@@ -73,19 +97,6 @@ class Receive extends React.Component {
       return this.wallet.name || this.account.name;
     }
     return this.wallet && this.wallet.address;
-  }
-
-  @computed get accounts() {
-    const coin = this.props.navigation.getParam('coin')
-    const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH' || coin.name === 'BTC') {
-      return accountStore.HDAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    }
-    return []
   }
 
   get sheetOptions() {
@@ -198,6 +209,4 @@ const styles = StyleSheet.create({
 export default inject(({ store: state }) => ({
   settings: state.settings,
   accountStore: state.accountStore,
-
-
 }))(observer(Receive))

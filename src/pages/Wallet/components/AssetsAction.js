@@ -1,4 +1,3 @@
-
 import React, { Component } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Text, View } from "react-native";
@@ -8,14 +7,13 @@ import { computed } from "mobx";
 import { styles as themeStyles } from '../../../theme';
 import { strings } from "../../../locales/i18n";
 import GlobalNavigation from "../../../utils/GlobalNavigation";
-import { string } from "prop-types";
 
 @inject('store')
 @observer
 class AssetsAction extends Component {
   render() {
     const { accountStore } = this.props.store
-    const { onSave, onSwapNetwork, onTransfer,  onReceive, onScan, onCross, onCrossOKT  } = this.props;
+    const { onSave, onSwapNetwork, onTransfer, onTools, onCreate, onCopyPubKey, onReceive, onScan, onCross, onCrossOKT } = this.props;
     return (
       <Flex justify="around" style={styles.sendView}>
         {[{
@@ -29,20 +27,32 @@ class AssetsAction extends Component {
         }, {
           onPress: onScan,
           img: <Icon name="scan" />,
-          text: strings('Scan')
+          text: 'Scan'
         }, , {
           onPress: onCrossOKT,
           img: <Icon name="transaction" />,
-          text: strings('Cross OKT')
+          text: 'Cross OKT'
         }, {
-          onPress: onSwapNetwork, 
+          onPress: onSwapNetwork,
           img: <Icon name="swap" />,
-          text: strings('Switch Network')
+          text: 'Switch Network'
         }, {
           onPress: onCross,
           img: <Icon name="retweet" />,
-          text: strings('Cross FO')
-        }].filter(item=>item.onPress).map((item,index) => (<TouchableOpacity style={styles.touchAction} onPress={item.onPress} key={index.toString()}>
+          text: 'Cross FO'
+        }, {
+          onPress: onCopyPubKey,
+          img: <Icon name="copy" />,
+          text: 'Copy PublicKey'
+        }, {
+          onPress: onCreate,
+          img: <Icon name="user-add" />,
+          text: 'Create Account'
+        }, {
+          onPress: onTools,
+          img: <Icon name="tool" />,
+          text: strings('wallet.tools')
+        }].filter(item => item.onPress).map((item, index) => (<TouchableOpacity style={styles.touchAction} onPress={item.onPress} key={index.toString()}>
           {item.img}
           <Text style={{ ...themeStyles.btnSecondaryText, fontSize: 14 }}>
             {item.text}

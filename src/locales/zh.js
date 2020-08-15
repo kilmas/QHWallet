@@ -139,6 +139,7 @@ export default {
     "verifyFail": '验证失败',
     "withdraw": '提现',
     "importFailTip": "导入失败,请重新尝试",
+    "tools": "工具",
 
     "title": "Wallet",
     "tokens": "TOKENS",

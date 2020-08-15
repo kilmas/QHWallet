@@ -17,6 +17,9 @@ import { FO } from "./Coin";
 export default class  FOWallet extends Wallet {
 
   @persist @observable index = 0;
+
+  @persist('list') @observable pubkeys = [];
+
   lastNonce = -1;
   FO = new FO();
 
@@ -49,6 +52,16 @@ export default class  FOWallet extends Wallet {
     this.path = path
     this.id = CryptoJS.MD5(obj.name).toString()
     this.type = COIN_TYPE_FO
+  }
+
+  getPublicKey = (mnemonic) =>{
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const node = bip32.fromSeed(seed);
+    const path = `m/44'/${COIN_ID_FO}'/0'/0/${this.index}`
+    this.path = path
+    const child = node.derivePath(path);
+    const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey); // 公钥
+    return pubkey
   }
   
   static import(mnemonic, pwd, name = "") {
