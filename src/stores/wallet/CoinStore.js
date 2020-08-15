@@ -3,6 +3,8 @@ import network, { EXCHANGE_RATE_API } from "../../modules/common/network";
 import { toSignificanceNumber } from "../../utils/NumberUtil";
 import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT } from "../../config/const";
 import storage from "../../utils/Storage";
+import { fibosRequest, request } from '../../utils/request'
+
 
 const COINSTORE_PRICE_STORAGE_KEY = "COINSTORE-PRICE-STORAGE-KEY";
 const COINSTORE_CURRENCY_STORAGE_KEY = "COINSTORE-CURRENCY-STORAGE-KEY";
@@ -10,31 +12,16 @@ class CoinPrice {
   id = 0;
   @observable USD = 0;
   @observable CNY = 0;
-  @observable USDAnchor = 0;
-  @observable CNYAnchor = 0;
 
-  @computed get USDFloating() {
-    return this.USD - this.USDAnchor;
-  }
 
-  @computed get CNYFloating() {
-    return this.CNY - this.CNYAnchor;
-  }
-
-  constructor({ tokenId, priceUSD = 0, priceCNY = 0, price24HUSD = 0, price24HCNY = 0 }) {
+  constructor({ tokenId, priceUSD = 0 }) {
     this.id = tokenId;
     this.USD = toSignificanceNumber(priceUSD, 8);
-    this.CNY = toSignificanceNumber(priceCNY, 8);
-    this.USDAnchor = toSignificanceNumber(price24HUSD, 8);
-    this.CNYAnchor = toSignificanceNumber(price24HCNY, 8);
   }
   toJSON() {
     return {
       tokenId: this.id,
       priceUSD: this.USD,
-      priceCNY: this.CNY,
-      price24HUSD: this.USDAnchor,
-      price24HCNY: this.CNYAnchor,
     };
   }
 }
@@ -51,7 +38,7 @@ class CoinStore {
   @observable map = new Map();
   constructor() {
     this.map.set(COIN_ID_BTC, new CoinPrice({ tokenId: COIN_ID_BTC }));
-    this.map.set(COIN_ID_USDT, new CoinPrice({ tokenId: COIN_ID_USDT }));
+    this.map.set(COIN_ID_USDT, new CoinPrice({ tokenId: COIN_ID_USDT, priceUSD: 1 }));
     this.map.set(COIN_ID_ETH, new CoinPrice({ tokenId: COIN_ID_ETH }));
     this.map.set(COIN_ID_FO, new CoinPrice({ tokenId: COIN_ID_FO }));
     this.map.set(COIN_ID_OKT, new CoinPrice({ tokenId: COIN_ID_OKT }));
@@ -68,6 +55,16 @@ class CoinStore {
   get USDTPrice() {
     return this.getPrice(COIN_ID_USDT);
   }
+
+  get FOPrice() {
+    return this.getPrice(COIN_ID_FO);
+  }
+  
+  get OKTPrice() {
+    return this.getPrice(COIN_ID_OKT);
+  }
+
+  @observable CNYRate = 7;
 
   async start() {
     try {
@@ -95,12 +92,16 @@ class CoinStore {
     if (!id || this.map.has(id)) {
       return;
     }
-    let coin = new CoinPrice({ tokenId: id });
+    const coin = new CoinPrice({ tokenId: id });
     this.map.set(id, coin);
     return coin;
   }
   getPrice(id) {
-    return (this.map.get(id) && this.map.get(id)[this.currency]) || 0;
+    let rate = 1
+    if (this.currency === CURRENCY_TYPE_CNY) {
+      rate = this.CNYRate
+    }
+    return (this.map.get(id) && this.map.get(id).USD) * rate || 0;
   }
   getFloatingPrice(id) {
     return (this.map.get(id) && this.map.get(id)[`${this.currency}Floating`]) || 0;
@@ -108,29 +109,19 @@ class CoinStore {
 
   fetchPrice = async () => {
     try {
-      let prices = (
-        await network.postJson(
-          "/token/price",
-          {
-            tokenIds: [...this.map.keys()],
-          },
-          EXCHANGE_RATE_API
-        )
-      ).data;
-      prices.forEach(price => {
-        let coin = this.map.get(price.tokenId);
-        if (!coin) {
-          return;
-        }
-        coin.USD = toSignificanceNumber(price.priceUSD, 8);
-        coin.CNY = toSignificanceNumber(price.priceCNY, 8);
-        coin.CNYAnchor = toSignificanceNumber(price.price24HCNY, 8);
-        coin.USDAnchor = toSignificanceNumber(price.price24HUSD, 8);
-      });
-      storage.save({
-        key: COINSTORE_PRICE_STORAGE_KEY,
-        data: [...this.map],
-      });
+      this.CNYRate = await request.getExchangerate()
+      const FOCoin = this.map.get(COIN_ID_FO);
+      FOCoin.USD = await fibosRequest.getPrice();
+      const OKBCoin = this.map.get(COIN_ID_OKT);
+      OKBCoin.USD = await request.getPrice('OKB');
+      const BTCCoin = this.map.get(COIN_ID_BTC);
+      BTCCoin.USD = await request.getPrice('BTC');
+      const ETHCoin = this.map.get(COIN_ID_ETH);
+      ETHCoin.USD = await request.getPrice('ETH');
+      // storage.save({
+      //   key: COINSTORE_PRICE_STORAGE_KEY,
+      //   data: [...this.map],
+      // });
     } catch (error) {}
   };
 

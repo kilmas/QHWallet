@@ -6,6 +6,9 @@ const scanURL = '';
 const rateURL = '';
 const btcComUrl = 'https://chain.api.btc.com/v3/';
 
+const fibosApiUrl = 'https://api.fowallet.net';
+
+
 export const ENV = 'test'; // production | test | staging
 
 const fetchTimeout = 30000;
@@ -43,20 +46,6 @@ const instance = axios.create({
     'Content-Type': 'application/json',
   },
 });
-const scanInstance = axios.create({
-  scanURL,
-  timeout: 30 * 1000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-const rateInstance = axios.create({
-  rateURL,
-  timeout: 30 * 1000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 const btcComInstance = axios.create({
   btcComUrl,
   timeout: 30 * 1000,
@@ -72,7 +61,7 @@ btcComInstance.interceptors.response.use(
     if (err && err.response) {
       err.message = `${err.response.status}: ${
         errStatusTips[err.response.status]
-      }`;
+        }`;
     } else {
       err.message = '连接到服务器失败';
     }
@@ -107,54 +96,11 @@ export const btcComRequest = {
         });
     });
   },
-  getScan: (url, params) => {
-    console.log(url);
-    return new Promise((resolve, reject) => {
-      scanInstance
-        .get(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  getExchangeRate: (url, params) => {
-    return new Promise((resolve, reject) => {
-      rateInstance
-        .get(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  hostPost: (url, params) => {
-    return new Promise((resolve, reject) => {
-      hostInstance
-        .post(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
 };
 
 //响应拦截器即异常处理
 instance.interceptors.response.use(
-  ({status, data}) => {
+  ({ status, data }) => {
     if (status === 200) {
       return data;
     }
@@ -164,7 +110,7 @@ instance.interceptors.response.use(
     if (err && err.response) {
       err.message = `${err.response.status}: ${
         errStatusTips[err.response.status]
-      }`;
+        }`;
     } else {
       err.message = '连接到服务器失败';
     }
@@ -174,7 +120,7 @@ instance.interceptors.response.use(
 
 //响应拦截器即异常处理
 instance.interceptors.response.use(
-  ({status, data}) => {
+  ({ status, data }) => {
     if (status === 200) {
       return data;
     }
@@ -184,45 +130,7 @@ instance.interceptors.response.use(
     if (err && err.response) {
       err.message = `${err.response.status}: ${
         errStatusTips[err.response.status]
-      }`;
-    } else {
-      err.message = '连接到服务器失败';
-    }
-    return Promise.reject(err.message);
-  },
-);
-
-scanInstance.interceptors.response.use(
-  ({status, data}) => {
-    if (status === 200) {
-      return data;
-    }
-    return Promise.reject(status);
-  },
-  err => {
-    if (err && err.response) {
-      err.message = `${err.response.status}: ${
-        errStatusTips[err.response.status]
-      }`;
-    } else {
-      err.message = '连接到服务器失败';
-    }
-    return Promise.reject(err.message);
-  },
-);
-
-rateInstance.interceptors.response.use(
-  ({status, data}) => {
-    if (status === 200) {
-      return data;
-    }
-    return Promise.reject(status);
-  },
-  err => {
-    if (err && err.response) {
-      err.message = `${err.response.status}: ${
-        errStatusTips[err.response.status]
-      }`;
+        }`;
     } else {
       err.message = '连接到服务器失败';
     }
@@ -243,31 +151,8 @@ export const hostRequest = {
     opt.body = JSON.stringify(params);
     return fetch(host + url, opt).then(res => res.json());
   },
-
-  uploadImg: async (imgUri, ossInfo) => {
-    const formData = new FormData(); // 如果需要上传多张图片,需要遍历数组,把图片的路径数组放入formData中
-    const file = {uri: imgUri, type: 'multipart/form-data', name: 'image.png'}; // 这里的key(uri和type和name)不能改变,
-    formData.append('OSSAccessKeyId', ossInfo.OSSAccessKeyId);
-    formData.append('policy', ossInfo.policy);
-    formData.append('Signature', ossInfo.Signature);
-    const fileName = imgUri.substring(
-      imgUri.lastIndexOf('/') + 1,
-      imgUri.length,
-    );
-    const key = `${ossInfo.key}${fileName}`;
-    formData.append('key', key);
-    formData.append('success_action_status', 200);
-    formData.append('file', file);
-
-    const opt = {
-      method: 'POST',
-      body: formData,
-    };
-
-    await fetch(ossInfo.uploadActionURL, opt);
-    return ossInfo.uploadActionURL + key;
-  },
 };
+
 
 // Make a request for a user with a given ID
 export const request = {
@@ -297,71 +182,26 @@ export const request = {
         });
     });
   },
-  getScan: (url, params) => {
-    console.log(url);
-    return new Promise((resolve, reject) => {
-      scanInstance
-        .get(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  getExchangeRate: (url, params) => {
-    return new Promise((resolve, reject) => {
-      rateInstance
-        .get(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  hostPost: (url, params) => {
-    return new Promise((resolve, reject) => {
-      hostInstance
-        .post(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  getBalance: (addresss) => {
-    const addressArr = addresss.split(',')
-    return new Promise((resolve, reject) => {
-      hostInstance
-        .post(url, {
-          ...params,
-        })
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  }
-};
 
-export const APIS = {
-  receiveBTC: '/wallets/deposit/address/btc/',
-  withdrawBTC: '/wallets/withdraw/btc',
-  transferHistory: '/asset/transfer/history/',
-  withdraw: '/api/v1/wallets/withdraw/request/', // 提现
+  getExchangerate: async (symple = 'USD', ret = 'CNY') => {
+    try {
+      const { data: { rates } } = await axios.get(`https://api.exchangerate-api.com/v4/latest/${symple}`)
+      return rates[ret]
+    } catch (err) {
+      console.warn(err)
+    }
+    return 7;
+  },
+  getPrice: async (coin) => {
+    let price = 1
+    try {
+      const { data: { data: { last } } } = await axios.get(`https://www.okex.me/api/index/v3/${coin}-USD/constituents`)
+      return Number(last)
+    } catch (err) {
+      console.warn(err)
+    }
+    return price
+  }
 };
 
 export const timeoutPromise = (fetchPromise, timeout = fetchTimeout) => {
@@ -374,6 +214,15 @@ export const timeoutPromise = (fetchPromise, timeout = fetchTimeout) => {
   return Promise.race([fetchPromise, abortPromise])
 }
 
+
+
+const fibosApi = axios.create({
+  baseURL: fibosApiUrl,
+  timeout: 30 * 1000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 const fibosInstance = axios.create({
   baseURL: 'https://api.fibos.rocks',
@@ -410,4 +259,18 @@ export const fibosRequest = {
         });
     });
   },
+  getPrice: async () => {
+    let price = 0
+    try {
+      const { data: { data } } = await fibosApi.post('/1.0/app/tokenpair/getSwapRankOnChain', { "tokenx": "FO@eosio", "tokeny": "FOUSDT@eosio" })
+      if (Array.isArray(data)) {
+        const totalWeights = data[data.length - 1]
+        const { tokenx_quantity, tokeny_quantity } = totalWeights
+        price = tokenx_quantity / tokeny_quantity
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+    return price
+  }
 };

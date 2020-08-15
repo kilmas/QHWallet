@@ -391,19 +391,17 @@ class History extends React.Component {
           })
         },
       }
-    } else if (coin.name === 'FO' && !this.wallet.hasCreated) {
-      actions = {
-        onCopyPubKey: this.onCopyPubKey,
-        onCreate: () => {
-          this.goBrowser(`https://see.fo/tools/create`)
-        },
-      }
     } else if (coin.name === 'FO') {
-      actions = {
-        ...actions,
-        onTools: () => {
-          this.goBrowser(`https://see.fo/tools`)
-        },
+      if (!this.wallet.hasCreated) {
+        actions = {
+          onCopyPubKey: this.onCopyPubKey,
+          onCreate:  () => this.goBrowser(`https://see.fo/tools/create`),
+        }
+      } else {
+        actions = {
+          ...actions,
+          onTools: () => this.goBrowser(`https://see.fo/tools`)
+        }
       }
     }
     return (

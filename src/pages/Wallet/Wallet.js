@@ -14,7 +14,7 @@ import BigNumber from "bignumber.js";
 import { observable, computed } from "mobx";
 import { inject, observer, Observer } from 'mobx-react';
 import LinearGradient from 'react-native-linear-gradient';
-import { toPriceString, toFixedLocaleString } from "../../utils/NumberUtil";
+import { toPriceString, toFixedLocaleString, toFixedNumber } from "../../utils/NumberUtil";
 import { BTCCoin, ETH } from '../../stores/wallet/Coin';
 import { styles as themeStyles, MainColor } from '../../theme';
 import GlobalNavigation from '../../utils/GlobalNavigation';
@@ -120,10 +120,16 @@ class CoinCell extends React.Component {
     if (this.props.store.accountStore.isHiddenPrice) {
       return "*****";
     }
-    if (this.balance == "-") {
+    if (this.balance === "-") {
       return "-";
     }
-    return `≈${toPriceString(this.props.coin.totalPrice, 2, 4, true)}  ${CoinStore.currency}`;
+    const balance = new BigNumber(`${this.balance}`);
+    if (balance.isLessThan(0)) {
+      return 0;
+    }
+    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.props.coin.price}`), 2);
+    // this.props.coin.totalPrice
+    return `≈${toPriceString(totalPrice, 2, 4, true)}  ${CoinStore.currency}`;
   }
   render() {
     const { coin, account } = this.props;

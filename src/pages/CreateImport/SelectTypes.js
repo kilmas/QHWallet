@@ -8,32 +8,28 @@ import { strings } from '../../locales/i18n';
 import TitleBar from '../../components/TitleBar';
 import { styles as themeStyle } from '../../theme';
 import GlobalNavigation from '../../utils/GlobalNavigation';
-import Coin from '../../stores/wallet/Coin';
+import { getIcon } from '../../stores/wallet/Coin';
 
 const btns = [
   {
-    icon: { uri: Coin.getIcon('BTC') },
+    icon: { uri: getIcon('BTC') },
     name: 'BTC',
     type: 'BTC',
-    backgroundColor: '#F0F7FF',
   },
   {
-    icon: { uri: Coin.getIcon('ETH') },
+    icon: { uri: getIcon('ETH') },
     name: 'ETH',
     type: 'ETH',
-    backgroundColor: '#F0F7FF',
   },
   {
-    icon: { uri: Coin.getIcon('FO') },
+    icon: { uri: getIcon('FO') },
     name: 'FO',
     type: 'FO',
-    backgroundColor: '#F0F7FF',
   },
   {
-    icon: { uri: Coin.getIcon('OKT') },
+    icon: { uri: getIcon('OKT') },
     name: 'OKT',
     type: 'OKT',
-    backgroundColor: '#F0F7FF',
   },
 ];
 
@@ -51,7 +47,7 @@ class SelectTypes extends React.Component {
         <TitleBar title={strings('wallet.import')} />
         <KeyboardAwareScrollView style={themeStyle.pt26}>
           {btns.map(
-            ({ icon, name, type, backgroundColor, width, height }, index) => (
+            ({ icon, name, type }, index) => (
               <TouchableOpacity key={index.toString()} onPress={() =>
                 GlobalNavigation.navigate('InputPrivateKey', {
                   type,
@@ -60,19 +56,20 @@ class SelectTypes extends React.Component {
               }>
                 <Flex
                   style={{
-                    backgroundColor,
+                    backgroundColor: '#F0F7FF',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    paddingVertical: 20,
-                    marginBottom: 26,
+                    padding: 15,
+                    marginBottom: 15,
+                    borderRadius: 5
                   }}>
                   <Image
                     source={icon}
-                    resizeMode={'contain'}
+                    resizeMode="contain"
                     style={{
                       width: 25,
                       height: 25,
-                      marginHorizontal: 25,
+                      marginRight: 25,
                     }}
                   />
                   <Text

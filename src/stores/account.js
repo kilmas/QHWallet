@@ -213,6 +213,7 @@ class AccountStore {
       alert(error)
     }
     this.isInit = true
+    CoinStore.fetchPrice()
   }
 
   setIronman = async () => {

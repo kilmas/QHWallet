@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, Image, TouchableHighlight, Animated } from "react-native";
+import _ from 'lodash'
 import { Text, View } from "react-native";
 import { Flex } from "@ant-design/react-native";
 import { observer, inject } from "mobx-react";
@@ -15,19 +16,39 @@ class AssetsHeader extends React.Component {
     hidden: false,
   };
 
+  @computed get balance() {
+    const { accountStore } = this.props.store;
+    let balance = 0
+    const { OKTAccounts } = accountStore
+    OKTAccounts.forEach(account => {
+      balance += _.get(account, 'OKTWallet.OKT.balance', 0)
+    });
+
+    const bigNumber = new BigNumber(`${balance * this.props.account.OKTWallet.OKT.price}`)
+    return bigNumber
+  }
+
   @computed get totalAsset() {
     const { accountStore } = this.props.store;
-    return accountStore.isHiddenPrice ? "*****" : toFixedLocaleString(this.props.account ? this.props.account.totalAsset: 0, 2, true);
+
+    if (accountStore.isHiddenPrice) {
+      return "*****";
+    }
+    const totalAsset = toFixedLocaleString(this.balance, 2, true)
+
+    return accountStore.isHiddenPrice ? "*****" : totalAsset;
+    // return accountStore.isHiddenPrice ? "*****" : toFixedLocaleString(this.props.account ? this.props.account.totalAsset: 0, 2, true);
   }
 
   @computed get coinbaseBTC() {
     const { accountStore } = this.props.store;
     if (accountStore.isHiddenPrice) {
       return "*****";
-    }
-    const amount = toFixedLocaleString(new BigNumber(this.props.account ? this.props.account.totalAsset: 0).div(CoinStore.BTCPrice || 1), 8);
+    }    
+    const amount = toFixedLocaleString(new BigNumber(this.balance).div(CoinStore.BTCPrice || 1), 8);
     return `≈ ${amount} BTC`;
   }
+
   constructor(props) {
     super(props);
   }

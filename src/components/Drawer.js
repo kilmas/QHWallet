@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { inject, observer } from 'mobx-react';
 import GlobalNavigation from '../utils/GlobalNavigation';
 import { styles as themeStyles, MainColor, BDCoLor } from '../theme';
-import Coin from '../stores/wallet/Coin';
+import { getIcon } from '../stores/wallet/Coin';
 import ReceiveRequest from './UI/ReceiveRequest';
 import { strings } from '../locales/i18n';
 import { withNavigation } from 'react-navigation';
@@ -93,7 +93,7 @@ class ChainCell extends React.Component {
         <Flex justify="between" style={cellStyles.cellFlex}>
           <Flex>
             <Image
-              source={{ uri: Coin.getIcon(coin) }}
+              source={{ uri: getIcon(coin) }}
               resizeMode="contain"
               style={cellStyles.cellCoin}
             />

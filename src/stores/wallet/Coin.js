@@ -13,7 +13,7 @@ import {
   COIN_ID_FO,
   COIN_ID_OKT,
 } from "../../config/const";
-import { observable, computed } from "mobx";
+import { observable, computed, action } from "mobx";
 import { toFixedNumber } from "../../utils/NumberUtil";
 import network from "../../modules/common/network";
 
@@ -22,6 +22,21 @@ const OMNI_PROPERTY_ID_OMNI_TEST = "2";
 const DEFAULT_ICON_URL = "https://dapp.qingah.com";
 
 export const FO_ICON = `https://fibos.io/imgs/854ad1ae16cb585bf1f37691616bcbe3.png`;
+
+export const getIcon = (coin) => {
+  switch (coin) {
+    case 'FO':
+      return FO_ICON;
+    case 'BTC':
+      return `${DEFAULT_ICON_URL}/BTC.png`;
+    case 'ETH':
+      return `${DEFAULT_ICON_URL}/ETH.png`;
+    case 'OKT':
+      return OKT_ICON;
+    default:
+      return '';
+  }
+}
 
 export const OKT_ICON = `${DEFAULT_ICON_URL}/OKB.jpg`
 class Coin {
@@ -37,20 +52,6 @@ class Coin {
   @computed get floatPrice() {
     return CoinStore.getFloatingPrice(this.id);
   }
-  static getIcon(coin) {
-    switch (coin) {
-      case 'FO':
-        return FO_ICON;
-      case 'BTC':
-        return `${DEFAULT_ICON_URL}/BTC.png`;
-      case 'ETH':
-        return `${DEFAULT_ICON_URL}/ETH.png`;
-      case 'OKT':
-        return OKT_ICON;
-      default:
-        return '';
-    }
-  }
   constructor(obj = {}) {
     if (obj.hasOwnProperty("display")) {
       this.display = obj.display;
@@ -60,9 +61,14 @@ class Coin {
     if (obj.icon && obj.icon.length > 0) {
       this.icon = obj.icon;
     }
-    this.balance = obj.balance || 0;
+    this.balance = obj.balance || 0
     // this.price = obj.price || 0
     // CoinStore
+  }
+
+  @action
+  setBalance = (balance) => {
+    this.balance = balance
   }
   /**
    * 总价 balance * price
@@ -71,14 +77,14 @@ class Coin {
    * @memberof Coin
    */
   @computed get totalPrice() {
-    const balance = new BigNumber(this.balance + "");
+    const balance = new BigNumber(`${this.balance}`);
     if (balance.isLessThan(0)) {
       return 0;
     }
-    return toFixedNumber(balance.multipliedBy(this.price + ""), 2);
+    return toFixedNumber(balance.multipliedBy(`${this.price}`), 2);
   }
   @computed get floatingTotalPrice() {
-    const balance = new BigNumber(this.balance + "");
+    const balance = new BigNumber(`${this.balance}`);
     if (balance.isLessThan(0)) {
       return 0;
     }

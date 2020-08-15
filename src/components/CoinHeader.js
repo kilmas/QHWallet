@@ -119,7 +119,7 @@ class CoinHeader extends React.Component {
           renderLeft={() => (
             <TouchableOpacity
               onPress={onLeftPress}
-              style={{ minWidth: 40, alignItems: 'center' }}>
+              style={{ alignItems: 'center' }}>
               <Icon
                 name="left"
               />

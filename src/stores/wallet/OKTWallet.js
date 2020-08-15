@@ -8,6 +8,7 @@ import Wallet from './Wallet'
 import { WALLET_SOURCE_PK, WALLET_SOURCE_MW, COIN_TYPE_OKT, COIN_ID_OKT } from '../../config/const'
 import { OKT } from './Coin'
 import OKClient from '../../modules/okchain'
+import { request } from '../../utils/request'
 
 export default class OKTWallet extends Wallet {
   @persist @observable index = 0
@@ -54,10 +55,11 @@ export default class OKTWallet extends Wallet {
     const { oKClient } = OKClient
     if (this.address && oKClient) {
       const balances = await oKClient.getBalance(this.address)
+      const price = await request.getPrice('OKB')
       if (_.isArray(balances)) {
         balances.forEach(item => {
           if (item.denom === 'tokt') {
-            this.OKT.balance = Number(item.amount)
+            this.OKT.setBalance(Number(item.amount))
             this.coins = [this.OKT]
           }
         })
