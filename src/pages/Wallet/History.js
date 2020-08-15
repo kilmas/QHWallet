@@ -391,7 +391,7 @@ class History extends React.Component {
           })
         },
       }
-    } else if (!this.wallet.hasCreated) {
+    } else if (coin.name === 'FO' && !this.wallet.hasCreated) {
       actions = {
         onCopyPubKey: this.onCopyPubKey,
         onCreate: () => {
