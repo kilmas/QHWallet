@@ -59,22 +59,21 @@ class SendCoin extends React.Component {
       return accountStore.ETHAccounts
     } else if (coin.name === 'OKT') {
       return accountStore.OKTAccounts
-    } else if (coin.name === 'BTC') {
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
     }
     return []
   }
 
   @computed get accountID() {
-    // const accountID = this.props.navigation.getParam('accountID')
-    // if (accountID) return accountID
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
+    console.log(coin.name)
     if (coin.name === 'FO') {
       return accountStore.currentFOID
     } else if (coin.name === 'ETH') {
       return accountStore.currentETHID
-    } else if (coin.name === 'BTC') {
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
@@ -88,7 +87,7 @@ class SendCoin extends React.Component {
 
   @observable amount = -1
   @observable reason = ''
-  @observable selectedCoinID = this.props.navigation.state.params.coinID !== undefined ? this.props.navigation.state.params.coinID : this.wallet.defaultCoin.id
+  @observable selectedCoinID = this.props.navigation.getParam('coinID')
 
   @computed get wallet() {
     let wallet
@@ -218,12 +217,12 @@ class SendCoin extends React.Component {
       console.log('Load complete !!!')
     })
     try {
-    } catch (e) {}
+    } catch (e) { }
   }
 
-  transSuccess() {}
+  transSuccess() { }
 
-  transFail(e) {}
+  transFail(e) { }
 
   _refresh(address) {
     this.setState({ receiver: address })
@@ -259,7 +258,7 @@ class SendCoin extends React.Component {
     }
   }, 10000)
 
-  gotoTxHash = _.throttle(async ()=> {
+  gotoTxHash = _.throttle(async () => {
     const coin = this.props.navigation.getParam('coin')
     let browserUrl
     if (coin.name === 'FO') {
@@ -304,7 +303,7 @@ class SendCoin extends React.Component {
               }}
               value={this.address}
             />
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity onPress={() => { }}>
               <Icon name="down" />
             </TouchableOpacity>
           </Flex>
@@ -355,7 +354,7 @@ class SendCoin extends React.Component {
               }}
               keyboardType="numeric"
             />
-            <Text style={{ fontSize: 15, color: '#C4CAD2' }}>{coin.name}</Text>
+            <Text style={styles.coinName}>{coin.name}</Text>
           </Flex>
           <Flex justify={'between'} style={styles.amountFlex}>
             <TextInput
@@ -429,7 +428,7 @@ const styles = StyleSheet.create({
   },
   toFlex: {
     height: 44,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     backgroundColor: '#FFF',
     marginTop: 13,
     marginBottom: 26,
@@ -439,7 +438,7 @@ const styles = StyleSheet.create({
   },
   toInput: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 11,
     color: '#000000',
   },
   line: {
@@ -454,13 +453,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 0.5,
     borderColor: '#C4CAD2',
-    paddingRight: 10,
+    paddingRight: 5,
     height: 44,
   },
   amountInput: {
     flex: 1,
     paddingHorizontal: 10,
-    fontSize: 12,
+    fontSize: 11,
     borderRadius: 5,
     color: '#000000',
   },
@@ -474,6 +473,7 @@ const styles = StyleSheet.create({
     color: 'blue',
     textDecorationLine: 'underline'
   },
+  coinName: { fontSize: 14, color: '#C4CAD2' }
 })
 
 export default inject(({ store: state }) => ({

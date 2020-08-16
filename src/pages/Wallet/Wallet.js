@@ -24,29 +24,25 @@ import DrawerIcon from '../../components/DrawerIcon';
 import CoinStore from '../../stores/wallet/CoinStore';
 import AssetsHeader from './components/AssetsHeader'
 import TitleBar from '../../components/TitleBar';
+import CommonAccount from '../../stores/account/CommonAccount';
+import HDAccount from '../../stores/account/HDAccount';
 
 const cellStyles = StyleSheet.create({
   cellFlex: {
     ...themeStyles.shadow,
-    width: 329,
     backgroundColor: '#fff',
     borderRadius: 5,
-    borderWidth: 0.5,
-    borderColor: '#007CFF',
     borderWidth: 0,
-    paddingHorizontal: 13,
-    paddingVertical: 8,
-    marginBottom: 18,
+    padding: 5,
   },
   cellCoin: {
     width: 40,
     height: 40,
-    marginLeft: 10,
-    marginRight: 10,
   },
   nameView: {
     paddingTop: 10,
     paddingBottom: 10,
+    paddingLeft: 10,
     width: 125,
   },
   coinName: {
@@ -86,38 +82,33 @@ const cellStyles = StyleSheet.create({
   }
 });
 
+
 @inject('store')
 @observer
 class CoinCell extends React.Component {
   @computed get balance() {
-    const { store: { accountStore }, coin  } = this.props
-    if (accountStore.isHiddenPrice) {
+    const { isHiddenPrice, coin } = this.props
+    if (isHiddenPrice) {
       return "*****";
     }
 
-    let balance = 0
-    if (coin.name === 'OKT') {
-      const { OKTAccounts } = accountStore
-      // todo
-      OKTAccounts.forEach(account => {
-        balance += _.get(account, 'OKTWallet.OKT.balance', 0)
-      });
-    } else {
-      balance = coin.balance
-    }
+    const balance = (coin.others || []).reduce((total, coin) => total + coin.balance, coin.balance)
     const bigNumber = new BigNumber(`${balance}`);
     if (bigNumber.isLessThan(0)) {
-      return "-";
+      return "-"
     }
-    return toFixedLocaleString(
-      bigNumber,
-      coin instanceof BTCCoin || coin instanceof ETH ? 8 : 4,
-      true
-    );
+    return toFixedLocaleString(bigNumber, coin.name === 'BTC' || coin.name === 'ETH' ? 8 : 4, true)
+  }
+
+  @computed get price() {
+    const { coin } = this.props
+    return (CoinStore[`${coin.name}Price`] || 0)
+    // return coin.price
   }
 
   @computed get totalPrice() {
-    if (this.props.store.accountStore.isHiddenPrice) {
+    const { coin, isHiddenPrice } = this.props
+    if (isHiddenPrice) {
       return "*****";
     }
     if (this.balance === "-") {
@@ -127,19 +118,20 @@ class CoinCell extends React.Component {
     if (balance.isLessThan(0)) {
       return 0;
     }
-    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.props.coin.price}`), 2);
+    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.price}`), 2);
     // this.props.coin.totalPrice
-    return `≈${toPriceString(totalPrice, 2, 4, true)}  ${CoinStore.currency}`;
+    return `≈ ${CoinStore.currencySymbol} ${toPriceString(totalPrice, 2, 4, true)}`;
   }
+
   render() {
-    const { coin, account } = this.props;
+    const { coin } = this.props;
     return (
       <TouchableOpacity
+        style={{ marginBottom: 10 }}
         onPress={() =>
           GlobalNavigation.navigate('History', {
             coin: coin,
             coinID: coin.id,
-            accountID: account.id,
           })
         }>
         <Flex justify="between" style={cellStyles.cellFlex}>
@@ -154,7 +146,7 @@ class CoinCell extends React.Component {
                 {this.props.coin.name}
               </Text>
               <Text ellipsizeMode={'tail'} style={cellStyles.coinPrice}>
-                {toPriceString(this.props.coin.price, 2, 4, true)} {CoinStore.currency}
+                {CoinStore.currencySymbol} {toPriceString(this.price, 2, 4, true)}
               </Text>
             </View>
           </Flex>
@@ -178,16 +170,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 60,
   },
-  coinList: {
-    backgroundColor: '#f7f7f7',
-    alignItems: 'center',
-    marginBottom: 50
-  },
   flat: {
-    marginTop: 10,
+    margin: 26,
   },
   flatContent: {
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   loadMore: {
     backgroundColor: "transparent",
@@ -219,16 +206,28 @@ class Wallet extends React.Component {
   @computed get coins() {
     const { accountStore } = this.props.store
     let coins = []
+    const coinsMap = new Map()
     accountStore.accounts.forEach(
       account => {
-
+        account.coins.forEach((coin) => {
+          const hasCoin = coinsMap.get(coin.name)
+          if (coins[hasCoin]) {
+            coins[hasCoin].others.push(coin)
+          } else {
+            coins.push({
+              ...coin,
+              others: []
+            })
+            coinsMap.set(coin.name, coins.length - 1)
+          }
+        })
       }
     )
-
-    if (this.account && this.account.displayChange) {
-      return this.account.coins;
-    }
-    return this.account.coins.filter(coin => coin && (coin.totalPrice >= 100 || coin.balance >= 100));
+    return coins;
+    // if (this.account && this.account.displayChange) {
+    //   return this.account.coins
+    // }
+    // return this.account.coins.filter(coin => coin && (coin.totalPrice >= 100 || coin.balance >= 100))
   }
 
   _onRefresh = async () => {
@@ -247,7 +246,7 @@ class Wallet extends React.Component {
   };
 
   _renderItem = ({ item }) => (
-    <Observer>{() => <CoinCell coin={item} account={this.account} />}</Observer>
+    <Observer>{() => <CoinCell coin={item} isHiddenPrice={this.props.store.accountStore.isHiddenPrice} />}</Observer>
   );
 
   render() {
@@ -269,10 +268,10 @@ class Wallet extends React.Component {
               <DrawerIcon dot={this.props.store.common.newVersion} />
             )}
             renderRight={() => (
-              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {}}><Icon name="ellipsis" /></TouchableOpacity>
+              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => { }}><Icon name="ellipsis" /></TouchableOpacity>
             )}
           />
-          <AssetsHeader account={this.account} />
+          <AssetsHeader coins={this.coins} />
         </LinearGradient>
         <FlatList
           refreshControl={

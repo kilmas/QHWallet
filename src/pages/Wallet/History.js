@@ -83,8 +83,6 @@ class History extends React.Component {
   }
 
   @computed get accountID() {
-    // const accountID = this.props.navigation.getParam('accountID')
-    // if (accountID) return accountID
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
     if (coin.name === 'FO') {
@@ -108,6 +106,16 @@ class History extends React.Component {
     return this.accounts.find(item => item.id === this.accountID)
     // const { accountStore } = this.props
     // return accountStore.match(this.accountID)
+  }
+
+  componentDidMount = async () => {
+    const coin = this.props.navigation.getParam('coin')
+    if (coin.name === 'FO') {
+      if (this.account instanceof HDAccount) {
+        const { password } = await SecureKeychain.getGenericPassword()
+        this.account.checkFOAccount(password)
+      }
+    }
   }
   /**
    *
@@ -321,27 +329,17 @@ class History extends React.Component {
 
     let actions = {
       onTransfer: () => {
-        let accountID = this.account.id
-        if (this.accounts[0]) {
-          accountID = this.accounts[0].id
-        }
         GlobalNavigation.navigate('SendCoin', {
           coin: this.coin,
           onSave: this.onSave,
           walletID: this.props.walletID,
-          accountID,
           coinID: this.selectedCoinID,
         })
       },
       onReceive: () => {
-        let accountID = this.account.id
-        if (this.accounts[0]) {
-          accountID = this.accounts[0].id
-        }
         GlobalNavigation.navigate('Receive', {
           coin: this.coin,
           walletID: this.props.walletID,
-          accountID,
           coinID: this.selectedCoinID,
         })
       },

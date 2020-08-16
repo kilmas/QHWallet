@@ -18,13 +18,13 @@ class AssetsHeader extends React.Component {
 
   @computed get balance() {
     const { accountStore } = this.props.store;
-    let balance = 0
-    const { OKTAccounts } = accountStore
-    OKTAccounts.forEach(account => {
-      balance += _.get(account, 'OKTWallet.OKT.balance', 0)
-    });
+    const { coins } = this.props
 
-    const bigNumber = new BigNumber(`${balance * this.props.account.OKTWallet.OKT.price}`)
+    const balance = coins.reduce((total, coin) => {
+      return total + (_.get(coin, 'others', []).reduce((ban, other) => ban + other.balance, coin.balance) * (CoinStore[`${coin.name}Price`] || 0))
+    }, 0);
+
+    const bigNumber = new BigNumber(`${balance}`)
     return bigNumber
   }
 
@@ -37,14 +37,16 @@ class AssetsHeader extends React.Component {
     const totalAsset = toFixedLocaleString(this.balance, 2, true)
 
     return accountStore.isHiddenPrice ? "*****" : totalAsset;
-    // return accountStore.isHiddenPrice ? "*****" : toFixedLocaleString(this.props.account ? this.props.account.totalAsset: 0, 2, true);
+    // return accountStore.isHiddenPrice ? "*****" : 
+    // toFixedLocaleString(this.props.account ? 
+    // this.props.account.totalAsset: 0, 2, true);
   }
 
   @computed get coinbaseBTC() {
     const { accountStore } = this.props.store;
     if (accountStore.isHiddenPrice) {
       return "*****";
-    }    
+    }
     const amount = toFixedLocaleString(new BigNumber(this.balance).div(CoinStore.BTCPrice || 1), 8);
     return `≈ ${amount} BTC`;
   }
@@ -61,7 +63,7 @@ class AssetsHeader extends React.Component {
     const { accountStore } = this.props.store
     return (
       <Flex justify="around" flexDirection="column">
-        <Text style={styles.price}>{!accountStore.isHiddenPrice && CoinStore.currency} {this.totalAsset}</Text>
+        <Text style={styles.price}>{!accountStore.isHiddenPrice && CoinStore.currencySymbol} {this.totalAsset}</Text>
         <Flex style={styles.titleWrap}>
           <Text style={styles.title}>{this.coinbaseBTC}</Text>
           <TouchableHighlight

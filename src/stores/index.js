@@ -23,44 +23,58 @@ const settingStore = new SettingStore();
 hydrate('settingStore', settingStore).then((store) => {
   if (!store.initialRouteName)
     store.setInitialRouteName()
-  console.log('settingStore has been hydrated')
+  // console.log('settingStore has been hydrated')
 });
 
 const accountStore = new AccountStore()
 hydrate('accounts', accountStore).then(store => {
   store.init(NETWORK_ENV_MAINNET)
-  console.log('accounts has been hydrated')
+  // console.log('accounts has been hydrated')
 })
 
-const walletStore =  new WalletStore();
-hydrate('walletStore', walletStore).then(() => console.log('walletStore has been hydrated'));
+const walletStore = new WalletStore();
+hydrate('walletStore', walletStore).then(() => {
+  // console.log('walletStore has been hydrated')
+});
 
 const engineStore = new EngineStore();
 hydrate('engineStore', engineStore).then((store) => {
   MetaMask.initalizeEngine(store);
-  setTimeout(()=>{
+  setTimeout(() => {
     store.initBGstate()
   }, 3000)
-  console.log('engineStore has been hydrated')
+  // console.log('engineStore has been hydrated')
 });
 
 const privacyStore = new Privacy();
-hydrate('privacyStore', privacyStore).then(() => console.log('privacyStore has been hydrated'));
+hydrate('privacyStore', privacyStore).then(() => {
+  // console.log('privacyStore has been hydrated')
+});
 
 const bookmarksStore = new Bookmarks();
-hydrate('bookmarksStore', bookmarksStore).then(() => console.log('bookmarksStore has been hydrated'));
+hydrate('bookmarksStore', bookmarksStore).then(() => {
+  // console.log('bookmarksStore has been hydrated')
+});
 
 const wizardStore = new Wizard();
-hydrate('wizardStore', wizardStore).then(() => console.log('wizardStore has been hydrated'));
+hydrate('wizardStore', wizardStore).then(() => {
+  // console.log('wizardStore has been hydrated')
+});
 
 const transactionStore = new Transaction();
-hydrate('transactionStore', transactionStore).then(() => console.log('transactionStore has been hydrated'));
+hydrate('transactionStore', transactionStore).then(() => {
+  // console.log('transactionStore has been hydrated')
+});
 
 const browserStore = new Browser();
-hydrate('borwserStore', browserStore).then(() => console.log('borwserStore has been hydrated'));
+hydrate('borwserStore', browserStore).then(() => {
+  // console.log('borwserStore has been hydrated')
+});
 
 const modalsStore = new Modals()
-hydrate('modalsStore', modalsStore).then(() => console.log('modalsStore has been hydrated'));
+hydrate('modalsStore', modalsStore).then(() => {
+  // console.log('modalsStore has been hydrated')
+});
 
 const rootStore = observable({
   settings: settingStore,

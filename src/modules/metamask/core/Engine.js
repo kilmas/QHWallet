@@ -65,8 +65,9 @@ class Engine {
           new AddressBookController(),
           new AssetsContractController(),
           new AssetsController(),
-          new AssetsDetectionController(),
+          new AssetsDetectionController({interval: 60000}),
           new CurrencyRateController({
+            interval: 60000,
             nativeCurrency,
             currentCurrency
           }),
@@ -101,16 +102,16 @@ class Engine {
             },
             { network: '1', provider: { type: 'mainnet' } }
           ),
-          new NetworkStatusController(),
-          new PhishingController(),
+          new NetworkStatusController({interval: 60000}),
+          new PhishingController({interval: 60000}),
           new PreferencesController(
             {},
             {
               ipfsGateway: AppConstants.IPFS_DEFAULT_GATEWAY_URL
             }
           ),
-          new TokenBalancesController(),
-          new TokenRatesController(),
+          new TokenBalancesController({interval: 60000}),
+          new TokenRatesController({interval: 60000}),
           new TransactionController(),
           new TypedMessageManager()
         ],

@@ -1,4 +1,4 @@
-import { observable, computed, reaction } from "mobx";
+import { observable, computed, reaction, action } from "mobx";
 import { persist } from 'mobx-persist'
 import BTCWallet from "../wallet/BTCWallet";
 import ETHWallet from "../wallet/ETHWallet";
@@ -72,19 +72,19 @@ class HDAccount extends Account {
    */
   @persist('object', ETHWallet) @observable ETHWallet;
 
-    /**
-   *
-   * @type { FOWallet }
-   * @memberof HDAccount
-   */
+  /**
+ *
+ * @type { FOWallet }
+ * @memberof HDAccount
+ */
   @persist('object', FOWallet) @observable FOWallet;
 
 
-    /**
-   *
-   * @type { OKTWallet }
-   * @memberof HDAccount
-   */
+  /**
+ *
+ * @type { OKTWallet }
+ * @memberof HDAccount
+ */
   @persist('object', OKTWallet) @observable OKTWallet;
 
 
@@ -184,10 +184,7 @@ class HDAccount extends Account {
     // AccountStore.currentETHID = account.id;
     // AccountStore.showDefaultIndex = false;
     // AccountStorage.insert(account);
-    AccountStorage.setDataByID(hdId, {
-      type: 'HD',
-      mnemonic: mnemonicStr
-    }, pwd)
+    AccountStorage.setDataByID(hdId, { type: 'HD', mnemonic: mnemonicStr }, pwd)
 
     // AccountStore.defaultMultiSigAccount.wallets = [];
     // AccountStore.defaultMultiSigAccount.pendingTxs = [];
@@ -248,6 +245,15 @@ class HDAccount extends Account {
     const { mnemonic } = await AccountStorage.getDataByID(this.hdId, pwd)
     return mnemonic
   };
+
+  @action
+  checkFOAccount = async (pwd) => {
+    const mnemonic = await this.exportMnemonic(pwd)
+    if (this.FOWallet) {
+      const privateKey = await this.FOWallet.autoCheckAccount(mnemonic)
+      AccountStorage.setDataByID(this.FOWallet.id, { type: 'FO', privateKey }, pwd)
+    }
+  }
 
   /**
    *

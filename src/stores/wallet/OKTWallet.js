@@ -37,12 +37,7 @@ export default class OKTWallet extends Wallet {
       this.getBalanceTime()
     }, 3000)
   }
-
-
-  startObserve = () => {
-    super.startObserve();
-  };
-
+  
   getBalanceTime = async () => {
     await this.getBalance()
     setTimeout(() => {

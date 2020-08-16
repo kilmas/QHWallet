@@ -25,9 +25,9 @@ class InputPrivateKey extends React.Component {
     pk: '',
   }
 
-  _importPK = (name, type) => {
+  _importPK = (name, type, alias) => {
     InteractionManager.runAfterInteractions(async () => {
-      const account = await CommonAccount.import(this.state.pk, type, name)
+      const account = await CommonAccount.import(this.state.pk, type, name, null, alias)
       if (account) {
         this.props.store.accountStore.insert(account)
         Toast.success('Import successfully')
@@ -52,7 +52,7 @@ class InputPrivateKey extends React.Component {
           const operations = account_names.map(account => ({
             text: account,
             onPress: () => {
-              this._importPK(account, type)
+              this._importPK(account, type, name)
             },
           }))
           if (operations.length) {

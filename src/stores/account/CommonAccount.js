@@ -149,7 +149,7 @@ class CommonAccount extends Account {
     this.pwd = pwd
   }
 
-  static import = async (pk, walletType, name, pwd) => {
+  static import = async (pk, walletType, name, pwd, alias) => {
     if (!pwd) {
       try {
         const credentials = await SecureKeychain.getGenericPassword();
@@ -163,14 +163,14 @@ class CommonAccount extends Account {
         return
       }
     }
-    return await CommonAccount.recovery(pk, name, pwd, walletType);
+    return await CommonAccount.recovery(pk, name, pwd, walletType, alias);
   };
-  static recovery = async (pk, name, pwd, walletType = 'FO') => {
+  static recovery = async (pk, name, pwd, walletType = 'FO', alias) => {
     const account = new CommonAccount();
     account.id = account.generateWalletID(pk);
     switch (walletType) {
       case 'FO':
-        account.FOWallet = await FOWallet.importPK(pk, pwd, name);
+        account.FOWallet = await FOWallet.importPK(pk, pwd, name, alias);
         break;
       case 'BTC':
         account.BTCWallet = await BTCWallet.importPK(pk, pwd, name);
@@ -186,21 +186,15 @@ class CommonAccount extends Account {
     }
     account.type = ACCOUNT_TYPE_COMMON;
     account.walletType = walletType;
-
     account.name = name;
     account.hasBackup = true;
-    AccountStorage.setDataByID(account.id, {
-      type: walletType,
-      privateKey: pk,
-    }, pwd)
+    console.log(account.id, pk, pwd)
+    AccountStorage.setDataByID(account.id, { type: walletType, privateKey: pk }, pwd)
 
     return account;
   };
   constructor(obj = {}) {
     super(obj);
-    // this.stashedTransferCoinID = obj.stashedTransferCoinID;
-    // this.stashedReceiveCoinID = obj.stashedReceiveCoinID;
-    // this.stashedWalletID = obj.stashedWalletID;
   }
   update = async () => {
     try {

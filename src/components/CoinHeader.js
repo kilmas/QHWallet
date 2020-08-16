@@ -54,7 +54,7 @@ class CoinHeader extends React.Component {
     if (this.balance == "-") {
       return "-";
     }
-    return `≈${toFixedLocaleString(this.props.coin.totalPrice, 2, true)} ${CoinStore.currency}`;
+    return `≈${toFixedLocaleString(this.props.coin.totalPrice, 2, true)} ${CoinStore.currencySymbol}`;
   }
 
   @computed get floatingAsset() {

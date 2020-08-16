@@ -238,6 +238,21 @@ class OKT extends Coin {
   }
 }
 
+class FOToken extends Coin {
+  contract;
+  decimals;
+  constructor(obj = {}) {
+    super(obj);
+    this.contract = obj.contract;
+    this.decimals = obj.decimals;
+  }
+  get txListParams() {
+    return {
+      tokenAddress: this.contract,
+      tokenType: COIN_TYPE_FO,
+    };
+  }
+}
 
 export default Coin;
-export { BTCCoin, BCH, BSV, USDT, ETH, ERC20Coin, ETC, FO, OKT };
+export { BTCCoin, BCH, BSV, USDT, ETH, ERC20Coin, ETC, FO, OKT, FOToken };
