@@ -287,7 +287,7 @@ class History extends React.Component {
     InteractionManager.runAfterInteractions(() => {
       setTimeout(() => {
         this.props.navigation.navigate('DApp');
-      }, 300);
+      }, 600);
     });
   }
 
@@ -583,37 +583,38 @@ class History extends React.Component {
             style={{ margin: 20 }}
             onPress={async () => {
               if (!this.state.isFibosAccountValid) {
+                // register account to eth
                 await this.registerApprove()
-                return
+              } else {
+                // const { number: value } = this.state
+                // const {
+                //   selectedAsset,
+                //   transactionState: { transaction },
+                //   setTransactionObject,
+                //   selectedAddress,
+                // } = this.props
+
+                // const transactionTo = ''
+
+                // const transactionObject = {
+                //   ...transaction,
+                //   value: BNToHex(toWei(value)),
+                //   selectedAsset,
+                //   from: selectedAddress,
+                // }
+
+                // if (selectedAsset.erc20) {
+                //   const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals)
+                //   transactionObject.data = generateTransferData('transfer', {
+                //     toAddress: transactionTo,
+                //     amount: BNToHex(tokenAmount),
+                //   })
+                //   transactionObject.value = '0x0'
+                // }
+                // setTransactionObject(transactionObject)
+                // go to cross web
+                this.goBrowser(`https://cross.fo/transfer`)
               }
-
-              const { number: value } = this.state
-              const {
-                selectedAsset,
-                transactionState: { transaction },
-                setTransactionObject,
-                selectedAddress,
-              } = this.props
-
-              const transactionTo = ''
-
-              const transactionObject = {
-                ...transaction,
-                value: BNToHex(toWei(value)),
-                selectedAsset,
-                from: selectedAddress,
-              }
-
-              if (selectedAsset.erc20) {
-                const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals)
-                transactionObject.data = generateTransferData('transfer', {
-                  toAddress: transactionTo,
-                  amount: BNToHex(tokenAmount),
-                })
-                transactionObject.value = '0x0'
-              }
-
-              setTransactionObject(transactionObject)
             }}>
             Confirm
           </Button>

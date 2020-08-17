@@ -51,10 +51,12 @@ import { strings } from '../../locales/i18n';
 import RenderIronman from '../../modules/ironman/RenderIronman';
 import Ironman from '../../modules/ironman';
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
+import DrawerIcon from '../../components/DrawerIcon';
+import TitleBar from '../../components/TitleBar';
 
 
 const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants;
-const HOMEPAGE_HOST = 'home.metamask.io';
+const HOMEPAGE_HOST = 'dapp.qingah.com';
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -347,7 +349,7 @@ export class BrowserTab extends React.Component {
       currentPageTitle: '',
       currentPageUrl: '',
       currentPageIcon: undefined,
-      entryScriptWeb3: null,
+      entryScriptWeb3: '',
       homepageScripts: null,
       fullHostname: '',
       hostname: '',
@@ -967,7 +969,7 @@ export class BrowserTab extends React.Component {
 
     if (this.isAllowedUrl(hostname)) {
       this.setState({
-        url: urlToGo,
+        // url: urlToGo,
         progress: 0,
         ipfsWebsite: !!contentUrl,
         inputValue: sanitizedURL,
@@ -976,6 +978,13 @@ export class BrowserTab extends React.Component {
         contentType,
         hostname: this.formatHostname(hostname),
         fullHostname: hostname
+      }, () => {
+        // confirm inject web3
+        setTimeout(() => {
+          this.setState({
+            url: urlToGo
+          });
+        }, 1)
       });
 
       this.props.navigation.setParams({ url: this.state.inputValue, silent: true });
@@ -1093,7 +1102,7 @@ export class BrowserTab extends React.Component {
     // Force unmount the webview to avoid caching problems
     this.setState({ forceReload: true }, () => {
       // Make sure we're not calling last mounted webview during this time threshold
-      this.webview.current = null;
+      // this.webview.current = null;
       setTimeout(() => {
         this.setState({ forceReload: false }, () => {
           this.isReloading = false;
@@ -1873,8 +1882,17 @@ export class BrowserTab extends React.Component {
         style={[styles.wrapper, isHidden && styles.hide]}
         {...(Device.isAndroid() ? { collapsable: false } : {})}
       >
+        <TitleBar
+          title={this.state.inputValue}
+          renderLeft={() => (
+            <DrawerIcon dot={false} />
+          )}
+          renderRight={() => (
+            null
+          )}
+        />
         <View style={styles.webview}>
-          {activated && !forceReload && (
+          {activated && !forceReload && !!entryScriptWeb3 && (
             <WebView
               renderError={() => (
                 <WebviewError error={this.state.lastError} onReload={this.forceReload} />
@@ -1888,11 +1906,13 @@ export class BrowserTab extends React.Component {
               onMessage={this.onMessage}
               onNavigationStateChange={this.onPageChange}
               ref={this.webview}
-              source={{ uri: url }}
+              // use <html></html> for injectedJavaScriptBeforeContentLoaded, and set url
+              source={url ? { uri: url } : { html: '<html></html>' }}
               style={styles.webview}
               userAgent={USER_AGENT}
               sendCookies
               javascriptEnabled
+              injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
               allowsInlineMediaPlayback
               useWebkit
               onShouldStartLoadWithRequest={this.onShouldStartLoadWithRequest}
@@ -1900,13 +1920,13 @@ export class BrowserTab extends React.Component {
               mixedContentMode='always'
             />
           )}
+          {this.renderProgressBar()}
         </View>
-        {this.renderProgressBar()}
         {!isHidden && this.renderUrlModal()}
         {!isHidden && this.renderApprovalModal()}
         {!isHidden && this.renderPhishingModal()}
         {!isHidden && this.renderWatchAssetModal()}
-        {!isHidden ? this.renderOptions() : null}
+        {!isHidden && this.renderOptions()}
         {!isHidden && this.renderBottomBar()}
         {!isHidden && this.renderOnboardingWizard()}
       </View>

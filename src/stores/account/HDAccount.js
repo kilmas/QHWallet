@@ -251,7 +251,9 @@ class HDAccount extends Account {
     const mnemonic = await this.exportMnemonic(pwd)
     if (this.FOWallet) {
       const privateKey = await this.FOWallet.autoCheckAccount(mnemonic)
-      AccountStorage.setDataByID(this.FOWallet.id, { type: 'FO', privateKey }, pwd)
+      if (privateKey && this.FOWallet.id) {
+        AccountStorage.setDataByID(this.FOWallet.id, { type: 'FO', privateKey }, pwd)
+      }
     }
   }
 

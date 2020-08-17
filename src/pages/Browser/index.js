@@ -8,8 +8,8 @@ import Tabs from '../../components/UI/Tabs';
 import BrowserTab from '../BrowserTab';
 import AppConstants from '../../modules/metamask/core/AppConstants';
 import { baseStyles } from '../../styles/common';
-import DrawerIcon from '../../components/DrawerIcon';
-import TitleBar from '../../components/TitleBar';
+// import DrawerIcon from '../../components/DrawerIcon';
+// import TitleBar from '../../components/TitleBar';
 
 const margin = 16;
 const THUMB_WIDTH = Dimensions.get('window').width / 2 - margin * 2;
@@ -279,18 +279,9 @@ class Browser extends React.Component {
   }
 
   render() {
-    const activeTab = this.props.tabs.find(tab => tab.id === this.props.activeTab);
+    // const activeTab = this.props.tabs.find(tab => tab.id === this.props.activeTab);
     return (
       <View style={baseStyles.flexGrow} testID={'browser-screen'}>
-        <TitleBar
-          title={activeTab && activeTab.url}
-          renderLeft={() => (
-            <DrawerIcon dot={false} />
-          )}
-          renderRight={() => (
-            null
-          )}
-        />
         {this.renderBrowserTabs()}
         {this.renderTabsView()}
       </View>
