@@ -271,7 +271,6 @@ class History extends React.Component {
           }
         })
         this.setState({ isFibosAccountValid: tmp_isFibosAccountValid })
-        console.log('tmp_isFibosAccountValid', tmp_isFibosAccountValid)
         if (!tmp_isFibosAccountValid) {
           this.setState({ crossInfo: `${fibosaccount} should register to eth at first!` })
           Toast.info('Current fibos account has not map to eth', 1)
@@ -372,7 +371,7 @@ class History extends React.Component {
             },
             () => {
               if (this.state.fibosAccount) {
-                this.checkMapState(this.state.fibosAccount)
+                this.checkFibosAccount(this.state.fibosAccount)
               }
             }
           )

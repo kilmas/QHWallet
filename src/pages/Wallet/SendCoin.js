@@ -68,7 +68,6 @@ class SendCoin extends React.Component {
   @computed get accountID() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    console.log(coin.name)
     if (coin.name === 'FO') {
       return accountStore.currentFOID
     } else if (coin.name === 'ETH') {
