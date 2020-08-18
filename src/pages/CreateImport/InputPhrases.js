@@ -12,6 +12,7 @@ import { styles as themeStyles, BGGray } from '../../theme'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import HDAccount from '../../stores/account/HDAccount'
 import setKeyChain from '../../utils/keychain'
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 
 @inject('store')
 @observer
@@ -29,18 +30,27 @@ class InputPhrases extends React.Component {
     this.setState({ loading: true })
     // InteractionManager.runAfterInteractions(async ()=>{
     try {
-      const { name, password } = this.props.navigation.state.params
+      let password = this.props.navigation.getParam('password')
+      const name = this.props.navigation.getParam('name')
       const mnemonics = this.state.list.join(' ')
       if (!validateMnemonic(mnemonics)) {
         Toast.fail(strings('wallet.importFailTip'))
         return
       }
-      const account = await HDAccount.import(mnemonics, name, password)
-      const keychain = await setKeyChain(name, password)
-      if (!keychain) {
-        return
+      let reset = true
+      if (!password) {
+        const keyObj = await SecureKeychain.getGenericPassword()
+        password = keyObj.password
+        reset = false
       }
-      this.props.store.engine.importMetamask(password, mnemonics)
+      const account = await HDAccount.import(mnemonics, name, password)
+      if (reset) {
+        const keychain = await setKeyChain(name, password)
+        if (!keychain) {
+          return
+        }
+      }
+      this.props.store.engine.importMetamask(mnemonics, password, reset)
       this.props.store.accountStore.insert(account)
       GlobalNavigation.reset('TabDrawer', {
         mnemonics: this.state.list,

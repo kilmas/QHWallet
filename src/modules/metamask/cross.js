@@ -62,4 +62,5 @@ export async function contractRegister({ provider, account, from }) {
   const test = await crossFoContractInstance.register(stringToName(account), {
     from: from
   })
+  console.log(test)
 }

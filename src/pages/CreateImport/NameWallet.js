@@ -43,7 +43,7 @@ class NameWallet extends React.Component {
         if (!keychain) {
           return
         }
-        this.props.store.engine.importMetamask(password, mnemonics);
+        this.props.store.engine.importMetamask(mnemonics, password);
         this.props.store.accountStore.insert(account)
         GlobalNavigation.reset('CreateWalletSuccess', {
           mnemonics: mnemonics.split(' '),

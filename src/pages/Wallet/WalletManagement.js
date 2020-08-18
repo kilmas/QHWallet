@@ -7,14 +7,13 @@ import GlobalNavigation from '../../utils/GlobalNavigation'
 import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
 
-@inject('store')
-@observer
 class WalletManagement extends React.Component {
   constructor(props) {
     super(props)
   }
 
   componentDidMount() {
+    console.log(this.props.identities)
     this._refresh()
   }
   
@@ -31,7 +30,7 @@ class WalletManagement extends React.Component {
   }
 
   extraAccount = (walletType, id) => {
-    const { accountStore } = this.props.store
+    const { accountStore } = this.props
     if (walletType === 'FO') {
       if (id === accountStore.currentFOID) {
         return `Current ${walletType}`
@@ -49,7 +48,7 @@ class WalletManagement extends React.Component {
   }
 
   render() {
-    const { accountStore } = this.props.store
+    const { accountStore } = this.props
     return (
       <Container>
         <TitleBar
@@ -90,4 +89,9 @@ class WalletManagement extends React.Component {
   }
 }
 
-export default WalletManagement
+export default inject(({ store: state }) => ({
+  settings: state.settings,
+  accountStore: state.accountStore,
+  identities: state.engine.backgroundState.PreferencesController.identities,
+
+}))(observer(WalletManagement))

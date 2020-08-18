@@ -267,11 +267,14 @@ class SendCoin extends React.Component {
       browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
     }
     if (browserUrl) {
-      const tab = this.props.createNewTab(browserUrl)
-      this.props.setActiveTab(tab.id)
+      // const tab = this.props.createNewTab(browserUrl)
+      // this.props.setActiveTab(tab.id)
+      this.props.navigation.navigate('Browser')
       InteractionManager.runAfterInteractions(() => {
         setTimeout(() => {
-          this.props.navigation.navigate('DApp');
+          this.props.navigation.navigate('DApp', {
+            newTabUrl: browserUrl
+          });
         }, 300);
       });
     }

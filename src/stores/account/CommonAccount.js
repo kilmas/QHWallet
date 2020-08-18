@@ -188,7 +188,6 @@ class CommonAccount extends Account {
     account.walletType = walletType;
     account.name = name;
     account.hasBackup = true;
-    console.log(account.id, pk, pwd)
     AccountStorage.setDataByID(account.id, { type: walletType, privateKey: pk }, pwd)
 
     return account;

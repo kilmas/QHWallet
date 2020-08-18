@@ -6,6 +6,7 @@ import Clipboard from '@react-native-community/clipboard'
 import { inject, observer } from 'mobx-react'
 import { computed, observable } from 'mobx'
 import WebView from 'react-native-webview'
+import _ from 'lodash'
 import Container from '../../components/Container'
 import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
@@ -61,7 +62,7 @@ class History extends React.Component {
     this.state = {
       crossToken: 0,
       fibosAccount: '',
-      oktAccount: ''
+      oktAccount: '',
     }
   }
 
@@ -207,7 +208,7 @@ class History extends React.Component {
     return `${this.coin.name}`
   }
 
-  onSave = () => { }
+  onSave = () => {}
 
   register = () => {
     this.props.resetTransaction()
@@ -225,7 +226,7 @@ class History extends React.Component {
     })
   }
 
-  registerApprove = async () => {
+  registerApprove = _.throttle(async () => {
     const { provider } = Engine.context.NetworkController
     contractRegister({
       provider,
@@ -233,15 +234,14 @@ class History extends React.Component {
       from: this.props.selectedAddress,
     })
     this.setState({ showCross: false })
-  }
+  }, 5000)
 
   checkFibosAccount = async account => {
     const fibos = Ironman.fibos
     if (fibos) {
       try {
-        const reponse = await fibos.getAccount(account)
-        console.log(reponse)
-        if (reponse && reponse.account_name === account) {
+        const response = await fibos.getAccount(account)
+        if (get(response, 'account_name') === account) {
           this.setState({ accountError: false }, () => {
             this.checkMapState(account)
           })
@@ -255,9 +255,8 @@ class History extends React.Component {
   }
 
   checkMapState = async fibosaccount => {
-    const { changeFieldValue } = this.props
     const fibos = Ironman.fibos
-
+    const { selectedAddress = '' } = this.props
     if (fibos) {
       try {
         const reponse = await fibos.getTableRows({ json: true, code: 'eosio.cross', scope: 'eosio.cross', table: 'accountmap', limit: 5000 })
@@ -266,14 +265,18 @@ class History extends React.Component {
         let tmp_isFibosAccountValid = false
         rows.forEach(item => {
           if (!tmp_isFibosAccountValid && item.account === fibosaccount) {
-            if (item.eth_address.indexOf(account.split('0x')[1].toLocaleLowerCase()) !== -1) {
+            if (item.eth_address.indexOf(selectedAddress.split('0x')[1].toLocaleLowerCase()) !== -1) {
               tmp_isFibosAccountValid = true
             }
           }
         })
         this.setState({ isFibosAccountValid: tmp_isFibosAccountValid })
+        console.log('tmp_isFibosAccountValid', tmp_isFibosAccountValid)
         if (!tmp_isFibosAccountValid) {
-          Toast.show('Current fibos account has not map to eth')
+          this.setState({ crossInfo: `${fibosaccount} should register to eth at first!` })
+          Toast.info('Current fibos account has not map to eth', 1)
+        } else {
+          this.setState({ crossInfo: '' })
         }
       } catch (error) {
         console.warn(error)
@@ -281,22 +284,23 @@ class History extends React.Component {
     }
   }
 
-  goBrowser = (browserUrl) => {
-    const tab = this.props.createNewTab(browserUrl)
-    this.props.setActiveTab(tab.id)
+  goBrowser = _.throttle(browserUrl => {
+    this.props.navigation.navigate('Browser')
     InteractionManager.runAfterInteractions(() => {
       setTimeout(() => {
-        this.props.navigation.navigate('DApp');
-      }, 600);
-    });
-  }
+        this.props.navigation.navigate('DApp', {
+          newTabUrl: browserUrl,
+        })
+      }, 300)
+    })
+  }, 8000)
 
   onCopyPubKey = async () => {
     const { password } = await SecureKeychain.getGenericPassword()
-    const mnemonic = await this.account.exportMnemonic(password);
+    const mnemonic = await this.account.exportMnemonic(password)
     const publicKey = this.wallet.getPublicKey(mnemonic)
-    Clipboard.setString(publicKey);
-    Toast.info(publicKey);
+    Clipboard.setString(publicKey)
+    Toast.info(publicKey)
   }
 
   render() {
@@ -348,23 +352,30 @@ class History extends React.Component {
     if (coin.name === 'ETH') {
       actions = {
         onCross: () => {
-          this.setState(state => {
-            const {
-              accountStore: { FOAccounts, currentFOID },
-            } = this.props
-            if (state.fibosAccount === '' && FOAccounts.length) {
-              const account = FOAccounts.find(item => item.id === currentFOID)
+          this.setState(
+            state => {
+              const {
+                accountStore: { FOAccounts, currentFOID },
+              } = this.props
+              if (state.fibosAccount === '' && FOAccounts.length) {
+                const account = FOAccounts.find(item => item.id === currentFOID)
+                return {
+                  fibosAccount: account.FOWallet.name,
+                  showCross: true,
+                  crossType: 'FO',
+                }
+              }
               return {
-                fibosAccount: account.FOWallet.name,
                 showCross: true,
-                crossType: 'FO'
+                crossType: 'FO',
+              }
+            },
+            () => {
+              if (this.state.fibosAccount) {
+                this.checkMapState(this.state.fibosAccount)
               }
             }
-            return {
-              showCross: true,
-              crossType: 'FO'
-            }
-          })
+          )
         },
         onSwapNetwork: () => {
           this.props.toggleNetworkModal()
@@ -379,12 +390,12 @@ class History extends React.Component {
               return {
                 oktAccount: account.OKTWallet.address,
                 showCross: true,
-                crossType: 'OKT'
+                crossType: 'OKT',
               }
             }
             return {
               showCross: true,
-              crossType: 'OKT'
+              crossType: 'OKT',
             }
           })
         },
@@ -393,12 +404,12 @@ class History extends React.Component {
       if (!this.wallet.hasCreated) {
         actions = {
           onCopyPubKey: this.onCopyPubKey,
-          onCreate:  () => this.goBrowser(`https://see.fo/tools/create`),
+          onCreate: () => this.goBrowser(`https://see.fo/tools/create`),
         }
       } else {
         actions = {
           ...actions,
-          onTools: () => this.goBrowser(`https://see.fo/tools`)
+          onTools: () => this.goBrowser(`https://see.fo/tools`),
         }
       }
     }
@@ -498,38 +509,39 @@ class History extends React.Component {
           animationType="slide-up"
           maskClosable
           onClose={() => {
-            this.setState({ showCross: false })
+            this.setState({ showCross: false, crossInfo: '' })
           }}>
-          <List renderHeader={`Cross to ${this.state.crossType}`}>
+          <List renderHeader={`Cross to ${this.state.crossType}`} renderFooter={<Text style={{color: 'blue', margin: 15}}>{this.state.crossInfo}</Text>}>
             <InputItem error={false} value={this.props.selectedAddress}>
               From:
             </InputItem>
-            {this.state.crossType === 'FO' && <InputItem
-              clear
-              error={this.state.accountError}
-              value={this.state.fibosAccount}
-              onChange={value => {
-                this.setState({
-                  fibosAccount: value,
-                })
-              }}
-              placeholder={strings('Please input fibos account')}
-              onBlur={() => {
-                const { fibosAccount } = this.state
-                if (!/^[a-z1-5.]{5,12}$/.test(fibosAccount)) {
+            {this.state.crossType === 'FO' && (
+              <InputItem
+                clear
+                error={this.state.accountError}
+                value={this.state.fibosAccount}
+                onChange={value => {
                   this.setState({
-                    accountError: true,
+                    fibosAccount: value,
                   })
-                  Toast.fail(strings('Account format error'))
-                } else {
-                  this.checkFibosAccount(fibosAccount)
-                }
-              }}>
-              To:
+                }}
+                placeholder={strings('Please input fibos account')}
+                onBlur={() => {
+                  const { fibosAccount } = this.state
+                  if (!/^[a-z1-5.]{5,12}$/.test(fibosAccount)) {
+                    this.setState({
+                      accountError: true,
+                    })
+                    Toast.fail(strings('Account format error'))
+                  } else {
+                    this.checkFibosAccount(fibosAccount)
+                  }
+                }}>
+                To:
               </InputItem>
-            }
-            {
-              this.state.crossType === 'OKT' && <InputItem
+            )}
+            {this.state.crossType === 'OKT' && (
+              <InputItem
                 clear
                 error={this.state.accountError}
                 value={this.state.oktAccount}
@@ -541,7 +553,7 @@ class History extends React.Component {
                 placeholder={strings('Please input OKChain account')}>
                 To:
               </InputItem>
-            }
+            )}
             <InputItem
               clear
               type="number"
@@ -574,7 +586,7 @@ class History extends React.Component {
                 </Picker>
               }
               placeholder={strings('Please input crosss amount')}
-              onBlur={() => { }}>
+              onBlur={() => {}}>
               Amount:
             </InputItem>
           </List>
@@ -582,9 +594,10 @@ class History extends React.Component {
             type="primary"
             style={{ margin: 20 }}
             onPress={async () => {
+              Toast.loading('loading..')
               if (!this.state.isFibosAccountValid) {
                 // register account to eth
-                await this.registerApprove()
+                this.registerApprove()
               } else {
                 // const { number: value } = this.state
                 // const {
@@ -616,7 +629,7 @@ class History extends React.Component {
                 this.goBrowser(`https://cross.fo/transfer`)
               }
             }}>
-            Confirm
+            {!!this.state.crossInfo ? 'Register': 'Confirm'}
           </Button>
         </Modal>
       </Container>
@@ -654,7 +667,6 @@ export default inject(({ store: state }) => ({
   // showTransactionNotification: args => state.transaction.showTransactionNotification(args),
   // hideTransactionNotification: state.transaction.hideTransactionNotification
 
-  createNewTab: url => state.browser.createNewTab(url),
-  setActiveTab: id => state.browser.setActiveTab(id),
-
+  // createNewTab: url => state.browser.createNewTab(url),
+  // setActiveTab: id => state.browser.setActiveTab(id),
 }))(observer(History))

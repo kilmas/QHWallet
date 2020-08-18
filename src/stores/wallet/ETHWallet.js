@@ -73,19 +73,19 @@ export default class ETHWallet extends Wallet {
     return new Promise(async (resolve, reject) => {
       try {
         const { address } = ethAccounts.privateKeyToAccount(pk);
-        const obj = {
+        const act = new ETHWallet({
+          name,
           address,
+          pwdnote: note,
+          pwd,
           id: CryptoJS.MD5(address).toString(),
           source: WALLET_SOURCE_PK,
-          type: COIN_TYPE_ETH
-        };
-
-        let act = new ETHWallet({ ...obj, source: WALLET_SOURCE_PK });
-        act.name = name;
-        act.pwdnote = note;
-        act.pwd = pwd;
+          type: COIN_TYPE_ETH,
+          source: WALLET_SOURCE_PK
+        });
         act.isBackup = true;
         act.save();
+        
         DeviceEventEmitter.emit("accountOnChange");
         resolve(act);
       } catch (error) {

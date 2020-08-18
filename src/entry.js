@@ -37,8 +37,6 @@ class Entry extends Component {
 
   componentDidMount() { }
 
-  componentWillUnmount() { }
-
   getCurrentRouteName = navigationState => {
     if (!navigationState) {
       return null

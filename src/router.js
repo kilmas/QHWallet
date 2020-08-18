@@ -48,12 +48,25 @@ let RouterContainer
 
 const routerFun = (initialRouteName) => {
   if (!initialRouteName) return null
+  if (initialRouteName === 'DApp') {
+    initialRouteName = 'Browser'
+  }
   if (RouterContainer) return RouterContainer;
   const Tab = createBottomTabNavigator(
     {
       Wallet,
       Defi,
-      DApp: Browser,
+      Browser: createStackNavigator({
+        DApp: {
+          screen: Browser,
+          navigationOptions: {
+            gesturesEnabled: false
+          }
+        }
+      }, {
+        headerMode: 'none',
+      }),
+      // DApp: Browser,
     },
     {
       initialRouteName,

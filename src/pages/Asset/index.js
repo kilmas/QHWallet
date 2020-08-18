@@ -80,7 +80,6 @@ class Asset extends React.Component {
   componentDidMount() {
     InteractionManager.runAfterInteractions(() => {
       this.normalizeTransactions();
-      this.mounted = true;
     });
 
     this.navSymbol = this.props.navigation.getParam('symbol', '').toLowerCase();
@@ -107,10 +106,6 @@ class Asset extends React.Component {
     this.setState({ loading: true }, () => {
       this.normalizeTransactions();
     });
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
   }
 
   didTxStatusesChange = newTxsPending => this.txsPending.length !== newTxsPending.length;

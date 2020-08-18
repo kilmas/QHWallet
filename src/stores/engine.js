@@ -38,9 +38,24 @@ export default class EngineStore {
     })
   }
 
-  @action importMetamask = async (password, mnemonic) => {
+  @action importMetamask = async (mnemonic, password, reset = true) => {
     const { KeyringController } = Engine.context;
-    await Engine.resetState();
+    if (reset) {
+      await Engine.resetState();
+    }
     return await KeyringController.createNewVaultAndRestore(password, mnemonic);
   }
+  
+  @action importAccountFromPrivateKey = async (private_key) => {
+    const { KeyringController } = Engine.context;
+    // Import private key
+    let pkey = private_key;
+    // Handle PKeys with 0x
+    if (pkey.length === 66 && pkey.substr(0, 2) === '0x') {
+      pkey = pkey.substr(2);
+    }
+    const res = await KeyringController.importAccountWithStrategy('privateKey', [private_key]);
+    console.log(res)
+  }
+
 }

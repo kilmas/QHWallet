@@ -424,7 +424,6 @@ export class BrowserTab extends React.Component {
     } else if (this.isTabActive() && this.isENSUrl(this.state.url)) {
       this.go(this.state.inputValue);
     }
-
     this.init();
   }
 
@@ -874,7 +873,6 @@ export class BrowserTab extends React.Component {
     if (prevNavigation && navigation) {
       const prevUrl = prevNavigation.getParam('url', null);
       const currentUrl = navigation.getParam('url', null);
-
       if (currentUrl && prevUrl !== currentUrl && currentUrl !== this.state.url) {
         this.loadUrl();
       }
@@ -1044,8 +1042,11 @@ export class BrowserTab extends React.Component {
   };
 
   goBackToHomepage = async () => {
+    // this.go('https://cross.fo');
+    // return
     this.toggleOptionsIfNeeded();
     const lastUrlBeforeHome = this.state.inputValue;
+    // await this.setState({ url: null })
     await this.go(HOMEPAGE_URL);
     if (lastUrlBeforeHome === HOMEPAGE_URL) {
       this.reload();
@@ -1918,6 +1919,7 @@ export class BrowserTab extends React.Component {
               onShouldStartLoadWithRequest={this.onShouldStartLoadWithRequest}
               testID={'browser-webview'}
               mixedContentMode='always'
+              cacheEnabled={false}
             />
           )}
           {this.renderProgressBar()}

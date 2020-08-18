@@ -312,6 +312,10 @@ class AccountStore {
     this.currentOKTID = currentOKTID
   }
 
+  @action setCurrentETHID = currentETHID => {
+    this.currentETHID = currentETHID
+  }
+
   @action setHiddenPrice = isHiddenPrice => {
     this.isHiddenPrice = isHiddenPrice
   }

@@ -64,15 +64,20 @@ class InputPrivateKey extends React.Component {
       }
       return
     } else if (type === 'OKT') {
-      if (!/[0-9a-z]{64}/.test(this.state.pk)) {
+      if (!/[0-9a-z]{64}/.test(pk)) {
         Toast.fail('PrivateKey format error')
         return
       }
+    } else if (type === 'ETH') {
+      // this.props.store.engine.importAccountFromPrivateKey(pk)
+      // return
     }
     this._importPK(name, type)
   }
 
   render() {
+    const { getParam } = this.props.navigation
+    const type = getParam('type')
     return (
       <Container>
         <TitleBar title={strings('wallet.import')} />
@@ -83,9 +88,8 @@ class InputPrivateKey extends React.Component {
               alignSelf: 'flex-start',
               marginBottom: 26,
             }}>
-            {strings('wallet.inputKey')}
+            {strings('wallet.inputKey')}({type})
           </Text>
-
           <TextInput
             style={{
               fontSize: 13,
@@ -93,6 +97,7 @@ class InputPrivateKey extends React.Component {
               borderRadius: 8,
               marginBottom: 80,
               padding: 8,
+              height: 88,
             }}
             multiline
             value={this.state.pk}
