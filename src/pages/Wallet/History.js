@@ -208,7 +208,7 @@ class History extends React.Component {
     return `${this.coin.name}`
   }
 
-  onSave = () => {}
+  onSave = () => { }
 
   register = () => {
     this.props.resetTransaction()
@@ -271,6 +271,7 @@ class History extends React.Component {
           }
         })
         this.setState({ isFibosAccountValid: tmp_isFibosAccountValid })
+        console.log('tmp_isFibosAccountValid', tmp_isFibosAccountValid)
         if (!tmp_isFibosAccountValid) {
           this.setState({ crossInfo: `${fibosaccount} should register to eth at first!` })
           Toast.info('Current fibos account has not map to eth', 1)
@@ -436,25 +437,49 @@ class History extends React.Component {
         />
         <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
           <AssetsAction {...actions} />
-          <Tabs tabs={[{ title: 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]} swipeable={false} useOnPan={false}>
+          <Tabs tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]} swipeable={false} useOnPan={false}>
             <View>
-              {coin.name === 'ETH' && <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />}
-              {coin.name === 'OKT' && (
-                <List>
-                  {this.wallet &&
-                    this.wallet.coins.map((item, index) => (
+              {coin.name === 'ETH' ? <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />
+                : coin.name === 'OKT' ? (
+                  <List>
+                    {this.wallet &&
+                      this.wallet.coins.map((item, index) => (
+                        <List.Item
+                          key={item.id}
+                          checked={index === 0}
+                          onPress={() => {
+                            console.log(item)
+                          }}>
+                          {item.name}
+                          <List.Item.Brief>{item.balance}</List.Item.Brief>
+                        </List.Item>
+                      ))}
+                  </List>
+                )
+                  : coin.name === 'BTC' && (
+                    <List>
+                      {this.account instanceof HDAccount &&
+                        this.wallet.addresses.map((item, index) => (
+                          <List.Item
+                            extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check"/> :''}
+                            key={item.id}
+                            checked={index === 0}
+                            onPress={() => {
+                              this.wallet.setCurrentAddress(item)
+                            }}>
+                            {item.address}
+                            <List.Item.Brief>{item.path}</List.Item.Brief>
+                          </List.Item>
+                        ))}
                       <List.Item
-                        key={item.id}
-                        checked={index === 0}
+                        styles={{ column: { alignItems: 'center' } }}
                         onPress={() => {
-                          console.log(item)
+                          console.log('item')
                         }}>
-                        {item.name}
-                        <List.Item.Brief>{item.balance}</List.Item.Brief>
+                        + Address
                       </List.Item>
-                    ))}
-                </List>
-              )}
+                    </List>
+                  )}
             </View>
             <View style={styles.tabView}>
               {coin.name === 'ETH' ? null : (
@@ -510,7 +535,7 @@ class History extends React.Component {
           onClose={() => {
             this.setState({ showCross: false, crossInfo: '' })
           }}>
-          <List renderHeader={`Cross to ${this.state.crossType}`} renderFooter={<Text style={{color: 'blue', margin: 15}}>{this.state.crossInfo}</Text>}>
+          <List renderHeader={`Cross to ${this.state.crossType}`} renderFooter={<Text style={{ color: 'blue', margin: 15 }}>{this.state.crossInfo}</Text>}>
             <InputItem error={false} value={this.props.selectedAddress}>
               From:
             </InputItem>
@@ -585,7 +610,7 @@ class History extends React.Component {
                 </Picker>
               }
               placeholder={strings('Please input crosss amount')}
-              onBlur={() => {}}>
+              onBlur={() => { }}>
               Amount:
             </InputItem>
           </List>
@@ -628,7 +653,7 @@ class History extends React.Component {
                 this.goBrowser(`https://cross.fo/transfer`)
               }
             }}>
-            {!!this.state.crossInfo ? 'Register': 'Confirm'}
+            {!!this.state.crossInfo ? 'Register' : 'Confirm'}
           </Button>
         </Modal>
       </Container>

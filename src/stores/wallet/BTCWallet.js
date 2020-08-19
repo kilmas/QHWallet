@@ -132,6 +132,15 @@ export default class BTCWallet extends Wallet {
     //     )) ||
     //   [];
     this.startObserve();
+    // check address
+    setTimeout(()=>{
+      if(this.addresses.length && !this.addresses.find(address => address.address === this.address)) {
+        this.addresses.push(new BIP44Address({
+          address: this.address,
+          path: this.path,
+        }));
+      }
+    }, 5000)
   }
   static create(name, pwd) {
     return new Promise(async (resolve, reject) => {
@@ -161,15 +170,20 @@ export default class BTCWallet extends Wallet {
         const seed = bip39.mnemonicToSeedSync(mnemonic);
         const node = bip32.fromSeed(seed);
         const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
-        const { address } = bitcoin.payments.p2pkh({ pubkey: node.derivePath(path).publicKey });
+        const pubkey = node.derivePath(path).publicKey
+        const { address } = bitcoin.payments.p2pkh({ pubkey });
         const obj = {
           name,
           address,
           source: WALLET_SOURCE_MW,
           id: CryptoJS.MD5(address).toString(),
-          type: COIN_TYPE_BTC
+          type: COIN_TYPE_BTC,
         };
         const act = new BTCWallet(obj);
+        act.insertAddresses([new BIP44Address({
+          address,
+          path: this.path,
+        })])
         act.extendedPublicKey = await act.generatorXpubByNode(node)
         await act.generatorAddress(BTC_INPUT_TYPE_P2SH, node);
         resolve(act);
@@ -409,8 +423,7 @@ export default class BTCWallet extends Wallet {
       map[address.address] = address;
       return map;
     }, {});
-
-    await AccountStorage.update();
+    // await AccountStorage.update();
   };
   /**
    *
@@ -471,7 +484,7 @@ export default class BTCWallet extends Wallet {
   @action setCurrentAddress = address => {
     if (address instanceof BIP44Address && address.address) {
       this.currentAddress = address;
-      AccountStorage.update();
+      // AccountStorage.update();
     }
   };
   loopUtxos = async () => {
@@ -506,7 +519,7 @@ export default class BTCWallet extends Wallet {
         const address = utxo.address;
         utxo.address = this.addressesMap[utxo.address];
         if (!utxo.address || !utxo.address.pubkey) {
-          //获得本地没有的地址时
+          // 获得本地没有的地址时
           try {
             const relativePath = utxo.path
               .split(this.extendedPublicKey.path)
