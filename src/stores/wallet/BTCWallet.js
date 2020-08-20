@@ -169,7 +169,7 @@ export default class BTCWallet extends Wallet {
       try {
         const seed = bip39.mnemonicToSeedSync(mnemonic);
         const node = bip32.fromSeed(seed);
-        const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
+        const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'/0/0" : "m/44'/0'/0'/0/0"
         const pubkey = node.derivePath(path).publicKey
         const { address } = bitcoin.payments.p2pkh({ pubkey });
         const obj = {

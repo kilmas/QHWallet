@@ -1,7 +1,7 @@
 import * as Qs from 'qs';
 import * as axios from 'axios';
 
-const baseURL = ''; //'https://admin-api.staging.riodefi.com/api/v1';
+const baseURL = '';
 const scanURL = '';
 const rateURL = '';
 const btcComUrl = 'https://chain.api.btc.com/v3/';

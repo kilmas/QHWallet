@@ -174,7 +174,6 @@ export default class AddCustomToken extends PureComponent {
           cancelText={strings('add_asset.tokens.cancel_add_token')}
           confirmText={strings('add_asset.tokens.add_token')}
           onCancelPress={this.cancelAddToken}
-          testID={'add-asset-cancel-button'}
           onConfirmPress={this.addToken}
           confirmDisabled={!(address && symbol && decimals)}
         >
@@ -188,7 +187,6 @@ export default class AddCustomToken extends PureComponent {
                 value={this.state.address}
                 onChangeText={this.onAddressChange}
                 onBlur={this.onAddressBlur}
-                testID={'input-token-address'}
                 onSubmitEditing={this.jumpToAssetSymbol}
                 returnKeyType={'next'}
               />

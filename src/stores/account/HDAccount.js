@@ -94,7 +94,7 @@ class HDAccount extends Account {
    * @memberof HDAccount
    */
   @computed get wallets() {
-    return _.compact([this.BTCWallet, this.ETHWallet, this.FOWallet, this.OKTWallet])
+    return _.compact([this.OKTWallet, this.BTCWallet, this.ETHWallet, this.FOWallet])
   }
 
   @persist @observable isExtendedPublicKeyUploaded = false;
@@ -129,11 +129,11 @@ class HDAccount extends Account {
     const ERC20s = this.ETHWallet && this.ETHWallet.coins.slice();
     ERC20s.shift();
     return _.compact([
+      this.OKTWallet.OKT,
       this.BTCWallet.BTC,
       this.BTCWallet.USDT,
       this.ETHWallet.ETH,
       this.FOWallet.FO,
-      this.OKTWallet.OKT,
       ...ERC20s,
     ]);
   }
