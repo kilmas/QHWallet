@@ -50,7 +50,6 @@ function serializeOutput(output) {
 function getScriptPubKey(addr) {
   if (_.isNil(addr)) {
     return "";
-    // throw new Error('getScriptPubKey invaild param')
   }
   const addrType = addressType(addr);
   const hash160 = base58

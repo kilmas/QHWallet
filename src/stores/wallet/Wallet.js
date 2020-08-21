@@ -238,6 +238,14 @@ class ExtendedKey {
 }
 
 class BIP44Address {
+
+   /**
+   *
+   * @type {'44'|'49'|'84'}
+   * 
+   */
+  @persist @observable bip = '44';
+
   /**
    *
    * @type {String}
@@ -259,10 +267,13 @@ class BIP44Address {
    */
   @persist @observable pubkey = '';
 
-  constructor({ address = '', path = '', pubkey = '' } = {}) {
+  constructor({ address = '', path = '', pubkey = '', bip } = {}) {
     this.address = address;
     this.path = path;
     this.pubkey = pubkey;
+    if (bip) {
+      this.bip = bip
+    }
   }
 }
 

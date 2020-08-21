@@ -462,7 +462,7 @@ class History extends React.Component {
                         this.wallet.addresses.map((item, index) => (
                           <List.Item
                             extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check"/> :''}
-                            key={item.id}
+                            key={index.toString()}
                             checked={index === 0}
                             onPress={() => {
                               this.wallet.setCurrentAddress(item)

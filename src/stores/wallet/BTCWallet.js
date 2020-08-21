@@ -17,10 +17,12 @@ import {
   WALLET_TYPE_BTC,
   BTC_ADDRESS_TYPE_PKH,
   BTC_ADDRESS_TYPE_SH,
+  BTC_ADDRESS_TYPE_KH,
   COIN_TYPE_BTC,
   COIN_TYPE_USDT,
   BTC_INPUT_TYPE_P2SH,
   BTC_INPUT_TYPE_P2PKH,
+  BTC_INPUT_TYPE_P2KH,
 } from "../../config/const";
 import { BTCCoin, USDT } from "./Coin";
 import { observable, action, reaction } from "mobx";
@@ -38,9 +40,23 @@ import { addressType } from "./util/serialize";
 
 const BITCOIN_SATOSHI = 100000000;
 
+
+const rootHd = (mnemonics) => {
+  const seed = bip39.mnemonicToSeedSync(mnemonics);
+  return node = bip32.fromSeed(seed);
+}
+
 export default class BTCWallet extends Wallet {
   BTC = new BTCCoin();
   USDT = new USDT();
+
+  index44 = 0;
+
+  index49 = 0;
+
+  index81 = 0;
+
+  pAccount;
 
   browserRecord = 'https://btc.com/'
   /**
@@ -48,7 +64,21 @@ export default class BTCWallet extends Wallet {
    * @type {BTCExtendedKey}
    * @memberof BTCWallet
    */
-  @persist('object', BTCExtendedKey) @observable extendedPublicKey = null;
+  @persist('object', BTCExtendedKey) @observable extendedPublicKey;
+
+    /**
+   *
+   * @type {BTCExtendedKey}
+   * @memberof BTCWallet
+   */
+  @persist('object', BTCExtendedKey) @observable extendedPublicKey49;
+
+      /**
+   *
+   * @type {BTCExtendedKey}
+   * @memberof BTCWallet
+   */
+  @persist('object', BTCExtendedKey) @observable extendedPublicKey84;
 
   /**
    *
@@ -90,7 +120,6 @@ export default class BTCWallet extends Wallet {
     this.path = this.path || DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'/0/0" : "m/44'/0'/0'/0/0";
     this.type = Wallet.WALLET_TYPE_BTC;
     this.coins = [this.BTC, this.USDT];
-    // this.extendedPublicKey = obj.extendedPublicKey && new BTCExtendedKey(obj.extendedPublicKey);
     // this.addresses = (obj.addresses &&
     //   obj.addresses.length > 0 &&
     //   _.compact(
@@ -131,23 +160,22 @@ export default class BTCWallet extends Wallet {
     //       })
     //     )) ||
     //   [];
-    this.startObserve();
     // check address
-    setTimeout(()=>{
-      if(this.addresses.length && !this.addresses.find(address => address.address === this.address)) {
-        this.addresses.push(new BIP44Address({
-          address: this.address,
-          path: this.path,
-        }));
-      }
-    }, 5000)
+    // setTimeout(()=>{
+    //   if(this.addresses.length && !this.addresses.find(address => address.address === this.address)) {
+    //     this.addresses.push(new BIP44Address({
+    //       address: this.address,
+    //       path: this.path,
+    //     }));
+    //   }
+    // }, 5000)
+    this.startObserve();
   }
   static create(name, pwd) {
     return new Promise(async (resolve, reject) => {
       try {
         let mnemonic = await mnemonicGenerate();
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
-        const node = bip32.fromSeed(seed);
+        const node = rootHd(mnemonic)
         const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
         const { address } = bitcoin.payments.p2pkh({ pubkey: node.derivePath(path).publicKey });
         const obj = {
@@ -167,8 +195,7 @@ export default class BTCWallet extends Wallet {
   static import(mnemonic, pwd, name = "", fetch) {
     return new Promise(async (resolve, reject) => {
       try {
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
-        const node = bip32.fromSeed(seed);
+        const node = rootHd(mnemonic)
         const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'/0/0" : "m/44'/0'/0'/0/0"
         const pubkey = node.derivePath(path).publicKey
         const { address } = bitcoin.payments.p2pkh({ pubkey });
@@ -182,10 +209,14 @@ export default class BTCWallet extends Wallet {
         const act = new BTCWallet(obj);
         act.insertAddresses([new BIP44Address({
           address,
-          path: this.path,
+          path,
         })])
-        act.extendedPublicKey = await act.generatorXpubByNode(node)
-        await act.generatorAddress(BTC_INPUT_TYPE_P2SH, node);
+        act.extendedPublicKey = act.generatorXpubByNode(node)
+        act.extendedPublicKey49 = act.generatorXpubByNode(node, "m/49'/0'/0'")
+        act.extendedPublicKey84 = act.generatorXpubByNode(node, "m/84'/0'/0'")
+
+        act.generatorAddress(BTC_INPUT_TYPE_P2SH, node);
+        act.generatorAddress(BTC_INPUT_TYPE_P2KH, node);
         resolve(act);
       } catch (error) {
         reject(error);
@@ -214,25 +245,6 @@ export default class BTCWallet extends Wallet {
       }
     });
   }
-  static backupMnemonic(mnemonic) {
-    return new Promise(async (resolve, reject) => {
-      const seed = bip39.mnemonicToSeedSync(mnemonic);
-      const node = bip32.fromSeed(seed);
-      const path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
-      const { address } = bitcoin.payments.p2pkh({ pubkey: node.derivePath(path).publicKey });
-
-      const obj = {
-        address,
-        id: CryptoJS.MD5(address).toString(),
-        source: WALLET_SOURCE_MW,
-        type: COIN_TYPE_BTC,
-        hasBackup: true
-      };
-      let act = new BTCWallet(obj);
-      DeviceEventEmitter.emit("accountOnChange");
-      resolve(act);
-    });
-  }
   startObserve = () => {
     super.startObserve();
     reaction(
@@ -245,6 +257,9 @@ export default class BTCWallet extends Wallet {
         this.BTC.balance = balance;
       }
     );
+    // setTimeout(() => {
+    //   this.loopUtxos()
+    // }, 3000)
   };
   drop = text => {
 
@@ -300,7 +315,7 @@ export default class BTCWallet extends Wallet {
 
     const tx = BTCSegwitP2SHTransaction.from(this.utxos, this.address, 0, this.address, feePerByte, true);
     const fee = toFixedString(new BigNumber(tx.fee).div(BITCOIN_SATOSHI));
-    const maximum = BigNumber.max(new BigNumber(this.BTC.balance + "").minus(fee), 0);
+    const maximum = BigNumber.max(new BigNumber(`${this.BTC.balance}`).minus(fee), 0);
 
     return toFixedString(maximum);
   };
@@ -342,11 +357,11 @@ export default class BTCWallet extends Wallet {
     }
 
     if (this.utxos.length == 0) {
-      throw new Error(strings("wallet-send-utxos-empty"));
+      throw new Error(strings("wallet send utxos empty"));
     }
 
     const maximum = await this.calculateMaximumAmount(feePerByte);
-    const showHand = new BigNumber(maximum).isEqualTo(amount + "");
+    const showHand = new BigNumber(maximum).isEqualTo(`${amount}`);
     const tx = BTCSegwitP2SHTransaction.from(this.utxos, to, amount, this.currentAddress.address, feePerByte, showHand);
 
     await tx.signInputs(
@@ -376,24 +391,31 @@ export default class BTCWallet extends Wallet {
     this.utxos.push(...utxos);
     return result;
   };
-  async isVaildPassword(pwd) {
-    return true;
-  }
+
   async exportPrivateKey(pwd) {
     if (!pwd || pwd.length == 0) {
       throw new Error("密码不能为空");
     }
-    let result = await bitcoin.exportPrivateKey(this.id, pwd);
-    if (Platform.OS === "android") {
-      result = result.privateKey;
+    let result
+    if (this.pAccount) {
+      if (this.pAccount.walletType) {
+        result = await this.pAccount.exportPrivateKey(pwd)
+      } else if (this.pAccount.type) {
+        result = await this.pAccount.exportMnemonic(pwd)
+      }
     }
     return result;
   }
+
   async exportMnemonic(pwd) {
     if (!pwd || pwd.length == 0) {
       throw new Error("密码不能为空");
     }
+    if(this.pAccount) {
+      return this.pAccount.exportMnemonic(pwd)
+    }
   }
+
   exportExtendedPublicKey = async (
     pwd,
     path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
@@ -402,32 +424,38 @@ export default class BTCWallet extends Wallet {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
     const node = bip32.fromSeed(seed);
     const key = node.derivePath(path).neutered().toBase58();
-    if (!key || !key.length > 0) {
-      throw new Error(strings("common-password-incorrect"));
-    }
     return new BTCExtendedKey({ key, path });
   };
+
   generatorXpubByNode = async (
     node,
     path = DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'" : "m/44'/0'/0'"
   ) => {
     const key = node.derivePath(path).neutered().toBase58();
-    if (!key || !key.length > 0) {
-      throw new Error(strings("common-password-incorrect"));
-    }
     return new BTCExtendedKey({ key, path });
   };
+
   @action insertAddresses = async addresses => {
     this.addresses.unshift(...addresses);
     this.addressesMap = this.addresses.reduce((map, address) => {
       map[address.address] = address;
       return map;
     }, {});
-    // await AccountStorage.update();
   };
+
+  @action genAddress = async (type, pwd) => {
+    const mnemonics = await this.exportMnemonic(pwd)
+    return this.genAddressByMnemonic(type, rootHd(mnemonics))
+  }
+
+  @action genAddressByMnemonic = async (type, mnemonics) => {
+    return this.generatorAddress(type, rootHd(mnemonics))
+  }
+
   /**
    *
-   * @type {BTC_ADDRESS_TYPE_PKH|BTC_ADDRESS_TYPE_SH}
+   * @type {BTC_ADDRESS_TYPE_PKH|BTC_ADDRESS_TYPE_SH|BTC_ADDRESS_TYPE_KH}
+   * @type {}
    * @memberof BTCWallet
    */
   @action generatorAddress = async (type, node) => {
@@ -435,44 +463,54 @@ export default class BTCWallet extends Wallet {
       const addType = addressType(address.address);
       return addType === type;
     });
-
-    if (!node) {
-      const mnemonics = await this.exportMnemonic(this.pwd);
-      const seed = bip39.mnemonicToSeedSync(mnemonics);
-      node = bip32.fromSeed(seed);
-    }
-
     const index =
       addresses.length > 0
         ? addresses.reduce((result, address) => Math.max(result, parseInt(address.path.split("/").pop())), 0) + 1
         : 0;
-    const path = `${this.extendedPublicKey.path}/0/${index}`;
-    let address;
+    let BIPAddress;
     switch (type) {
       case BTC_ADDRESS_TYPE_PKH: {
+        const bip = '44'
+        const path = `m/${bip}'/0'/0'/0/${index}`
         const { publicKey: pubkey } = node.derivePath(path)
-        address = new BIP44Address({
-          address: bitcoin.payments.p2pkh({ pubkey: node.derivePath(path).publicKey, network }).address,
+        BIPAddress = new BIP44Address({
+          address: bitcoin.payments.p2pkh({ pubkey, network }).address,
           path,
           pubkey: pubkey.toString('hex'),
         });
         break;
       }
       case BTC_ADDRESS_TYPE_SH: {
+        const bip = '49'
+        const path = `m/${bip}'/0'/0'/0/${index}`
         const { publicKey: pubkey } = node.derivePath(path)
-        const p2wpkh = bitcoin.payments.p2sh({
+        const { address } = bitcoin.payments.p2sh({
           redeem: bitcoin.payments.p2wpkh({ pubkey }),
         });
-        address = new BIP44Address({
-          address: p2wpkh.address,
+        BIPAddress = new BIP44Address({
+          address,
           path,
           pubkey: pubkey.toString('hex'),
+          bip,
+        });
+        break;
+      }
+      case BTC_ADDRESS_TYPE_KH: {
+        const bip = '84'
+        const path = `m/${bip}'/0'/0'/0/${index}`
+        const { publicKey: pubkey } = node.derivePath(path)
+        const { address } = bitcoin.payments.p2wpkh({ pubkey })
+        BIPAddress = new BIP44Address({
+          address,
+          path,
+          pubkey: pubkey.toString('hex'),
+          bip,
         });
         break;
       }
     }
 
-    await this.insertAddresses([address]);
+    await this.insertAddresses([BIPAddress]);
     return this.addresses[0];
   };
 
@@ -489,8 +527,11 @@ export default class BTCWallet extends Wallet {
   };
   loopUtxos = async () => {
     try {
-      const addressStr = this.addresses.map(address => address.address).join(',');
-      const { data: addressBalances } = await btcComRequest.get(`/address/${addressStr}`);
+      console.log('addressBalances')
+      // const addressStr = this.addresses.map(address => address.address).join(',');
+      const addressBalances = await Promise.all(this.addresses.map(item => btcComRequest.get(`/address/${item.address}`)))
+      // const { data: addressBalances } = await btcComRequest.get(`/address/${addressStr}`);
+      console.log(addressBalances)
       let addresses = []
       if (addressBalances && addressBalances.length) {
         addresses = addressBalances.filter(item => item.balance > 0)
@@ -654,24 +695,7 @@ export default class BTCWallet extends Wallet {
         orderCount: toFixedString(amount, 8),
       };
     });
-
-    return DFNetwork.post(
-      "/addTrade",
-      {
-        postData: rawData,
-        fromAddress: this.address,
-        toAddress: to,
-        tokenAddress: "btc",
-        tokenType: type,
-        orderCount: amount,
-        walletAddress: this.id,
-        txCreateTime: new Date().getTime(),
-        fromAddressList: inputs,
-        toAddressList: outputs,
-        remark: note,
-      },
-      HD_BTC_API
-    );
+    // post data
   };
 }
 

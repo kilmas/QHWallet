@@ -36,9 +36,12 @@ export const ETHEREUM_CHAINID_ETC_MAINNET = 61;
 
 export const BTC_ADDRESS_TYPE_PKH = 1;
 export const BTC_ADDRESS_TYPE_SH = 2;
+export const BTC_ADDRESS_TYPE_KH = 3;
 
 export const BTC_INPUT_TYPE_P2PKH = 1;
 export const BTC_INPUT_TYPE_P2SH = 2;
+export const BTC_INPUT_TYPE_P2KH = 3;
+
 
 export const BTC_SIGHASH_ALL = 0x1;
 export const BTC_SIGHASH_NONE = 0x2;

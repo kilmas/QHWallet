@@ -33,7 +33,7 @@ class AccountStorage {
         break;
       }
     }
-    this.accounts[index] = account;
+    this.accounts[index] = { id: account.id };
     if (account.type != ACCOUNT_TYPE_EXCHANGE) {
       await this.update();
     }
@@ -82,7 +82,7 @@ class AccountStorage {
   getDataByID = async (id, pwd) => {
     try {
       const result = await AsyncStorage.getItem(id);
-      const data =  await encryptor.decrypt(id + pwd, result);
+      const data = await encryptor.decrypt(id + pwd, result);
       return data;
     } catch (error) {
       console.warn(error)

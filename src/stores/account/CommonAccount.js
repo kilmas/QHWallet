@@ -1,4 +1,4 @@
-import { observable, computed, action } from "mobx";
+import { observable, computed, action, when } from "mobx";
 import { persist } from 'mobx-persist'
 import BTCWallet from "../wallet/BTCWallet";
 import ETHWallet from "../wallet/ETHWallet";
@@ -77,11 +77,11 @@ class CommonAccount extends Account {
  */
   @persist('object', FOWallet) @observable FOWallet;
 
-    /**
-   *
-   * @type { OKTWallet }
-   * @memberof CommonAccount
-   */
+  /**
+ *
+ * @type { OKTWallet }
+ * @memberof CommonAccount
+ */
   @persist('object', OKTWallet) @observable OKTWallet;
 
   /**
@@ -179,8 +179,8 @@ class CommonAccount extends Account {
         account.ETHWallet = await ETHWallet.importPK(pk, pwd, name);
         break;
       case 'OKT':
-          account.OKTWallet = await OKTWallet.importPK(pk, pwd, name);
-          break;
+        account.OKTWallet = await OKTWallet.importPK(pk, pwd, name);
+        break;
       default:
         return null;
     }
@@ -192,8 +192,17 @@ class CommonAccount extends Account {
 
     return account;
   };
+
+  exportPrivateKey = async (pwd) => {
+    const data = await AccountStorage.getDataByID(this.id, pwd)
+    return data
+  }
+
   constructor(obj = {}) {
     super(obj);
+    when(() => !!this.BTCWallet, () => {
+      this.BTCWallet.pAccount = this
+    })
   }
   update = async () => {
     try {

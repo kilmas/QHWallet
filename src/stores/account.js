@@ -202,7 +202,6 @@ class AccountStore {
       // }
 
       if (this.currentAccountID && !this.currentAccount) {
-        console.log('testest')
         this.currentAccount = this.match(this.currentAccountID)
       }
 

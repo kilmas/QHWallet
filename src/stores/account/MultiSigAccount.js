@@ -56,12 +56,12 @@ class MultiSigAccount extends Account {
     const { wallets } = obj;
     super(obj);
     // this.wallets = (wallets && wallets.map(wallet => new BTCMultiSigWallet(wallet))) || [];
-    reaction(
-      () => this.wallets.length,
-      length => {
-        AccountStorage.update();
-      }
-    );
+    // reaction(
+    //   () => this.wallets.length,
+    //   length => {
+    //     AccountStorage.update();
+    //   }
+    // );
   }
   @action update = async () => {
     try {

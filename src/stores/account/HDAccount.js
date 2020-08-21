@@ -1,4 +1,4 @@
-import { observable, computed, reaction, action } from "mobx";
+import { observable, computed, reaction, action, when } from "mobx";
 import { persist } from 'mobx-persist'
 import BTCWallet from "../wallet/BTCWallet";
 import ETHWallet from "../wallet/ETHWallet";
@@ -211,7 +211,11 @@ class HDAccount extends Account {
     // this.stashedReceiveCoinID = obj.stashedReceiveCoinID;
     // this.stashedWalletID = obj.stashedWalletID;
     // this.isExtendedPublicKeyUploaded = obj.isExtendedPublicKeyUploaded;
+    when(() => !!this.BTCWallet, () => {
+      this.BTCWallet.pAccount = this
+    })
   }
+
   update = async () => {
     try {
       if (!this.hasCreated) {
@@ -294,6 +298,7 @@ class HDAccount extends Account {
 
     return wallet;
   };
+
 
   /**
    *

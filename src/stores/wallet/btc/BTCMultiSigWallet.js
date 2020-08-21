@@ -628,7 +628,7 @@ class BTCMultiSigWallet extends MultiSigWallet {
       map[address.address] = address;
       return map;
     }, {});
-    await AccountStorage.update();
+    // await AccountStorage.update();
   };
   /**
    *
@@ -638,7 +638,7 @@ class BTCMultiSigWallet extends MultiSigWallet {
   @action setCurrentAddress = address => {
     if (address instanceof BIP44Address && address.address) {
       this.currentAddress = address;
-      AccountStorage.update();
+      // AccountStorage.update();
     }
   };
   @action syncAddress = (list = []) => {

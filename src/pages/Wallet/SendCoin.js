@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, InteractionManager
 import _ from 'lodash'
 import { inject, observer } from 'mobx-react'
 import { util } from '@metamask/controllers'
-import { Flex, Toast, Button, Icon, Modal } from '@ant-design/react-native'
+import { Flex, Toast, Button, Icon, Modal, Slider } from '@ant-design/react-native'
 import { observable, computed } from 'mobx'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Container from '../../components/Container'
@@ -33,6 +33,7 @@ import CommonAccount from '../../stores/account/CommonAccount'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Ironman from '../../modules/ironman'
 import OKClient from '../../modules/okchain'
+import { BDCoLor } from '../../theme'
 
 const { hexToBN, BNToHex } = util
 
@@ -47,6 +48,7 @@ class SendCoin extends React.Component {
       assetId: '',
       balance: 0,
       memo: '',
+      gasFee: 1,
     }
   }
 
@@ -279,6 +281,10 @@ class SendCoin extends React.Component {
     }
   }, 10000)
 
+  handleGasChange = (value) => {
+    this.setState({ gasFee: value })
+  }
+
   render() {
     const coin = this.props.navigation.getParam('coin')
 
@@ -371,10 +377,36 @@ class SendCoin extends React.Component {
               }}
             />
           </Flex>
-          <Flex justify={'between'} style={styles.fee}>
-            <Text style={styles.assetMidText}>Gas Fee</Text>
-            <Text style={styles.assetMidText}>0</Text>
-          </Flex>
+          {
+            (coin.name === 'BTC' || coin.name === 'USDT') && <View>
+              <Flex justify={'between'} style={styles.fee}>
+                <Text style={styles.assetMidText}>Gas Fee</Text>
+                <Flex>
+                  <Text style={styles.assetMidText}>{this.state.gasFee} {coin.name}</Text>
+                  <TouchableOpacity onPress={() => {
+                    this.setState(state => ({ setGas: !state.setGas }))
+                  }}><Icon name={this.state.setGas ? "up" : "down"} /></TouchableOpacity>
+                </Flex>
+              </Flex>
+              {
+                this.state.setGas && <React.Fragment>
+                  <View style={{ height: 30, justifyContent: 'center' }}>
+                    <Slider
+                      defaultValue={this.state.gasFee}
+                      onChange={value => this.handleGasChange(value)}
+                    />
+                  </View>
+                  <Flex align="center" justify="between">
+                    <Text>
+                      {this.state.gasFee} sat/b
+                  </Text>
+                    <TouchableOpacity style={{ borderRadius: 5, borderWidth: 0.5, borderColor: BDCoLor, padding: 5 }}><Text style={{ color: BDCoLor }}>recommend gas</Text></TouchableOpacity>
+                  </Flex>
+                </React.Fragment>
+              }
+
+            </View>
+          }
           <Flex style={styles.transactionId}>
             {this.state.transactionId && <TouchableOpacity onPress={this.gotoTxHash}><Text style={styles.hashLink}>txhash:{this.state.transactionId}</Text></TouchableOpacity>}
           </Flex>
@@ -426,7 +458,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#4A4A4A',
-    textAlign: 'center',
+    marginRight: 10
   },
   toFlex: {
     height: 44,

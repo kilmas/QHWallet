@@ -69,7 +69,7 @@ class BTCSegwitP2SHTransaction extends BTCTransaction {
       const changeAmount = totalInput
         .minus(amount)
         .minus(fee)
-        .minus(changeOutputFee); //假设有找零的情况下, 若找零金额若大于 TAG 则加入找零
+        .minus(changeOutputFee); // 假设有找零的情况下, 若找零金额若大于 TAG 则加入找零
       if (changeAmount.isGreaterThanOrEqualTo(USDT_TAG_SATOSHI)) {
         changeOutput.satoshis = changeAmount.toFixed(0);
         outputs.push(changeOutput);
@@ -93,6 +93,7 @@ class BTCSegwitP2SHTransaction extends BTCTransaction {
       outputs,
     });
   }
+  
   hashInputs = () => {
     const hashes = this.inputs.map(input =>
       input instanceof BTCSegwitP2SHInput ? this.segwitHash(input) : this.legacyHash(input)

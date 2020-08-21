@@ -4,7 +4,7 @@ import * as axios from 'axios';
 const baseURL = '';
 const scanURL = '';
 const rateURL = '';
-const btcComUrl = 'https://chain.api.btc.com/v3/';
+const btcComUrl = 'https://chain.api.btc.com/v3';
 
 const fibosApiUrl = 'https://api.fowallet.net';
 
@@ -47,7 +47,7 @@ const instance = axios.create({
   },
 });
 const btcComInstance = axios.create({
-  btcComUrl,
+  baseURL: btcComUrl,
   timeout: 30 * 1000,
   headers: {
     'Content-Type': 'application/json',
@@ -73,9 +73,7 @@ export const btcComRequest = {
   get: (url, params) => {
     return new Promise((resolve, reject) => {
       btcComInstance
-        .get(url, {
-          ...params,
-        })
+        .get(url, params)
         .then(response => {
           resolve(response);
         })
