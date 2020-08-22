@@ -272,3 +272,9 @@ export const fibosRequest = {
     return price
   }
 };
+
+const OK_API_URL = 'https://www.okex.me'
+export const okChainRequest = {
+  getValidators: () => axios.get(`${OK_API_URL}/okchain/v1/staking/validators?status=all`),
+  getDelegators: (address) => axios.get(`${OK_API_URL}/okchain/v1/staking/delegators/${address}`),
+};

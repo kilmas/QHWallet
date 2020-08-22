@@ -412,6 +412,15 @@ class History extends React.Component {
           onTools: () => this.goBrowser(`https://see.fo/tools`),
         }
       }
+    } else  if (coin.name === 'OKT') {
+      actions = {
+        ...actions,
+        onVote: () => {
+          GlobalNavigation.navigate('VoteList', {
+            address: this.address
+          })
+        },
+      }
     }
     return (
       <Container>

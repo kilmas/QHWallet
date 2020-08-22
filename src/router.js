@@ -43,6 +43,7 @@ import Asset from './pages/Asset'
 import Confirm from './pages/SendFlow/Confirm'
 import Amount from './pages/SendFlow/Amount'
 import SendTo from './pages/SendFlow/SendTo'
+import VoteList from './pages/Wallet/VoteList'
 
 let RouterContainer
 
@@ -155,6 +156,7 @@ const routerFun = (initialRouteName) => {
           headerMode: 'none',
         })
       },
+      VoteList,
     },
     {
       headerMode: 'none',

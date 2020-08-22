@@ -13,7 +13,7 @@ import GlobalNavigation from "../../../utils/GlobalNavigation";
 class AssetsAction extends Component {
   render() {
     const { accountStore } = this.props.store
-    const { onSave, onSwapNetwork, onTransfer, onTools, onCreate, onCopyPubKey, onReceive, onScan, onCross, onCrossOKT } = this.props;
+    const { onVote, onSave, onSwapNetwork, onTransfer, onTools, onCreate, onCopyPubKey, onReceive, onScan, onCross, onCrossOKT } = this.props;
     return (
       <Flex justify="around" style={styles.sendView}>
         {[{
@@ -48,6 +48,10 @@ class AssetsAction extends Component {
           onPress: onCreate,
           img: <Icon name="user-add" />,
           text: 'Create Account'
+        }, {
+          onPress: onVote,
+          img: <Icon name="select" />,
+          text: 'Staking'
         }, {
           onPress: onTools,
           img: <Icon name="tool" />,
