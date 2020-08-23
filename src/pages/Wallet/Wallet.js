@@ -199,8 +199,7 @@ class Wallet extends React.Component {
   }
 
   @computed get username() {
-    const { accountStore } = this.props.store
-    return accountStore.credentials && accountStore.credentials.username;
+    return this.account && this.account.name
   }
 
   @computed get coins() {

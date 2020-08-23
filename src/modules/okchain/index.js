@@ -43,6 +43,19 @@ const OKClient = {
     const signedTx = await instance.buildTransaction(msg, signMsg, '', defaultFee, null)
     const res = await instance.sendTransaction(signedTx)
     return res
+  },
+  unBond: async (amount) => {
+    const msg = [{
+      type: "okchain/staking/MsgUndelegate",
+      value: {
+        "delegator_address": instance.address,
+        "quantity": { "amount": amount, "denom": "tokt" }
+      }
+    }];
+    const signMsg = msg
+    const signedTx = await instance.buildTransaction(msg, signMsg, '', defaultFee, null)
+    const res = await instance.sendTransaction(signedTx)
+    return res
   }
 };
 

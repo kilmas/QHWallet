@@ -37,9 +37,9 @@ import {
 import { btcComRequest } from "../../utils/request";
 import { strings } from "../../locales/i18n";
 import { addressType } from "./util/serialize";
+import { sleep } from "../../utils/Timer";
 
 const BITCOIN_SATOSHI = 100000000;
-
 
 const rootHd = (mnemonics) => {
   const seed = bip39.mnemonicToSeedSync(mnemonics);
@@ -66,18 +66,18 @@ export default class BTCWallet extends Wallet {
    */
   @persist('object', BTCExtendedKey) @observable extendedPublicKey;
 
-    /**
-   *
-   * @type {BTCExtendedKey}
-   * @memberof BTCWallet
-   */
+  /**
+ *
+ * @type {BTCExtendedKey}
+ * @memberof BTCWallet
+ */
   @persist('object', BTCExtendedKey) @observable extendedPublicKey49;
 
-      /**
-   *
-   * @type {BTCExtendedKey}
-   * @memberof BTCWallet
-   */
+  /**
+*
+* @type {BTCExtendedKey}
+* @memberof BTCWallet
+*/
   @persist('object', BTCExtendedKey) @observable extendedPublicKey84;
 
   /**
@@ -100,6 +100,10 @@ export default class BTCWallet extends Wallet {
    * @memberof BTCWallet
    */
   @persist('list') @observable utxos = [];
+
+
+  @observable unspents = [];
+
 
   /**
    *
@@ -257,9 +261,9 @@ export default class BTCWallet extends Wallet {
         this.BTC.balance = balance;
       }
     );
-    // setTimeout(() => {
-    //   this.loopUtxos()
-    // }, 3000)
+    setTimeout(() => {
+      this.getUtxos()
+    }, 3000)
   };
   drop = text => {
 
@@ -411,7 +415,7 @@ export default class BTCWallet extends Wallet {
     if (!pwd || pwd.length == 0) {
       throw new Error("密码不能为空");
     }
-    if(this.pAccount) {
+    if (this.pAccount) {
       return this.pAccount.exportMnemonic(pwd)
     }
   }
@@ -525,77 +529,72 @@ export default class BTCWallet extends Wallet {
       // AccountStorage.update();
     }
   };
-  loopUtxos = async () => {
+  getUtxos = async () => {
     try {
-      console.log('addressBalances')
-      // const addressStr = this.addresses.map(address => address.address).join(',');
-      const addressBalances = await Promise.all(this.addresses.map(item => btcComRequest.get(`/address/${item.address}`)))
-      // const { data: addressBalances } = await btcComRequest.get(`/address/${addressStr}`);
-      console.log(addressBalances)
-      let addresses = []
-      if (addressBalances && addressBalances.length) {
-        addresses = addressBalances.filter(item => item.balance > 0)
-      }
-      if (addresses.length) {
-        let upspents = await Promise.all(addresses.map(item => btcComRequest.get(`/address/${item.address}/unspent`)));
-        upspents = upspents.map(upspent => {
-          if (upspent.data && upspent.data.list) {
-            return upspent.list;
+      const unspents = await Promise.all(this.addresses.map(address => btcComRequest.unspents(address.address)))
+      const utxos = unspents.reduce((a, b) => a.concat(b), [])
+      const txHashs = await Promise.all(utxos.map(tx => btcComRequest.txHash(tx.tx_hash)))
+      this.unspents = utxos.map((utxo, index) => {
+        return {
+          txId: utxo.tx_hash,
+          vout: utxo.tx_output_n,
+          value: utxo.value,
+          nonWitnessUtxo: Buffer.from(txHashs[index].witness_hash, 'hex'),
+          witnessUtxo: {
+            script: Buffer.from(txHashs[index].outputs[utxo.tx_output_n].script_hex, 'hex'),
+            value: txHashs[index].outputs[utxo.tx_output_n].value,
           }
-          return [];
-        }).reduce((maps, upspentList) => { return maps.concat(upspentList) }, []);
-      }
-      const utxos = upspents.map(upspent => ({
-        address: { pubkey: upspent.pubkey, },
-        confirmations: upspent.confirmations,
-        path: upspent.path,
-        pubkey: upspent.pubkey,
-        txid: upspent.tx_hash,
-        vout: upspent.tx_output_n,
-        amount: upspent.value,
-      }))
-      // const utxos = (await btcComRequest.get(`/address/update/${addressStr}`).data;
-
-      for (const utxo of utxos) {
-        const address = utxo.address;
-        utxo.address = this.addressesMap[utxo.address];
-        if (!utxo.address || !utxo.address.pubkey) {
-          // 获得本地没有的地址时
-          try {
-            const relativePath = utxo.path
-              .split(this.extendedPublicKey.path)
-              .slice(-1)
-              .pop();
-            if (!relativePath || relativePath.length == 0) {
-              throw new Error("vaild path");
-            }
-            const [pubkey] = await this.extendedPublicKey.generatePublicKey([relativePath]);
-            if (!utxo.address) {
-              utxo.address = new BIP44Address({ address, path: utxo.path, pubkey });
-              this.insertAddresses([utxo.address]);
-            }
-            utxo.address.pubkey = pubkey;
-          } catch (error) { }
         }
-      }
-      this.utxos = _.compact(
-        utxos.map(utxo => {
-          utxo.confirmations = parseInt(utxo.confirmations);
-          if (isNaN(utxo.confirmations) || !utxo.address) {
-            return undefined;
-          }
-
-          const type = addressType(utxo.address.address);
-          switch (type) {
-            case BTC_INPUT_TYPE_P2PKH:
-              return new BTCInput(utxo);
-            case BTC_INPUT_TYPE_P2SH:
-              return new BTCSegwitP2SHInput(utxo);
-          }
-        })
-      ).sort((a, b) => (new BigNumber(a.satoshis).minus(b.satoshis).isGreaterThanOrEqualTo(0) ? -1 : 1));
-    } catch (error) { }
+      })
+    } catch (error) {
+      console.warn(error)
+    }
   };
+
+  sendTransaction = async (to, amount, feeRate) => {
+    let utxos = this.unspents
+    let targets = [
+      {
+        address: to,
+        value: amount
+      }
+    ]
+
+    // ...
+    const { inputs, outputs, fee } = coinSelect(utxos, targets, feeRate)
+
+    // the accumulated fee is always returned for analysis
+    console.log(fee)
+
+    // .inputs and .outputs will be undefined if no solution was found
+    if (!inputs || !outputs) return
+
+    let psbt = new bitcoin.Psbt()
+
+    inputs.forEach(input =>
+      psbt.addInput({
+        hash: input.txId,
+        index: input.vout,
+        nonWitnessUtxo: input.nonWitnessUtxo,
+        // OR (not both)
+        witnessUtxo: input.witnessUtxo,
+      })
+    )
+    outputs.forEach(output => {
+      // watch out, outputs may have been added that you need to provide
+      // an output address/script for
+      if (!output.address) {
+        // output.address = wallet.getChangeAddress()
+        // wallet.nextChangeAddress()
+      }
+
+      psbt.addOutput({
+        address: output.address,
+        value: output.value,
+      })
+    })
+  };
+
   fetchUtxos = async () => {
     try {
       // await this.syncAddress()

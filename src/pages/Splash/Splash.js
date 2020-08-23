@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image } from 'react-native';
-import { reaction } from "mobx";
+import { when } from "mobx";
 import { inject, observer } from 'mobx-react';
 import Container from '../../components/Container';
 import GlobalNavigation from '../../utils/GlobalNavigation';
@@ -15,10 +15,10 @@ class Splash extends React.Component {
   componentDidMount() {
     // SecureKeychain.resetGenericPassword()
     const { accountStore } = this.props.store
-    reaction(
+    when(
       () => accountStore.isInit,
       isInit => {
-        this.goNext(isInit, accountStore.currentAccount)
+        this.goNext(true, accountStore.currentAccount)
       }
     )
     this.goNext(accountStore.isInit, accountStore.currentAccount)

@@ -94,6 +94,20 @@ export const btcComRequest = {
         });
     });
   },
+  unspents: async (address) => {
+    const { data: { data: { list = [] } = {} } } = await btcComInstance.request({
+      method: 'GET',
+      url: `/address/${address}/unspent`,
+    })
+    return Array.isArray(list) ? list : [];
+  },
+  txHash: async (tx) => {
+    const { data: { data } } = await btcComInstance.request({
+      method: 'GET',
+      url: `/tx/${tx}?verbose=3`,
+    })
+    return data;
+  }
 };
 
 //响应拦截器即异常处理

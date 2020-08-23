@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, TextInput } from 'react-native';
-import { Checkbox, List, Button, Flex } from '@ant-design/react-native';
+import { Checkbox, List, Button, Flex, Toast } from '@ant-design/react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { okChainRequest } from '../../utils/request';
 import TitleBar from '../../components/TitleBar';
@@ -40,6 +40,14 @@ export default class VoteList extends React.Component {
   componentDidMount() {
     this._reflesh()
   }
+
+  sendTx = async (callback) => {
+    this.setState({ loading: true })
+    await callback()
+    this.setState({ loading: false })
+    this._reflesh()
+  }
+
   render() {
     const validators = new Set(this.state.voteValidators)
     return (
@@ -51,7 +59,7 @@ export default class VoteList extends React.Component {
             numberOfLines={1}
             keyboardType={'decimal-pad'}
             placeholder="Vote Amount"
-            value={this.state.amount}
+            defaultValue={this.state.amount}
             onChangeText={amount => {
               this.setState({
                 amount,
@@ -60,17 +68,15 @@ export default class VoteList extends React.Component {
             keyboardType="numeric"
           />
           <Text>OKT</Text>
-          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={async () => {
-            this.setState({ loading: true })
-            const test = await OKClient.delegate(Number(this.state.amount || 0).toFixed(8))
-            this.setState({ loading: false })
-            this._reflesh()
+          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
+            this.sendTx(async ()=> {
+              return await OKClient.delegate(Number(this.state.amount || 0).toFixed(8))
+            })
           }}>Delegate</Button>
-          <Button type="primary" disabled={this.state.loading} loading={this.state.loading} onPress={async () => {
-            this.setState({ loading: true })
-            const test = await OKClient.vote(this.state.voteValidators)
-            this.setState({ loading: false })
-            this._reflesh()
+          <Button type="primary" disabled={this.state.loading} loading={this.state.loading} onPress={() => {
+            this.sendTx(async ()=> {
+              return await OKClient.vote(this.state.voteValidators)
+            })
           }}>Vote</Button>
         </Flex>
         <Flex align="center" style={{ margin: 10 }}>
@@ -82,23 +88,23 @@ export default class VoteList extends React.Component {
             value={this.state.unAmount}
             onChangeText={amount => {
               this.setState({
-                amount,
+                unAmount:amount,
               })
             }}
             keyboardType="numeric"
           />
           <Text>OKT</Text>
-          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={async () => {
-            this.setState({ loading: true })
-            this.setState({ loading: false })
-            this._reflesh()
+          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
+            this.sendTx(async ()=> {
+              Toast.info('Comming soon')
+              // const test = await OKClient.unBond(Number(this.state.unAmount || 0).toFixed(8))
+            })
           }}>unDelegate</Button>
         </Flex>
         <KeyboardAwareScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           <List style={{ marginTop: 12 }} renderHeader="Select Bp to Vote">
             {
               this.state.validators.map(item => <CheckboxItem defaultChecked={validators.has(item.operator_address)} thumb={item.description.identity} key={item.operator_address} onChange={event => {
-                console.log(item.description.identity)
                 this.setState(state => {
                   const voteValidators = new Set(state.voteValidators)
                   if (event.target.checked) {
