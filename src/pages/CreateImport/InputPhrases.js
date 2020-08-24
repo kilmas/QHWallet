@@ -52,6 +52,7 @@ class InputPhrases extends React.Component {
       }
       this.props.store.engine.importMetamask(mnemonics, password, reset)
       this.props.store.accountStore.insert(account)
+      this.setState({ loading: false })
       GlobalNavigation.reset('TabDrawer', {
         mnemonics: this.state.list,
         name: this.props.navigation.state.params.name,
@@ -60,8 +61,6 @@ class InputPhrases extends React.Component {
     } catch (error) {
       console.warn(error)
       Toast.fail(strings('Input failed, error'))
-    } finally {
-      this.setState({ loading: false })
     }
     // })
   }

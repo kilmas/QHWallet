@@ -94,6 +94,18 @@ export const btcComRequest = {
         });
     });
   },
+  getAddress: async (address) => {
+    try {
+      const { data: { data = {} } = {} } = await btcComInstance.request({
+        method: 'GET',
+        url: `/address/${address}`,
+      })
+      return data
+    } catch (error) {
+      console.warn(error)
+    }
+    return {};
+  },
   unspents: async (address) => {
     const { data: { data: { list = [] } = {} } } = await btcComInstance.request({
       method: 'GET',

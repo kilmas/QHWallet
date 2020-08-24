@@ -412,7 +412,7 @@ class History extends React.Component {
           onTools: () => this.goBrowser(`https://see.fo/tools`),
         }
       }
-    } else  if (coin.name === 'OKT') {
+    } else if (coin.name === 'OKT') {
       actions = {
         ...actions,
         onVote: () => {
@@ -444,10 +444,10 @@ class History extends React.Component {
             </TouchableOpacity>
           )}
         />
-        <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
-          <AssetsAction {...actions} />
-          <Tabs tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]} swipeable={false} useOnPan={false}>
-            <View>
+        <AssetsAction {...actions} />
+        <Tabs tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]}>
+          <View>
+            <KeyboardAwareScrollView>
               {coin.name === 'ETH' ? <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />
                 : coin.name === 'OKT' ? (
                   <List>
@@ -470,7 +470,7 @@ class History extends React.Component {
                       {this.account instanceof HDAccount &&
                         this.wallet.addresses.map((item, index) => (
                           <List.Item
-                            extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check"/> :''}
+                            extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check" /> : ''}
                             key={index.toString()}
                             checked={index === 0}
                             onPress={() => {
@@ -489,24 +489,24 @@ class History extends React.Component {
                       </List.Item>
                     </List>
                   )}
-            </View>
-            <View style={styles.tabView}>
-              {coin.name === 'ETH' ? null : (
-                <WebView
-                  bounces={false}
-                  directionalLockEnabled
-                  source={{ uri: `${this.browserRecord}${this.address}` }}
-                  scrollEnabled={false}
-                  overScrollMode={'never'}
-                  sendCookies
-                  javascriptEnabled
-                  allowsInlineMediaPlayback
-                  useWebkit
-                />
-              )}
-            </View>
-          </Tabs>
-        </KeyboardAwareScrollView>
+            </KeyboardAwareScrollView>
+          </View>
+          <View style={styles.tabView}>
+            {coin.name === 'ETH' ? null : (
+              <WebView
+                bounces={false}
+                directionalLockEnabled
+                source={{ uri: `${this.browserRecord}${this.address}` }}
+                scrollEnabled={false}
+                overScrollMode={'never'}
+                sendCookies
+                javascriptEnabled
+                allowsInlineMediaPlayback
+                useWebkit
+              />
+            )}
+          </View>
+        </Tabs>
         <Modal
           popup
           visible={this.state.visible}

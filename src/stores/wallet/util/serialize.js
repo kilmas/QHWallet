@@ -4,6 +4,7 @@ import {
   BTC_ADDRESS_TYPE_SH,
   BTC_INPUT_TYPE_P2PKH,
   BTC_INPUT_TYPE_P2SH,
+  BTC_ADDRESS_TYPE_KH,
 } from "../../../config/const";
 import opcode from "./opcode";
 import crypto from "../../../utils/crypto";
@@ -150,6 +151,8 @@ function addressType(addr) {
     case "3":
     case "2":
       return BTC_ADDRESS_TYPE_SH;
+    case "b":
+        return BTC_ADDRESS_TYPE_KH;
     default:
       throw new Error("unknow address type");
   }
