@@ -5,6 +5,7 @@ import { persist } from "mobx-persist";
 import * as bip32 from 'bip32';
 import * as bip39 from 'bip39';
 import * as bitcoin from 'bitcoinjs-lib';
+import coinSelect from 'coinselect'
 import _ from "lodash";
 import DFNetwork, { HD_BTC_API } from "../../modules/common/network";
 import Wallet, { ExtendedKey, BIP44Address } from "./Wallet";
@@ -34,7 +35,7 @@ import {
   BTCSegwitP2SHTransaction,
   BTCSegwitP2SHUSDTTransaction,
 } from "./btc/BTCSegwit";
-import { btcComRequest } from "../../utils/request";
+import { btcRequest } from "../../utils/request";
 import { strings } from "../../locales/i18n";
 import { addressType } from "./util/serialize";
 import { sleep } from "../../utils/Timer";
@@ -211,18 +212,15 @@ export default class BTCWallet extends Wallet {
           type: COIN_TYPE_BTC,
         };
         const act = new BTCWallet(obj);
-        act.insertAddresses([new BIP44Address({
-          pubkey: pubkey.toString('hex'),
-          address,
-          path,
-        })])
         act.extendedPublicKey = act.generatorXpubByNode(node)
         act.extendedPublicKey49 = act.generatorXpubByNode(node, "m/49'/0'/0'")
         act.extendedPublicKey84 = act.generatorXpubByNode(node, "m/84'/0'/0'")
-
-        act.generatorAddress(BTC_ADDRESS_TYPE_SH, node);
-        act.generatorAddress(BTC_ADDRESS_TYPE_KH, node);
+        // act.generatorAddress(BTC_ADDRESS_TYPE_SH, node);
+        // act.generatorAddress(BTC_ADDRESS_TYPE_KH, node);
         act.searchAddress(node)
+        setTimeout(() => {
+          this.getUtxos()
+        }, 5000)
         resolve(act);
       } catch (error) {
         reject(error);
@@ -259,6 +257,13 @@ export default class BTCWallet extends Wallet {
           this.utxos.reduce((res, utxo) => res.plus(utxo.satoshis), new BigNumber(0)).div(BITCOIN_SATOSHI),
           8
         ),
+      balance => {
+        this.BTC.balance = balance;
+      }
+    );
+
+    reaction(
+      () => toFixedString(new BigNumber(this.unspents.reduce((res, utxo) => res + (utxo.value), 0)).div(BITCOIN_SATOSHI), 8),
       balance => {
         this.BTC.balance = balance;
       }
@@ -553,13 +558,12 @@ export default class BTCWallet extends Wallet {
   @action setCurrentAddress = address => {
     if (address instanceof BIP44Address && address.address) {
       this.currentAddress = address;
-      // AccountStorage.update();
     }
   };
 
   getAddressTimes = async (i, bipAddress, node, type, addressIndex) => {
-    const address = await btcComRequest.getAddress(bipAddress.address)
-    await sleep(100)
+    const address = await btcRequest.getAddress(bipAddress.address)
+    await sleep(parseInt(Math.random() * 100))
     let j
     if (address.tx_count) {
       this.insertAddress(bipAddress, addressIndex);
@@ -567,10 +571,15 @@ export default class BTCWallet extends Wallet {
     } else {
       j = i + 1
     }
+    const index = this.getIndex(type)
+    const btcAddress = this.getAddress(type, index, node)
     if (j < 20) {
-      const index = this.getIndex(type)
-      const btcAddress = this.getAddress(type, index, node)
       this.getAddressTimes(j, btcAddress, node, type, index)
+    } else {
+      this.insertAddress(bipAddress, addressIndex);
+      if (type === BTC_ADDRESS_TYPE_SH) {
+        this.currentAddress = bipAddress
+      }
     }
   }
 
@@ -584,20 +593,24 @@ export default class BTCWallet extends Wallet {
 
   getUtxos = async () => {
     try {
-      const unspents = await Promise.all(this.addresses.map(address => btcComRequest.unspents(address.address)))
+      const unspents = await Promise.all(this.addresses.map(address => btcRequest.unspents(address.address)))
       const utxos = unspents.reduce((a, b) => a.concat(b), [])
-      const txHashs = await Promise.all(utxos.map(tx => btcComRequest.txHash(tx.tx_hash)))
+      const txHashs = await Promise.all(utxos.map(tx => btcRequest.txHash(_.get(tx, 'tx_hash'))))
       this.unspents = _.compact(utxos.map((utxo, index) => {
-        if (!txHashs || txHashs[index]) return null
+
+        if (!txHashs[index]) return null
+        const scriptHex = _.get(txHashs, `[${index}].outputs[${utxo.tx_output_n}].script_hex`)
+        const mixin = scriptHex ? {
+          witnessUtxo: {
+            script: Buffer.from(scriptHex, 'hex'),
+            value: txHashs[index].outputs[utxo.tx_output_n].value,
+          }
+        } : { nonWitnessUtxo: Buffer.from(_.get(txHashs, `[${index}].witness_hash`, ''), 'hex'), };
         return {
           txId: utxo.tx_hash,
           vout: utxo.tx_output_n,
           value: utxo.value,
-          nonWitnessUtxo: Buffer.from(txHashs[index].witness_hash, 'hex'),
-          witnessUtxo: {
-            script: Buffer.from(txHashs[index].outputs[utxo.tx_output_n].script_hex, 'hex'),
-            value: txHashs[index].outputs[utxo.tx_output_n].value,
-          }
+          ...mixin
         }
       }))
     } catch (error) {
@@ -615,31 +628,36 @@ export default class BTCWallet extends Wallet {
     ]
 
     // ...
-    const { inputs, outputs, fee } = coinSelect(utxos, targets, feeRate)
-
+    const data = coinSelect(utxos, targets, feeRate)
+    const { inputs, outputs, fee } = data
     // the accumulated fee is always returned for analysis
-    console.log(fee)
+    console.log(inputs, outputs, fee)
 
     // .inputs and .outputs will be undefined if no solution was found
     if (!inputs || !outputs) return
 
     let psbt = new bitcoin.Psbt()
 
-    inputs.forEach(input =>
+    inputs.forEach(input => {
+      const { nonWitnessUtxo, witnessUtxo } = input
+      const mixin = witnessUtxo ? { witnessUtxo } : { nonWitnessUtxo };
+
       psbt.addInput({
         hash: input.txId,
         index: input.vout,
-        nonWitnessUtxo: input.nonWitnessUtxo,
-        // OR (not both)
-        witnessUtxo: input.witnessUtxo,
+        // nonWitnessUtxo: input.nonWitnessUtxo,
+        // // OR (not both)
+        // witnessUtxo: input.witnessUtxo,
+        ...mixin
       })
-    )
+    })
     outputs.forEach(output => {
       // watch out, outputs may have been added that you need to provide
       // an output address/script for
       if (!output.address) {
         // output.address = wallet.getChangeAddress()
         // wallet.nextChangeAddress()
+        output.address = this.currentAddress.address
       }
 
       psbt.addOutput({

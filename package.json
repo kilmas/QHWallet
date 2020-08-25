@@ -40,6 +40,7 @@
     "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.1.8",
     "bs58": "^4.0.1",
+    "coinselect": "^3.1.12",
     "connext": "4.2.5",
     "crypto-js": "^4.0.0",
     "eth-contract-metadata": "1.12.1",

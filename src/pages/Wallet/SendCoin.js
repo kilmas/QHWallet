@@ -34,6 +34,7 @@ import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Ironman from '../../modules/ironman'
 import OKClient from '../../modules/okchain'
 import { BDCoLor } from '../../theme'
+import { btcRequest } from '../../utils/request'
 
 const { hexToBN, BNToHex } = util
 
@@ -49,6 +50,7 @@ class SendCoin extends React.Component {
       balance: 0,
       memo: '',
       gasFee: 1,
+      maxFee: 4,
     }
   }
 
@@ -221,6 +223,15 @@ class SendCoin extends React.Component {
     } catch (e) { }
   }
 
+  getRecommendFee = () => {
+    btcRequest.getFee().then(res => {
+      this.setState({ gasFee: res.fastestFee, maxFee: res.fastestFee * 4 })
+    })
+  }
+  componentDidMount = () => {
+    this.getRecommendFee()
+  }
+
   transSuccess() { }
 
   transFail(e) { }
@@ -282,6 +293,7 @@ class SendCoin extends React.Component {
   }, 10000)
 
   handleGasChange = (value) => {
+    console.log(value)
     this.setState({ gasFee: value })
   }
 
@@ -382,7 +394,7 @@ class SendCoin extends React.Component {
               <Flex justify={'between'} style={styles.fee}>
                 <Text style={styles.assetMidText}>Gas Fee</Text>
                 <Flex>
-                  <Text style={styles.assetMidText}>{this.state.gasFee} {coin.name}</Text>
+                  <Text style={styles.assetMidText}>{this.state.gasFee} {coin.name ==='BTC' ? 'sat/b': ''}</Text>
                   <TouchableOpacity onPress={() => {
                     this.setState(state => ({ setGas: !state.setGas }))
                   }}><Icon name={this.state.setGas ? "up" : "down"} /></TouchableOpacity>
@@ -392,7 +404,10 @@ class SendCoin extends React.Component {
                 this.state.setGas && <React.Fragment>
                   <View style={{ height: 30, justifyContent: 'center' }}>
                     <Slider
+                      min={0}
+                      step={1}
                       defaultValue={this.state.gasFee}
+                      max={this.state.maxFee}
                       onChange={value => this.handleGasChange(value)}
                     />
                   </View>
@@ -400,7 +415,7 @@ class SendCoin extends React.Component {
                     <Text>
                       {this.state.gasFee} sat/b
                   </Text>
-                    <TouchableOpacity style={{ borderRadius: 5, borderWidth: 0.5, borderColor: BDCoLor, padding: 5 }}><Text style={{ color: BDCoLor }}>recommend gas</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.recommendBtn}  onPress={this.getRecommendFee}><Text style={{ color: BDCoLor }}>recommended gas</Text></TouchableOpacity>
                   </Flex>
                 </React.Fragment>
               }
@@ -427,6 +442,8 @@ class SendCoin extends React.Component {
                         this.transferFO()
                       } else if (coin.name === 'OKT') {
                         this.transferOKT()
+                      } else if (coin.name === 'BTC') {
+                        this.wallet.sendTransaction(this.state.receiver, Number(this.state.amount), this.state.gasFee)
                       }
                     } catch (e) {
                       console.warn(e)
@@ -507,7 +524,8 @@ const styles = StyleSheet.create({
     color: 'blue',
     textDecorationLine: 'underline'
   },
-  coinName: { fontSize: 14, color: '#C4CAD2' }
+  coinName: { fontSize: 14, color: '#C4CAD2' },
+  recommendBtn: { borderRadius: 5, borderWidth: 0.5, borderColor: BDCoLor, padding: 5 }
 })
 
 export default inject(({ store: state }) => ({

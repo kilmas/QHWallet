@@ -69,31 +69,7 @@ btcComInstance.interceptors.response.use(
   },
 );
 
-export const btcComRequest = {
-  get: (url, params) => {
-    return new Promise((resolve, reject) => {
-      btcComInstance
-        .get(url, params)
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
-  post: (url, params, option) => {
-    return new Promise((resolve, reject) => {
-      instance
-        .post(url, params, option)
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          reject(error);
-        });
-    });
-  },
+export const btcRequest = {
   getAddress: async (address) => {
     try {
       const { data: { data = {} } = {} } = await btcComInstance.request({
@@ -107,18 +83,38 @@ export const btcComRequest = {
     return {};
   },
   unspents: async (address) => {
-    const { data: { data: { list = [] } = {} } } = await btcComInstance.request({
-      method: 'GET',
-      url: `/address/${address}/unspent`,
-    })
-    return Array.isArray(list) ? list : [];
+    let list = []
+    try {
+      const { data: { data } } = await btcComInstance.request({
+        method: 'GET',
+        url: `/address/${address}/unspent`,
+      })
+      list = data ? data.list : []
+    } catch (e) {
+      console.warn(e)
+    }
+    return list;
   },
   txHash: async (tx) => {
-    const { data: { data } } = await btcComInstance.request({
-      method: 'GET',
-      url: `/tx/${tx}?verbose=3`,
-    })
-    return data;
+    try {
+      if (!tx) return
+      const { data: { data } } = await btcComInstance.request({
+        method: 'GET',
+        url: `/tx/${tx}?verbose=3`,
+      })
+      return data;
+    } catch (e) {
+      console.warn(e)
+    }
+  },
+  getFee: async () => {
+    try {
+      const { data } = await axios.get(`https://bitcoinfees.earn.com/api/v1/fees/recommended`)
+      return data
+    } catch (error) {
+      console.warn(error)
+    }
+    return { "fastestFee": 1, "halfHourFee": 1, "hourFee": 1 }
   }
 };
 

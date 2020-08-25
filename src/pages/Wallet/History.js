@@ -117,6 +117,9 @@ class History extends React.Component {
         this.account.checkFOAccount(password)
       }
     }
+    // else if (coin.name === 'BTC') {
+    //   this.wallet && this.wallet.getUtxos()
+    // }
   }
   /**
    *
@@ -473,7 +476,7 @@ class History extends React.Component {
                             extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check" /> : ''}
                             key={index.toString()}
                             checked={index === 0}
-                            onPress={() => {
+                            onLongPress={() => {
                               this.wallet.setCurrentAddress(item)
                             }}>
                             {item.address}
@@ -483,9 +486,8 @@ class History extends React.Component {
                       <List.Item
                         styles={{ column: { alignItems: 'center' } }}
                         onPress={() => {
-                          console.log('item')
                         }}>
-                        + Address
+                        + Reflesh
                       </List.Item>
                     </List>
                   )}

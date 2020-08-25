@@ -26,6 +26,8 @@ export default class VoteList extends React.Component {
       this.setState({
         validators: data
       })
+    }).catch(e => {
+      console.warn(e)
     })
     const address = this.props.navigation.getParam('address')
     okChainRequest.getDelegators(address).then(res => {
@@ -34,6 +36,8 @@ export default class VoteList extends React.Component {
         voteValidators: data.validator_address,
         amount: data.tokens
       })
+    }).catch(e => {
+      console.warn(e)
     })
   }
 
@@ -69,12 +73,12 @@ export default class VoteList extends React.Component {
           />
           <Text>OKT</Text>
           <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async ()=> {
+            this.sendTx(async () => {
               return await OKClient.delegate(Number(this.state.amount || 0).toFixed(8))
             })
           }}>Delegate</Button>
           <Button type="primary" disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async ()=> {
+            this.sendTx(async () => {
               return await OKClient.vote(this.state.voteValidators)
             })
           }}>Vote</Button>
@@ -88,14 +92,14 @@ export default class VoteList extends React.Component {
             value={this.state.unAmount}
             onChangeText={amount => {
               this.setState({
-                unAmount:amount,
+                unAmount: amount,
               })
             }}
             keyboardType="numeric"
           />
           <Text>OKT</Text>
           <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async ()=> {
+            this.sendTx(async () => {
               Toast.info('Comming soon')
               // const test = await OKClient.unBond(Number(this.state.unAmount || 0).toFixed(8))
             })
