@@ -11,7 +11,7 @@ import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import CoinHeader from '../../components/CoinHeader'
 import { BTCCoin, FO } from '../../stores/wallet/Coin'
-import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
+import { HDACCOUNT_FIND_WALELT_TYPE_COINID, BITCOIN_SATOSHI } from '../../config/const'
 // import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
@@ -443,7 +443,7 @@ class SendCoin extends React.Component {
                       } else if (coin.name === 'OKT') {
                         this.transferOKT()
                       } else if (coin.name === 'BTC') {
-                        this.wallet.sendTransaction(this.state.receiver, Number(this.state.amount), this.state.gasFee)
+                        this.wallet.sendTransaction(this.state.receiver, Number(this.state.amount * BITCOIN_SATOSHI), this.state.gasFee, password)
                       }
                     } catch (e) {
                       console.warn(e)

@@ -139,3 +139,5 @@ export const crossFoContractAddress =
 export const foChainID = '68cee14f598d88d340b50940b6ddfba28c444b46cd5f33201ace82c78896793a'
 
 export const foNetwork = 'http://testnet.fo/'
+
+export const BITCOIN_SATOSHI = 100000000

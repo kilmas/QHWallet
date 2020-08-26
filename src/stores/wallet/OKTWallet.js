@@ -49,8 +49,14 @@ export default class OKTWallet extends Wallet {
   getBalance = async () => {
     const { oKClient } = OKClient
     if (this.address && oKClient) {
-      const balances = await oKClient.getBalance(this.address)
-      const price = await request.getPrice('OKB')
+      let balances
+      try {
+        balances = await oKClient.getBalance(this.address)
+      } catch(e) {
+        console.warn(e)
+        return
+      }
+      // const price = await request.getPrice('OKB')
       if (_.isArray(balances)) {
         balances.forEach(item => {
           if (item.denom === 'tokt') {

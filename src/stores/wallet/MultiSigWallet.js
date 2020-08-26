@@ -5,7 +5,7 @@ import Wallet, { ExtendedKey } from "./Wallet";
 import moment from "moment";
 import WalletTxStore, { Transaction, TX_TYPE_OUT } from "./WalletTxStore";
 import { BTCExtendedKey, BIP44Address } from "./BTCWallet";
-import { COIN_TYPE_BTC, COIN_TYPE_USDT, COIN_ID_BTC, COIN_ID_USDT, TX_PAGE_SIZE } from "../../config/const";
+import { COIN_TYPE_BTC, COIN_TYPE_USDT, COIN_ID_BTC, COIN_ID_USDT, TX_PAGE_SIZE, BITCOIN_SATOSHI } from "../../config/const";
 import Coin from "./Coin";
 import { getScriptPubKey, decodeOmniPlayload } from "./util/serialize";
 import { BTCTransaction, BTCInput } from "./btc/BTCTransaction";
@@ -13,7 +13,6 @@ import { toFixedString } from "../../utils/NumberUtil";
 import opcode from "./util/opcode";
 import network from "../../modules/common/network";
 
-const BITCOIN_SATOSHI = 100000000;
 class MultisigCoin extends Coin {
   @observable available = 0;
   @observable frozen = 0;

@@ -52,11 +52,8 @@ function getScriptPubKey(addr) {
   if (_.isNil(addr)) {
     return "";
   }
-  const addrType = addressType(addr);
-  const hash160 = base58
-    .decode(addr)
-    .toString("hex")
-    .substr(2, 40);
+  const addrType = addressType(addr)
+  const hash160 = base58.decode(addr).toString("hex").substr(2, 40)
   switch (addrType) {
     case BTC_ADDRESS_TYPE_PKH:
       return `${opcode.OP_DUP}${opcode.OP_HASH160}${pushScript(hash160)}${opcode.OP_EQUALVERIFY}${opcode.OP_CHECKSIG}`;

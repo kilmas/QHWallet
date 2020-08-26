@@ -1,4 +1,4 @@
-import { DeviceEventEmitter, Platform } from "react-native";
+import { DeviceEventEmitter } from "react-native";
 import { BigNumber } from "bignumber.js";
 import CryptoJS from 'crypto-js';
 import { persist } from "mobx-persist";
@@ -24,6 +24,7 @@ import {
   BTC_INPUT_TYPE_P2SH,
   BTC_INPUT_TYPE_P2PKH,
   BTC_INPUT_TYPE_P2KH,
+  BITCOIN_SATOSHI,
 } from "../../config/const";
 import { BTCCoin, USDT } from "./Coin";
 import { observable, action, reaction } from "mobx";
@@ -37,10 +38,8 @@ import {
 } from "./btc/BTCSegwit";
 import { btcRequest } from "../../utils/request";
 import { strings } from "../../locales/i18n";
-import { addressType } from "./util/serialize";
+import { addressType, getScriptPubKey } from "./util/serialize";
 import { sleep } from "../../utils/Timer";
-
-const BITCOIN_SATOSHI = 100000000;
 
 const rootHd = (mnemonics) => {
   const seed = bip39.mnemonicToSeedSync(mnemonics);
@@ -166,14 +165,6 @@ export default class BTCWallet extends Wallet {
     //     )) ||
     //   [];
     // check address
-    // setTimeout(()=>{
-    //   if(this.addresses.length && !this.addresses.find(address => address.address === this.address)) {
-    //     this.addresses.push(new BIP44Address({
-    //       address: this.address,
-    //       path: this.path,
-    //     }));
-    //   }
-    // }, 5000)
     this.startObserve();
   }
   static create(name, pwd) {
@@ -219,7 +210,7 @@ export default class BTCWallet extends Wallet {
         // act.generatorAddress(BTC_ADDRESS_TYPE_KH, node);
         act.searchAddress(node)
         setTimeout(() => {
-          this.getUtxos()
+          act.getUtxos()
         }, 5000)
         resolve(act);
       } catch (error) {
@@ -465,22 +456,21 @@ export default class BTCWallet extends Wallet {
     }, {});
   };
 
-  @action genAddress = async (type, pwd) => {
+  hdRoot = async (pwd) => {
     const mnemonics = await this.exportMnemonic(pwd)
-    return this.genAddressByMnemonic(type, rootHd(mnemonics))
+    return rootHd(mnemonics)
   }
 
   @action genAddressByMnemonic = async (type, mnemonics) => {
     return this.generatorAddress(type, rootHd(mnemonics))
   }
 
-
-  getAddress = (type, index, node) => {
+  getAddress = (type, index, node, change = 0, account = 0) => {
     let BIPAddress;
     switch (type) {
       case BTC_ADDRESS_TYPE_PKH: {
         const bip = '44'
-        const path = `m/${bip}'/0'/0'/0/${index}`
+        const path = `m/${bip}'/0'/${account}'/${change}/${index}`
         const { publicKey: pubkey } = node.derivePath(path)
         BIPAddress = new BIP44Address({
           address: bitcoin.payments.p2pkh({ pubkey }).address,
@@ -491,7 +481,7 @@ export default class BTCWallet extends Wallet {
       }
       case BTC_ADDRESS_TYPE_SH: {
         const bip = '49'
-        const path = `m/${bip}'/0'/0'/0/${index}`
+        const path = `m/${bip}'/0'/${account}'/${change}/${index}`
         const { publicKey: pubkey } = node.derivePath(path)
         const { address } = bitcoin.payments.p2sh({
           redeem: bitcoin.payments.p2wpkh({ pubkey }),
@@ -506,7 +496,7 @@ export default class BTCWallet extends Wallet {
       }
       case BTC_ADDRESS_TYPE_KH: {
         const bip = '84'
-        const path = `m/${bip}'/0'/0'/0/${index}`
+        const path = `m/${bip}'/0'/${account}'/${change}/${index}`
         const { publicKey: pubkey } = node.derivePath(path)
         const { address } = bitcoin.payments.p2wpkh({ pubkey })
         BIPAddress = new BIP44Address({
@@ -521,18 +511,21 @@ export default class BTCWallet extends Wallet {
     return BIPAddress
   }
 
-  getIndex = (type) => {
-    if (type === BTC_ADDRESS_TYPE_KH && this.index81) return this.index81
-    if (type === BTC_ADDRESS_TYPE_PKH && this.index44) return this.index44
-    if (type === BTC_ADDRESS_TYPE_SH && this.index49) return this.index49
+  getIndex = (type, change = 0) => {
+    if (change === 0) {
+      if (type === BTC_ADDRESS_TYPE_KH && this.index81) return this.index81
+      if (type === BTC_ADDRESS_TYPE_PKH && this.index44) return this.index44
+      if (type === BTC_ADDRESS_TYPE_SH && this.index49) return this.index49
+    }
 
     const addresses = this.addresses.filter(address => {
       const addType = addressType(address.address);
-      return addType === type;
+      const paths = address.path.replace(/'/g, "").split("/")
+      return change === parseInt(paths[4]) && addType === type;
     });
     const index =
       addresses.length > 0
-        ? addresses.reduce((result, address) => Math.max(result, parseInt(address.path.split("/").pop())), 0) + 1
+        ? addresses.reduce((result, address) => Math.max(result, parseInt(address.path.replace(/'/g, "").split("/").pop())), 0) + 1
         : 0;
     return index
   }
@@ -557,13 +550,15 @@ export default class BTCWallet extends Wallet {
    */
   @action setCurrentAddress = address => {
     if (address instanceof BIP44Address && address.address) {
-      this.currentAddress = address;
+      if ((address.path.replace(/'/g, "").split("/"))[4] === '0') {
+        this.currentAddress = address;
+      }
     }
   };
 
   getAddressTimes = async (i, bipAddress, node, type, addressIndex) => {
     const address = await btcRequest.getAddress(bipAddress.address)
-    await sleep(parseInt(Math.random() * 100))
+    await sleep(parseInt(Math.random() * 100) + 1)
     let j
     if (address.tx_count) {
       this.insertAddress(bipAddress, addressIndex);
@@ -583,11 +578,23 @@ export default class BTCWallet extends Wallet {
     }
   }
 
+  searchChangeAddress = async (node, type) => {
+    const addressIndex = this.getIndex(type, 1)
+    const bipAddress = this.getAddress(type, addressIndex, node, 1)
+    const address = await btcRequest.getAddress(bipAddress.address)
+    await sleep(parseInt(Math.random() * 100) + 1)
+    this.insertAddress(bipAddress, addressIndex);
+    if (address.tx_count) {
+      this.searchChangeAddress(node, type)
+    }
+  }
+
   searchAddress = (node) => {
     [BTC_ADDRESS_TYPE_PKH, BTC_ADDRESS_TYPE_SH, BTC_ADDRESS_TYPE_KH].forEach(type => {
       const index = this.getIndex(type)
       const bipAddress = this.getAddress(type, index, node)
       this.getAddressTimes(0, bipAddress, node, type, index)
+      this.searchChangeAddress(node, type)
     })
   }
 
@@ -600,13 +607,16 @@ export default class BTCWallet extends Wallet {
 
         if (!txHashs[index]) return null
         const scriptHex = _.get(txHashs, `[${index}].outputs[${utxo.tx_output_n}].script_hex`)
+        // const test = getScriptPubKey('f47950e381794583f1a411cfa56526398552d51c')
         const mixin = scriptHex ? {
           witnessUtxo: {
             script: Buffer.from(scriptHex, 'hex'),
             value: txHashs[index].outputs[utxo.tx_output_n].value,
           }
         } : { nonWitnessUtxo: Buffer.from(_.get(txHashs, `[${index}].witness_hash`, ''), 'hex'), };
+        // console.log(utxo, txHashs[index])
         return {
+          address: _.get(txHashs, `[${index}].outputs[${utxo.tx_output_n}].addresses[0]`, ''),
           txId: utxo.tx_hash,
           vout: utxo.tx_output_n,
           value: utxo.value,
@@ -618,7 +628,27 @@ export default class BTCWallet extends Wallet {
     }
   };
 
-  sendTransaction = async (to, amount, feeRate) => {
+  getChangeAddress = () => {
+    const bipAddress = this.addresses.find(address => {
+      const paths = address.path.replace(/'/g, "").split("/")
+      return parseInt(paths[4]) === 1 && address.bip === '49';
+    })
+    if (bipAddress) {
+      return bipAddress.address
+    }
+    return ''
+  }
+
+  getMapAddress = (address) => {
+    if (this.addressesMap[address]) {
+      return this.addressesMap[address]
+    }
+    this.addressesMap[address] = this.addresses.find(item => item.address === address)
+    return this.addressesMap[address]
+  }
+
+  sendTransaction = async (to, amount, feeRate, pwd) => {
+
     let utxos = this.unspents
     let targets = [
       {
@@ -636,28 +666,42 @@ export default class BTCWallet extends Wallet {
     // .inputs and .outputs will be undefined if no solution was found
     if (!inputs || !outputs) return
 
+    const hdRoot = await this.hdRoot(pwd)
+    const masterFingerprint = hdRoot.fingerprint;
+    // const path = "m/84'/0'/0'/0/0";
+    // const childNode = hdRoot.derivePath(path);
+    // const pubkey = childNode.publicKey;
+
     let psbt = new bitcoin.Psbt()
 
     inputs.forEach(input => {
-      const { nonWitnessUtxo, witnessUtxo } = input
+      const { nonWitnessUtxo, witnessUtxo, address } = input
       const mixin = witnessUtxo ? { witnessUtxo } : { nonWitnessUtxo };
 
+      const bipAddress = this.getMapAddress(input.address)
+      console.log(bipAddress)
       psbt.addInput({
         hash: input.txId,
         index: input.vout,
         // nonWitnessUtxo: input.nonWitnessUtxo,
         // // OR (not both)
         // witnessUtxo: input.witnessUtxo,
-        ...mixin
+        ...mixin,
+        bip32Derivation: [
+          {
+            masterFingerprint,
+            path: bipAddress.path,
+            pubkey: Buffer.from(bipAddress.pubkey, 'hex'),
+          },
+        ],
       })
     })
     outputs.forEach(output => {
       // watch out, outputs may have been added that you need to provide
       // an output address/script for
       if (!output.address) {
-        // output.address = wallet.getChangeAddress()
+        output.address = this.getChangeAddress()
         // wallet.nextChangeAddress()
-        output.address = this.currentAddress.address
       }
 
       psbt.addOutput({
@@ -665,6 +709,12 @@ export default class BTCWallet extends Wallet {
         value: output.value,
       })
     })
+    psbt.signAllInputsHD(hdRoot)
+    
+    const tx = psbt.extractTransaction();
+    console.log(tx, tx.toHex())
+    // build and broadcast to the Bitcoin network
+
   };
 
   fetchUtxos = async () => {

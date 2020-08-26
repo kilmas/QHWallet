@@ -17,7 +17,7 @@ import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
 @observer
 class NameWallet extends React.Component {
 
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.handleClickThrottled = _.throttle(this._createImport, 5000);
     this.state = {
@@ -36,7 +36,7 @@ class NameWallet extends React.Component {
     } = this.state;
 
     if (mode === 'create') {
-      this.setState({loading: true})
+      this.setState({ loading: true })
       try {
         const { account, mnemonics } = await HDAccount.create(name, password);
         const keychain = await setKeyChain(name, password);
@@ -45,6 +45,7 @@ class NameWallet extends React.Component {
         }
         this.props.store.engine.importMetamask(mnemonics, password);
         this.props.store.accountStore.insert(account)
+        this.setState({ loading: false })
         GlobalNavigation.reset('CreateWalletSuccess', {
           mnemonics: mnemonics.split(' '),
           name,
@@ -53,8 +54,6 @@ class NameWallet extends React.Component {
       } catch (e) {
         console.warn(e)
         Toast.info(strings('Create failed'));
-      } finally {
-        this.setState({loading: false})
       }
     } else {
       GlobalNavigation.navigate('InputPhrases', {
@@ -67,7 +66,7 @@ class NameWallet extends React.Component {
   getPassword = async () => {
     const keychain = await SecureKeychain.getGenericPassword()
     if (keychain && keychain.password) {
-      this.setState({password: keychain.password}, this.handleClickThrottled)
+      this.setState({ password: keychain.password }, this.handleClickThrottled)
     } else {
       this.setPassword()
     }
@@ -87,7 +86,7 @@ class NameWallet extends React.Component {
           'Save it carefully!',
           password2 => {
             if (password1 === password2) {
-              this.setState({password: password1}, this.handleClickThrottled)
+              this.setState({ password: password1 }, this.handleClickThrottled)
             } else {
               Toast.info(strings('password incorret'));
             }
@@ -133,7 +132,7 @@ class NameWallet extends React.Component {
                 return;
               }
               if (mode === 'import') {
-                const { accountStore: { defaultHDAccount }  } = this.props.store
+                const { accountStore: { defaultHDAccount } } = this.props.store
                 if (defaultHDAccount && defaultHDAccount.hasCreated) {
                   GlobalNavigation.navigate('ImportMethod', {
                     name: this.state.name,

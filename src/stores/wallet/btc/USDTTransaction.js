@@ -3,7 +3,6 @@ import _ from "lodash";
 import {
   BTCTransaction,
   BTCInput,
-  BITCOIN_SATOSHI,
   USDT_TAG_SATOSHI,
   BTCUtxoSelector,
   BTCOutput,
@@ -11,6 +10,7 @@ import {
 } from "./BTCTransaction";
 import { USDT } from "../Coin";
 import { omniPayload } from "../util/serialize";
+import { BITCOIN_SATOSHI } from "../../../config/const";
 
 class OmniOutput extends BTCOutput {
   constructor({ propertyId, satoshis }) {

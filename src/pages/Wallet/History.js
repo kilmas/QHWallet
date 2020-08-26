@@ -476,6 +476,7 @@ class History extends React.Component {
                             extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check" /> : ''}
                             key={index.toString()}
                             checked={index === 0}
+                            onPress={() => { }}
                             onLongPress={() => {
                               this.wallet.setCurrentAddress(item)
                             }}>

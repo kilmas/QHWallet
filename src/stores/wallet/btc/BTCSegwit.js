@@ -4,14 +4,13 @@ import { Buffer } from "buffer";
 import { BTCInput, BTCTransaction, BTCCalculateSize, BTCUtxoSelector, BTCOutput } from "./BTCTransaction";
 import crypto from "../../../utils/crypto";
 import { pushScript, serializeInput, serializeOutput, int2Hex, varInt, hash256 } from "../util/serialize";
-import { BTC_INPUT_TYPE_P2PKH, BTC_INPUT_TYPE_P2SH, NETWORK_ENV_MAINNET } from "../../../config/const";
+import { BTC_INPUT_TYPE_P2PKH, BTC_INPUT_TYPE_P2SH, NETWORK_ENV_MAINNET, BITCOIN_SATOSHI } from "../../../config/const";
 import { USDTTransaction, OmniOutput } from "./USDTTransaction";
 import { toFixedString } from "../../../utils/NumberUtil";
 
 const CHECKSUM_HEX_LENGTH = 8;
 const BTC_VERSION_PREFIX_SH_MAINNET = "05";
 const BTC_VERSION_PREFIX_SH_TESTNET = "C4";
-const BITCOIN_SATOSHI = 100000000;
 const USDT_TAG_SATOSHI = 546;
 const P2PKH_INPUT_SIZE = 150;
 

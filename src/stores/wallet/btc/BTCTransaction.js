@@ -9,6 +9,7 @@ import {
   BTC_SIGHASH_ALL,
   BTC_SIGHASH_FORKID,
   NETWORK_ENV_MAINNET,
+  BITCOIN_SATOSHI,
 } from "../../../config/const";
 import opcode from "../util/opcode";
 import { BIP44Address } from "../Wallet";
@@ -32,7 +33,6 @@ import { strings } from "../../../locales/i18n";
 
 const base58 = require("../util/base58");
 
-const BITCOIN_SATOSHI = 100000000;
 const USDT_TAG_SATOSHI = 546;
 const P2PKH_INPUT_SIZE = 150;
 const P2PKH_OUTPUT_SIZE = 40;
@@ -520,7 +520,6 @@ function BTCCalculateSize(inputs, outputs) {
 }
 
 export {
-  BITCOIN_SATOSHI,
   USDT_TAG_SATOSHI,
   BTCTransaction,
   BTCInput,
