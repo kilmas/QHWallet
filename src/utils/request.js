@@ -1,17 +1,16 @@
-import * as Qs from 'qs';
-import * as axios from 'axios';
+import * as Qs from 'qs'
+import * as axios from 'axios'
 
-const baseURL = '';
-const scanURL = '';
-const rateURL = '';
-const btcComUrl = 'https://chain.api.btc.com/v3';
+const baseURL = ''
+const scanURL = ''
+const rateURL = ''
+const btcComUrl = 'https://chain.api.btc.com/v3'
 
-const fibosApiUrl = 'https://api.fowallet.net';
+const fibosApiUrl = 'https://api.fowallet.net'
 
+export const ENV = 'test' // production | test | staging
 
-export const ENV = 'test'; // production | test | staging
-
-const fetchTimeout = 30000;
+const fetchTimeout = 30000
 
 const errStatusTips = {
   400: '错误请求',
@@ -26,17 +25,17 @@ const errStatusTips = {
   503: '服务不可用',
   504: '网络超时',
   505: 'http版本不支持该请求',
-};
+}
 
-let host;
+let host
 if (ENV === 'production') {
-  host = '';
+  host = ''
 } else if (ENV === 'test') {
-  host = '';
+  host = ''
 } else if (ENV === 'staging') {
-  host = '';
+  host = ''
 } else {
-  host = '';
+  host = ''
 }
 
 const instance = axios.create({
@@ -45,32 +44,38 @@ const instance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 const btcComInstance = axios.create({
   baseURL: btcComUrl,
   timeout: 30 * 1000,
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 //响应拦截器即异常处理
 btcComInstance.interceptors.response.use(
   res => res,
   err => {
     if (err && err.response) {
-      err.message = `${err.response.status}: ${
-        errStatusTips[err.response.status]
-        }`;
+      err.message = `${err.response.status}: ${errStatusTips[err.response.status]}`
     } else {
-      err.message = '连接到服务器失败';
+      err.message = '连接到服务器失败'
     }
-    return Promise.reject(err.message);
-  },
-);
+    return Promise.reject(err.message)
+  }
+)
+
+
+const prepareResult = function (feeByBlockTarget) {
+  var kb = 1000
+  var list = Object.keys(feeByBlockTarget).
+    map(function (k) { return Math.floor(feeByBlockTarget[k] / kb) })
+  return list
+}
 
 export const btcRequest = {
-  getAddress: async (address) => {
+  getAddress: async address => {
     try {
       const { data: { data = {} } = {} } = await btcComInstance.request({
         method: 'GET',
@@ -80,12 +85,14 @@ export const btcRequest = {
     } catch (error) {
       console.warn(error)
     }
-    return {};
+    return {}
   },
-  unspents: async (address) => {
+  unspents: async address => {
     let list = []
     try {
-      const { data: { data } } = await btcComInstance.request({
+      const {
+        data: { data },
+      } = await btcComInstance.request({
         method: 'GET',
         url: `/address/${address}/unspent`,
       })
@@ -93,16 +100,18 @@ export const btcRequest = {
     } catch (e) {
       console.warn(e)
     }
-    return list;
+    return list
   },
-  txHash: async (tx) => {
+  txHash: async tx => {
     try {
       if (!tx) return
-      const { data: { data } } = await btcComInstance.request({
+      const {
+        data: { data },
+      } = await btcComInstance.request({
         method: 'GET',
         url: `/tx/${tx}?verbose=3`,
       })
-      return data;
+      return data
     } catch (e) {
       console.warn(e)
     }
@@ -114,65 +123,101 @@ export const btcRequest = {
     } catch (error) {
       console.warn(error)
     }
-    return { "fastestFee": 1, "halfHourFee": 1, "hourFee": 1 }
+    return { fastestFee: 0, halfHourFee: 0, hourFee: 0 }
+  },
+  recommended: async () => {
+    const { data: res } = await axios.get('https://www.bitgo.com/api/v1/tx/fee?numBlocks=2')
+    var list = prepareResult(res.feeByBlockTarget)
+    var n = 0
+    var spb1 = list.length > n ? list[n++] : 0
+    var spb2 = list.length > n ? list[n++] : spb1
+    var spb3 = list.length > n ? list[n++] : spb2
+    return {
+      "fastestFee": spb1, "halfHourFee": spb2, "hourFee": spb3
+    }
+  },
+  broadcast: async rawhex => {
+    try {
+      const { data } = await axios.post(`https://api.blockcypher.com/v1/btc/main/txs/push`, {
+        rawhex,
+      })
+      return true
+    } catch (error) {
+      console.warn(error)
+    }
+    return false
+  },
+  multiaddr: async (addresses) => {
+    try {
+      const { data: { addresses } } = await axios.post(`https://blockchain.info/multiaddr?active=${addresses}`)
+      return addresses
+    } catch (error) {
+      console.warn(error)
+    }
+    return []
+  },
+  unspentByAddrs: async (addresses) => {
+    console.log(addresses)
+    try {
+      const { data: { addresses } } = await axios.post(`https://blockchain.info/unspent?active=${addresses}`)
+      return addresses
+    } catch (error) {
+      console.warn(error)
+    }
+    return []
   }
-};
+}
 
 //响应拦截器即异常处理
 instance.interceptors.response.use(
   ({ status, data }) => {
     if (status === 200) {
-      return data;
+      return data
     }
-    return Promise.reject(status);
+    return Promise.reject(status)
   },
   err => {
     if (err && err.response) {
-      err.message = `${err.response.status}: ${
-        errStatusTips[err.response.status]
-        }`;
+      err.message = `${err.response.status}: ${errStatusTips[err.response.status]}`
     } else {
-      err.message = '连接到服务器失败';
+      err.message = '连接到服务器失败'
     }
-    return Promise.reject(err.message);
-  },
-);
+    return Promise.reject(err.message)
+  }
+)
 
 //响应拦截器即异常处理
 instance.interceptors.response.use(
   ({ status, data }) => {
     if (status === 200) {
-      return data;
+      return data
     }
-    return Promise.reject(status);
+    return Promise.reject(status)
   },
   err => {
     if (err && err.response) {
-      err.message = `${err.response.status}: ${
-        errStatusTips[err.response.status]
-        }`;
+      err.message = `${err.response.status}: ${errStatusTips[err.response.status]}`
     } else {
-      err.message = '连接到服务器失败';
+      err.message = '连接到服务器失败'
     }
-    return Promise.reject(err.message);
-  },
-);
+    return Promise.reject(err.message)
+  }
+)
 
 export const hostRequest = {
   get: url => fetch(host + url).then(res => res.json()),
 
   post: (url, params = {}) => {
-    const opt = {};
-    opt.method = 'post';
+    const opt = {}
+    opt.method = 'post'
     opt.headers = {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-    };
-    opt.body = JSON.stringify(params);
-    return fetch(host + url, opt).then(res => res.json());
+    }
+    opt.body = JSON.stringify(params)
+    return fetch(host + url, opt).then(res => res.json())
   },
-};
-
+}
 
 // Make a request for a user with a given ID
 export const request = {
@@ -183,46 +228,52 @@ export const request = {
           ...params,
         })
         .then(response => {
-          resolve(response);
+          resolve(response)
         })
         .catch(error => {
-          reject(error);
-        });
-    });
+          reject(error)
+        })
+    })
   },
   post: (url, params, option) => {
     return new Promise((resolve, reject) => {
       instance
         .post(url, params, option)
         .then(response => {
-          resolve(response);
+          resolve(response)
         })
         .catch(error => {
-          reject(error);
-        });
-    });
+          reject(error)
+        })
+    })
   },
 
   getExchangerate: async (symple = 'USD', ret = 'CNY') => {
     try {
-      const { data: { rates } } = await axios.get(`https://api.exchangerate-api.com/v4/latest/${symple}`)
+      const {
+        data: { rates },
+      } = await axios.get(`https://api.exchangerate-api.com/v4/latest/${symple}`)
       return rates[ret]
     } catch (err) {
       console.warn(err)
     }
-    return 7;
+    return 7
   },
-  getPrice: async (coin) => {
+  getPrice: async coin => {
     let price = 1
     try {
-      const { data: { data: { last } } } = await axios.get(`https://www.okex.me/api/index/v3/${coin}-USD/constituents`)
+      const {
+        data: {
+          data: { last },
+        },
+      } = await axios.get(`https://www.okex.me/api/index/v3/${coin}-USD/constituents`)
       return Number(last)
     } catch (err) {
       console.warn(err)
     }
     return price
-  }
-};
+  },
+}
 
 export const timeoutPromise = (fetchPromise, timeout = fetchTimeout) => {
   const abortPromise = new Promise((resolve, reject) => {
@@ -234,15 +285,13 @@ export const timeoutPromise = (fetchPromise, timeout = fetchTimeout) => {
   return Promise.race([fetchPromise, abortPromise])
 }
 
-
-
 const fibosApi = axios.create({
   baseURL: fibosApiUrl,
   timeout: 30 * 1000,
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 const fibosInstance = axios.create({
   baseURL: 'https://api.fibos.rocks',
@@ -250,7 +299,7 @@ const fibosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 export const fibosRequest = {
   get: (url, params) => {
@@ -260,29 +309,31 @@ export const fibosRequest = {
           ...params,
         })
         .then(response => {
-          resolve(response);
+          resolve(response)
         })
         .catch(error => {
-          reject(error);
-        });
-    });
+          reject(error)
+        })
+    })
   },
   post: (url, params, option) => {
     return new Promise((resolve, reject) => {
       fibosInstance
         .post(url, params, option)
         .then(response => {
-          resolve(response);
+          resolve(response)
         })
         .catch(error => {
-          reject(error);
-        });
-    });
+          reject(error)
+        })
+    })
   },
   getPrice: async () => {
     let price = 0
     try {
-      const { data: { data } } = await fibosApi.post('/1.0/app/tokenpair/getSwapRankOnChain', { "tokenx": "FO@eosio", "tokeny": "FOUSDT@eosio" })
+      const {
+        data: { data },
+      } = await fibosApi.post('/1.0/app/tokenpair/getSwapRankOnChain', { tokenx: 'FO@eosio', tokeny: 'FOUSDT@eosio' })
       if (Array.isArray(data)) {
         const totalWeights = data[data.length - 1]
         const { tokenx_quantity, tokeny_quantity } = totalWeights
@@ -292,11 +343,11 @@ export const fibosRequest = {
       console.warn(err)
     }
     return price
-  }
-};
+  },
+}
 
 const OK_API_URL = 'https://www.okex.me'
 export const okChainRequest = {
   getValidators: () => axios.get(`${OK_API_URL}/okchain/v1/staking/validators?status=all`),
-  getDelegators: (address) => axios.get(`${OK_API_URL}/okchain/v1/staking/delegators/${address}`),
-};
+  getDelegators: address => axios.get(`${OK_API_URL}/okchain/v1/staking/delegators/${address}`),
+}

@@ -103,7 +103,6 @@ class CoinCell extends React.Component {
   @computed get price() {
     const { coin } = this.props
     return (CoinStore[`${coin.name}Price`] || 0)
-    // return coin.price
   }
 
   @computed get totalPrice() {

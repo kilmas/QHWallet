@@ -6,6 +6,7 @@ import { util } from '@metamask/controllers'
 import { Flex, Toast, Button, Icon, Modal, Slider } from '@ant-design/react-native'
 import { observable, computed } from 'mobx'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import BigNumber from 'bignumber.js'
 import Container from '../../components/Container'
 import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
@@ -35,6 +36,8 @@ import Ironman from '../../modules/ironman'
 import OKClient from '../../modules/okchain'
 import { BDCoLor } from '../../theme'
 import { btcRequest } from '../../utils/request'
+import { toFixedNumber, toPriceString } from '../../utils/NumberUtil'
+import CoinStore from '../../stores/wallet/CoinStore'
 
 const { hexToBN, BNToHex } = util
 
@@ -138,35 +141,12 @@ class SendCoin extends React.Component {
     return transactionToSend
   }
 
-  validateGas = () => {
-    const { accounts } = this.props
-    const {
-      transaction: { gas, gasPrice, value, from },
-    } = this.props.transaction
-    let errorMessage
-    const totalGas = gas.mul(gasPrice)
-    const valueBN = hexToBN(value)
-    const balanceBN = hexToBN(accounts[from].balance)
-    if (valueBN.add(totalGas).gt(balanceBN)) {
-      errorMessage = strings('transaction.insufficient')
-      this.setState({ errorMessage })
-    }
-    return errorMessage
-  }
+  validateGas = () => { }
 
   /**
    * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
    */
-  checkRemoveCollectible = () => {
-    const {
-      transaction: { selectedAsset, assetType },
-      network,
-    } = this.props
-    if (assetType === 'ERC721' && network !== 1) {
-      const { AssetsController } = Engine.context
-      AssetsController.removeCollectible(selectedAsset.address, selectedAsset.tokenId)
-    }
-  }
+  checkRemoveCollectible = () => { }
 
   /**
    * Validates crypto value only
@@ -175,45 +155,7 @@ class SendCoin extends React.Component {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = transaction => {
-    const {
-      accounts,
-      contractBalances,
-      selectedAsset,
-      transaction: {
-        paymentChannelTransaction,
-        transaction: { gas, gasPrice },
-      },
-    } = this.props
-    const selectedAddress = transaction.from
-    let weiBalance, weiInput, errorMessage
-    if (isDecimal(transaction.value)) {
-      if (paymentChannelTransaction) {
-        weiBalance = toWei(Number(selectedAsset.assetBalance))
-        weiInput = toWei(transaction.value)
-        errorMessage = weiBalance.gte(weiInput) ? undefined : strings('transaction.insufficient')
-      } else if (selectedAsset.isETH || selectedAsset.tokenId) {
-        const totalGas = gas ? gas.mul(gasPrice) : toBN('0x0')
-        weiBalance = hexToBN(accounts[selectedAddress].balance)
-        weiInput = hexToBN(transaction.value).add(totalGas)
-        errorMessage = weiBalance.gte(weiInput) ? undefined : strings('transaction.insufficient')
-      } else {
-        const [, , amount] = decodeTransferData('transfer', transaction.data)
-        weiBalance = contractBalances[selectedAsset.address]
-        weiInput = hexToBN(amount)
-        errorMessage = weiBalance && weiBalance.gte(weiInput) ? undefined : strings('transaction.insufficient_tokens', { token: selectedAsset.symbol })
-      }
-    } else {
-      errorMessage = strings('transaction.invalid_amount')
-    }
-    this.setState({ errorMessage }, () => {
-      if (errorMessage) {
-        Toast.fail('false')
-        // this.scrollView.scrollToEnd({ animated: true });
-      }
-    })
-    return !!errorMessage
-  }
+  validateAmount = transaction => { }
 
   sendAction = async () => {
     const loading = Toast.loading('Loading', 0, () => {
@@ -224,17 +166,13 @@ class SendCoin extends React.Component {
   }
 
   getRecommendFee = () => {
-    btcRequest.getFee().then(res => {
-      this.setState({ gasFee: res.fastestFee, maxFee: res.fastestFee * 4 })
+    btcRequest.recommended().then(res => {
+      this.setState({ gasFee: res.fastestFee, maxFee: res.fastestFee * 2 })
     })
   }
   componentDidMount = () => {
     this.getRecommendFee()
   }
-
-  transSuccess() { }
-
-  transFail(e) { }
 
   _refresh(address) {
     this.setState({ receiver: address })
@@ -295,6 +233,17 @@ class SendCoin extends React.Component {
   handleGasChange = (value) => {
     console.log(value)
     this.setState({ gasFee: value })
+  }
+
+  get gasFee() {
+    const { fee } = this.wallet && this.wallet.transationData(this.state.receiver, this.state.amount, this.state.gasFee)
+    const totalPrice = toFixedNumber(new BigNumber(fee).div(BITCOIN_SATOSHI).multipliedBy(`${this.price}`), 2);
+    return `${fee} sat  ≈ ${toPriceString(totalPrice, 2, 4, true)} ${CoinStore.currencySymbol}`;
+  }
+
+  @computed get price() {
+    const coin = this.props.navigation.getParam('coin')
+    return (CoinStore[`${coin.name}Price`] || 0)
   }
 
   render() {
@@ -394,7 +343,7 @@ class SendCoin extends React.Component {
               <Flex justify={'between'} style={styles.fee}>
                 <Text style={styles.assetMidText}>Gas Fee</Text>
                 <Flex>
-                  <Text style={styles.assetMidText}>{this.state.gasFee} {coin.name ==='BTC' ? 'sat/b': ''}</Text>
+                  <Text style={styles.assetMidText}>{this.gasFee}</Text>
                   <TouchableOpacity onPress={() => {
                     this.setState(state => ({ setGas: !state.setGas }))
                   }}><Icon name={this.state.setGas ? "up" : "down"} /></TouchableOpacity>
@@ -415,7 +364,7 @@ class SendCoin extends React.Component {
                     <Text>
                       {this.state.gasFee} sat/b
                   </Text>
-                    <TouchableOpacity style={styles.recommendBtn}  onPress={this.getRecommendFee}><Text style={{ color: BDCoLor }}>recommended gas</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.recommendBtn} onPress={this.getRecommendFee}><Text style={{ color: BDCoLor }}>recommended gas</Text></TouchableOpacity>
                   </Flex>
                 </React.Fragment>
               }
@@ -443,7 +392,13 @@ class SendCoin extends React.Component {
                       } else if (coin.name === 'OKT') {
                         this.transferOKT()
                       } else if (coin.name === 'BTC') {
-                        this.wallet.sendTransaction(this.state.receiver, Number(this.state.amount * BITCOIN_SATOSHI), this.state.gasFee, password)
+                        const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
+                        if (txHex)
+                          Toast.info('Push transaction successfully')
+                        else {
+                          Toast.fail('transfer fail')
+                        }
+                        this.setState({ sending: false })
                       }
                     } catch (e) {
                       console.warn(e)
@@ -472,10 +427,9 @@ const styles = StyleSheet.create({
     padding: 26,
   },
   assetMidText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '500',
-    color: '#4A4A4A',
-    marginRight: 10
+    marginHorizontal: 5
   },
   toFlex: {
     height: 44,
