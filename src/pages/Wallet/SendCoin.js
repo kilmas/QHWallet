@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, InteractionManager } from 'react-native'
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import _ from 'lodash'
 import { inject, observer } from 'mobx-react'
 import { util } from '@metamask/controllers'
@@ -16,20 +16,6 @@ import { HDACCOUNT_FIND_WALELT_TYPE_COINID, BITCOIN_SATOSHI } from '../../config
 // import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
-import Engine from '../../modules/metamask/core/Engine'
-
-import {
-  // renderFromWei,
-  // renderFromTokenMinimalUnit,
-  // weiToFiat,
-  // balanceToFiat,
-  // weiToFiatNumber,
-  // balanceToFiatNumber,
-  // renderFiatAddition,
-  toWei,
-  isDecimal,
-  toBN,
-} from '../../utils/number'
 import CommonAccount from '../../stores/account/CommonAccount'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Ironman from '../../modules/ironman'
@@ -38,8 +24,9 @@ import { BDCoLor } from '../../theme'
 import { btcRequest } from '../../utils/request'
 import { toFixedNumber, toPriceString } from '../../utils/NumberUtil'
 import CoinStore from '../../stores/wallet/CoinStore'
+import { goBrowser } from '../../utils/common'
 
-const { hexToBN, BNToHex } = util
+const { BNToHex } = util
 
 class SendCoin extends React.Component {
   constructor(props) {
@@ -208,7 +195,7 @@ class SendCoin extends React.Component {
     }
   }, 10000)
 
-  gotoTxHash = _.throttle(async () => {
+  gotoTxHash = async () => {
     const coin = this.props.navigation.getParam('coin')
     let browserUrl
     if (coin.name === 'FO') {
@@ -217,18 +204,9 @@ class SendCoin extends React.Component {
       browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
     }
     if (browserUrl) {
-      // const tab = this.props.createNewTab(browserUrl)
-      // this.props.setActiveTab(tab.id)
-      this.props.navigation.navigate('Browser')
-      InteractionManager.runAfterInteractions(() => {
-        setTimeout(() => {
-          this.props.navigation.navigate('DApp', {
-            newTabUrl: browserUrl
-          });
-        }, 300);
-      });
+      goBrowser(this.props.navigation, browserUrl)
     }
-  }, 10000)
+  }
 
   handleGasChange = (value) => {
     console.log(value)

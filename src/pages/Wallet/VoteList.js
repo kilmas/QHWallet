@@ -1,54 +1,64 @@
-import React from 'react';
-import { Text, View, TextInput } from 'react-native';
-import { Checkbox, List, Button, Flex, Toast } from '@ant-design/react-native';
+import React from 'react'
+import { Text, View, TextInput, TouchableOpacity } from 'react-native'
+import { Checkbox, List, Button, Flex } from '@ant-design/react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { okChainRequest } from '../../utils/request';
-import TitleBar from '../../components/TitleBar';
-import OKClient from '../../modules/okchain';
-const AgreeItem = Checkbox.AgreeItem;
-const CheckboxItem = Checkbox.CheckboxItem;
+import { okChainRequest } from '../../utils/request'
+import TitleBar from '../../components/TitleBar'
+import OKClient from '../../modules/okchain'
+import { goBrowser } from '../../utils/common'
+const CheckboxItem = Checkbox.CheckboxItem
 export default class VoteList extends React.Component {
   constructor(props, context) {
-    super(props, context);
+    super(props, context)
     this.state = {
-      checkBox1: true,
-      agreeItem1: true,
-      checkboxItem1: true,
       validators: [],
       voteValidators: [],
       amount: '0',
-    };
+    }
   }
 
   _reflesh() {
-    okChainRequest.getValidators().then(res => {
-      const { data } = res
-      this.setState({
-        validators: data
+    okChainRequest
+      .getValidators()
+      .then(res => {
+        const { data } = res
+        this.setState({
+          validators: data,
+        })
       })
-    }).catch(e => {
-      console.warn(e)
-    })
+      .catch(e => {
+        console.warn(e)
+      })
     const address = this.props.navigation.getParam('address')
-    okChainRequest.getDelegators(address).then(res => {
-      const { data } = res
-      this.setState({
-        voteValidators: data.validator_address,
-        amount: data.tokens
+    okChainRequest
+      .getDelegators(address)
+      .then(res => {
+        const { data } = res
+        this.setState({
+          voteValidators: data.validator_address,
+          amount: data.tokens,
+        })
       })
-    }).catch(e => {
-      console.warn(e)
-    })
+      .catch(e => {
+        console.warn(e)
+      })
+  }
+
+  gotoTxHash = () => {
+    if (this.state.transactionId) {
+      const browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
+      goBrowser(this.props.navigation, browserUrl)
+    }
   }
 
   componentDidMount() {
     this._reflesh()
   }
 
-  sendTx = async (callback) => {
+  sendTx = async callback => {
     this.setState({ loading: true })
-    await callback()
-    this.setState({ loading: false })
+    const transactionId = await callback()
+    this.setState({ loading: false, transactionId })
     this._reflesh()
   }
 
@@ -72,16 +82,31 @@ export default class VoteList extends React.Component {
             keyboardType="numeric"
           />
           <Text>OKT</Text>
-          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async () => {
-              return await OKClient.delegate(Number(this.state.amount || 0).toFixed(8))
-            })
-          }}>Delegate</Button>
-          <Button type="primary" disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async () => {
-              return await OKClient.vote(this.state.voteValidators)
-            })
-          }}>Vote</Button>
+          <Button
+            type="primary"
+            style={{ marginHorizontal: 5 }}
+            disabled={this.state.loading}
+            loading={this.state.loading}
+            onPress={() => {
+              this.sendTx(async () => {
+                const { result: { txhash } = {} } = await OKClient.delegate(Number(this.state.amount || 0).toFixed(8))
+                return txhash
+              })
+            }}>
+            Delegate
+          </Button>
+          <Button
+            type="primary"
+            disabled={this.state.loading}
+            loading={this.state.loading}
+            onPress={() => {
+              this.sendTx(async () => {
+                const { result: { txhash } = {} } = await OKClient.vote(this.state.voteValidators)
+                return txhash
+              })
+            }}>
+            Vote
+          </Button>
         </Flex>
         <Flex align="center" style={{ margin: 10 }}>
           <TextInput
@@ -98,34 +123,49 @@ export default class VoteList extends React.Component {
             keyboardType="numeric"
           />
           <Text>OKT</Text>
-          <Button type="primary" style={{ marginHorizontal: 5 }} disabled={this.state.loading} loading={this.state.loading} onPress={() => {
-            this.sendTx(async () => {
-              Toast.info('Comming soon')
-              // const test = await OKClient.unBond(Number(this.state.unAmount || 0).toFixed(8))
-            })
-          }}>unDelegate</Button>
+          <Button
+            type="primary"
+            style={{ marginHorizontal: 5 }}
+            disabled={this.state.loading}
+            loading={this.state.loading}
+            onPress={() => {
+              this.sendTx(async () => {
+                if (!this.state.unAmount) return
+                const { result: { txhash } = {} } = await OKClient.unBond(Number(this.state.unAmount || 0).toFixed(8))
+                return txhash
+              })
+            }}>
+            unDelegate
+          </Button>
         </Flex>
-        <KeyboardAwareScrollView contentContainerStyle={{ paddingBottom: 200 }}>
+        <Flex style={{margin: 10}}>
+          {this.state.transactionId && <TouchableOpacity onPress={this.gotoTxHash}><Text style={{color: 'blue', textDecorationLine: 'underline'}}>txhash:{this.state.transactionId}</Text></TouchableOpacity>}
+        </Flex>
+        <KeyboardAwareScrollView contentContainerStyle={{ paddingBottom: 300 }}>
           <List style={{ marginTop: 12 }} renderHeader="Select Bp to Vote">
-            {
-              this.state.validators.map(item => <CheckboxItem defaultChecked={validators.has(item.operator_address)} thumb={item.description.identity} key={item.operator_address} onChange={event => {
-                this.setState(state => {
-                  const voteValidators = new Set(state.voteValidators)
-                  if (event.target.checked) {
-                    voteValidators.add(item.operator_address)
-                  } else {
-                    voteValidators.delete(item.operator_address)
-                  }
-                  return { voteValidators: Array.from(voteValidators) }
-                });
-              }}>
+            {this.state.validators.map(item => (
+              <CheckboxItem
+                defaultChecked={validators.has(item.operator_address)}
+                thumb={item.description.identity}
+                key={item.operator_address}
+                onChange={event => {
+                  this.setState(state => {
+                    const voteValidators = new Set(state.voteValidators)
+                    if (event.target.checked) {
+                      voteValidators.add(item.operator_address)
+                    } else {
+                      voteValidators.delete(item.operator_address)
+                    }
+                    return { voteValidators: Array.from(voteValidators) }
+                  })
+                }}>
                 {item.description.moniker}
                 <List.Item.Brief>{item.description.details}</List.Item.Brief>
-              </CheckboxItem>)
-            }
+              </CheckboxItem>
+            ))}
           </List>
         </KeyboardAwareScrollView>
       </View>
-    );
+    )
   }
 }

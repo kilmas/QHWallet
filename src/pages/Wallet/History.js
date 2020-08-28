@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableOpacity, StyleSheet, Text, View, InteractionManager } from 'react-native'
+import { TouchableOpacity, StyleSheet, Text, View } from 'react-native'
 import { Flex, Radio, List, Icon, Modal, Tabs, Button, InputItem, Picker, Toast } from '@ant-design/react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Clipboard from '@react-native-community/clipboard'
@@ -16,15 +16,16 @@ import AssetsAction from './components/AssetsAction'
 import HDAccount from '../../stores/account/HDAccount'
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
-import { weiToFiat, hexToBN, renderFromWei, toTokenMinimalUnit, BNToHex, toWei } from '../../utils/number'
+import { weiToFiat, hexToBN, renderFromWei } from '../../utils/number'
 import Tokens from '../../components/UI/Tokens'
-import { getTicker, generateTransferData } from '../../utils/transactions'
+import { getTicker } from '../../utils/transactions'
 import Ironman from '../../modules/ironman'
 import resolveRegister, { contractRegister } from '../../modules/metamask/cross'
 import Engine from '../../modules/metamask/core/Engine'
 import CommonAccount from '../../stores/account/CommonAccount'
 import { FO, BTCCoin } from '../../stores/wallet/Coin'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
+import { goBrowser } from '../../utils/common'
 
 const RadioItem = Radio.RadioItem
 
@@ -244,7 +245,7 @@ class History extends React.Component {
     if (fibos) {
       try {
         const response = await fibos.getAccount(account)
-        if (get(response, 'account_name') === account) {
+        if (_.get(response, 'account_name') === account) {
           this.setState({ accountError: false }, () => {
             this.checkMapState(account)
           })
@@ -286,17 +287,6 @@ class History extends React.Component {
       }
     }
   }
-
-  goBrowser = _.throttle(browserUrl => {
-    this.props.navigation.navigate('Browser')
-    InteractionManager.runAfterInteractions(() => {
-      setTimeout(() => {
-        this.props.navigation.navigate('DApp', {
-          newTabUrl: browserUrl,
-        })
-      }, 300)
-    })
-  }, 8000)
 
   onCopyPubKey = async () => {
     const { password } = await SecureKeychain.getGenericPassword()
@@ -407,12 +397,12 @@ class History extends React.Component {
       if (!this.wallet.hasCreated) {
         actions = {
           onCopyPubKey: this.onCopyPubKey,
-          onCreate: () => this.goBrowser(`https://see.fo/tools/create`),
+          onCreate: () => goBrowser(this.props.navigation, `https://see.fo/tools/create`),
         }
       } else {
         actions = {
           ...actions,
-          onTools: () => this.goBrowser(`https://see.fo/tools`),
+          onTools: () => goBrowser(this.props.navigation, `https://see.fo/tools`),
         }
       }
     } else if (coin.name === 'OKT') {
@@ -635,34 +625,7 @@ class History extends React.Component {
                 // register account to eth
                 this.registerApprove()
               } else {
-                // const { number: value } = this.state
-                // const {
-                //   selectedAsset,
-                //   transactionState: { transaction },
-                //   setTransactionObject,
-                //   selectedAddress,
-                // } = this.props
-
-                // const transactionTo = ''
-
-                // const transactionObject = {
-                //   ...transaction,
-                //   value: BNToHex(toWei(value)),
-                //   selectedAsset,
-                //   from: selectedAddress,
-                // }
-
-                // if (selectedAsset.erc20) {
-                //   const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals)
-                //   transactionObject.data = generateTransferData('transfer', {
-                //     toAddress: transactionTo,
-                //     amount: BNToHex(tokenAmount),
-                //   })
-                //   transactionObject.value = '0x0'
-                // }
-                // setTransactionObject(transactionObject)
-                // go to cross web
-                this.goBrowser(`https://cross.fo/transfer`)
+                goBrowser(this.props.navigation, `https://cross.fo/transfer`)
               }
             }}>
             {!!this.state.crossInfo ? 'Register' : 'Confirm'}

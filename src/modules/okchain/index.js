@@ -23,7 +23,7 @@ const OKClient = {
   },
   delegate: async (amount) => {
     const msg = [{
-      type: "okchain/staking/MsgDelegate",
+      type: "okchain/staking/MsgDeposit",
       value: {
         "delegator_address": instance.address,
         "quantity": { "amount": amount, "denom": "tokt" }
@@ -36,7 +36,7 @@ const OKClient = {
   },
   vote: async (validator_addresses) => {
     const msg = [{
-      type: "okchain/staking/MsgVote",
+      type: "okchain/staking/MsgAddShares",
       value: { "delegator_address": instance.address, "validator_addresses": validator_addresses }
     }];
     const signMsg = msg
@@ -46,7 +46,7 @@ const OKClient = {
   },
   unBond: async (amount) => {
     const msg = [{
-      type: "okchain/staking/MsgUndelegate",
+      type: "okchain/staking/MsgWithdraw",
       value: {
         "delegator_address": instance.address,
         "quantity": { "amount": amount, "denom": "tokt" }
