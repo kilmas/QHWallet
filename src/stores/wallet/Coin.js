@@ -1,4 +1,5 @@
 import { BigNumber } from "bignumber.js";
+import { persist } from "mobx-persist";
 import CoinStore from "./CoinStore";
 import {
   COIN_ID_BTC,
@@ -43,7 +44,7 @@ class Coin {
   id = 0;
   @observable display = true;
   @observable icon = `${DEFAULT_ICON_URL}/default.png`;
-  @observable balance = 0;
+  @persist @observable balance = 0;
   decimals;
   // @observable price = 0
   @computed get price() {
@@ -105,7 +106,7 @@ class BTCCoin extends Coin {
   decimals = 8;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -121,7 +122,7 @@ class BCH extends Coin {
   decimals = 8;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -137,7 +138,7 @@ class BSV extends Coin {
   decimals = 8;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -153,7 +154,7 @@ class USDT extends Coin {
   decimals = 8;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -169,7 +170,7 @@ class ETH extends Coin {
   icon = `${DEFAULT_ICON_URL}/ETH.png`;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -185,7 +186,7 @@ class ERC20Coin extends Coin {
     super(obj);
     this.contract = obj.contract;
     this.decimals = obj.decimals;
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -202,7 +203,7 @@ class ETC extends Coin {
   icon = `${DEFAULT_ICON_URL}/ETC.png`;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -218,7 +219,7 @@ class FO extends Coin {
   icon = FO_ICON;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
   get txListParams() {
     return {
@@ -234,7 +235,7 @@ class OKT extends Coin {
   icon = OKT_ICON;
   constructor(obj = {}) {
     super(obj);
-    CoinStore.observePrice(this.id);
+    // CoinStore.observePrice(this.id);
   }
 }
 

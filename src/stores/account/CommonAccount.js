@@ -99,6 +99,7 @@ class CommonAccount extends Account {
       2
     );
   }
+  
   @computed get floatingAsset() {
     return toFixedNumber(
       this.wallets.reduce((sum, wallet) => sum + wallet.floatingAssetPrice, 0),
@@ -117,24 +118,21 @@ class CommonAccount extends Account {
   }
   @computed get allCoins() {
     if (this.walletType === 'BTC') {
-      return _.compact([
-        this.BTCWallet && this.BTCWallet.BTC,
-        this.BTCWallet && this.BTCWallet.USDT,
-      ]);
+      return this.BTCWallet && this.BTCWallet.coins;
     } else if (this.walletType === 'ETH') {
       const ERC20s = this.ETHWallet && this.ETHWallet.coins.slice();
       ERC20s && ERC20s.shift();
       return _.compact([
-        this.ETHWallet && this.ETHWallet.ETH,
+        this.ETHWallet && this.ETHWallet.defaultCoin,
         ...ERC20s,
       ]);
     } else if (this.walletType === 'FO') {
       return _.compact([
-        this.FOWallet && this.FOWallet.FO,
+        this.FOWallet && this.FOWallet.defaultCoin,
       ]);
     } else if (this.walletType === 'OKT') {
       return _.compact([
-        this.OKTWallet && this.OKTWallet.OKT,
+        this.OKTWallet && this.OKTWallet.defaultCoin,
       ]);
     }
     return _.compact([

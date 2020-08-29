@@ -15,7 +15,6 @@ import {
 import Account from './account/Account'
 import network from '../modules/common/network'
 import HDAccount from './account/HDAccount'
-import CoinStore from './wallet/CoinStore'
 import AccountStorage from './account/AccountStorage'
 import CommonAccount from './account/CommonAccount'
 import MultiSigAccount from './account/MultiSigAccount'
@@ -212,7 +211,6 @@ class AccountStore {
       alert(error)
     }
     this.isInit = true
-    CoinStore.fetchPrice()
   }
 
   setIronman = async () => {

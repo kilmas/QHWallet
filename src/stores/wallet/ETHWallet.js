@@ -29,7 +29,11 @@ export default class ETHWallet extends Wallet {
 
   constructor(obj) {
     super(obj);
-    this.coins = [this.ETH];
+    if (obj) {
+      if (obj.name) {
+        this.coins = [this.ETH];
+      }
+    }
     this.startObserve();
   }
   static create(name, pwd) {
@@ -54,14 +58,15 @@ export default class ETHWallet extends Wallet {
         const child = node.derivePath(path);
         const { address } = ethAccounts.privateKeyToAccount(child.privateKey.toString('hex'));
         const obj = {
-          address,
           id: CryptoJS.MD5(address).toString(),
-          type: COIN_TYPE_ETH
+          name,
+          address,
+          pwd,
+          type: COIN_TYPE_ETH,
+          source: WALLET_SOURCE_MW,
         };
 
         let act = new ETHWallet({ ...obj, source: WALLET_SOURCE_MW });
-        act.pwd = pwd;
-        act.name = name;
         resolve(act);
       } catch (error) {
         reject(error);
@@ -74,18 +79,16 @@ export default class ETHWallet extends Wallet {
       try {
         const { address } = ethAccounts.privateKeyToAccount(pk);
         const act = new ETHWallet({
+          id: CryptoJS.MD5(address).toString(),
           name,
           address,
           pwdnote: note,
           pwd,
-          id: CryptoJS.MD5(address).toString(),
           source: WALLET_SOURCE_PK,
           type: COIN_TYPE_ETH,
-          source: WALLET_SOURCE_PK
         });
         act.isBackup = true;
         act.save();
-        
         DeviceEventEmitter.emit("accountOnChange");
         resolve(act);
       } catch (error) {

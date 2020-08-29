@@ -116,8 +116,12 @@ export default class BTCWallet extends Wallet {
   constructor(obj) {
     super(obj)
     this.path = this.path || DFNetwork.env === NETWORK_ENV_TESTNET ? "m/44'/1'/0'/0/0" : "m/44'/0'/0'/0/0"
-    this.type = Wallet.WALLET_TYPE_BTC
-    this.coins = [this.BTC, this.USDT]
+    // this.type = Wallet.WALLET_TYPE_BTC
+    if (obj) {
+      if (obj.name) {
+        this.coins = [this.BTC, this.USDT]
+      }
+    }
     // this.addresses = (obj.addresses &&
     //   obj.addresses.length > 0 &&
     //   _.compact(

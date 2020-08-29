@@ -109,6 +109,7 @@ class HDAccount extends Account {
       2
     );
   }
+  
   @computed get floatingAsset() {
     return toFixedNumber(
       this.wallets.reduce((sum, wallet) => sum + wallet.floatingAssetPrice, 0),
@@ -129,11 +130,10 @@ class HDAccount extends Account {
     const ERC20s = this.ETHWallet && this.ETHWallet.coins.slice();
     ERC20s.shift();
     return _.compact([
-      this.OKTWallet.OKT,
-      this.BTCWallet.BTC,
-      this.BTCWallet.USDT,
-      this.ETHWallet.ETH,
-      this.FOWallet.FO,
+      this.OKTWallet.defaultCoin,
+      ...this.BTCWallet.coins,
+      this.ETHWallet.defaultCoin,
+      this.FOWallet.defaultCoin,
       ...ERC20s,
     ]);
   }

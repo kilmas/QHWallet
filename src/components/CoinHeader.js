@@ -19,8 +19,7 @@ const bgCoin = index => ({
   ETH: ['#7f86a3', '#60688c'],
   FO: ['#99dfff', '#33bfff'],
   OKT: ['#5894f4', '#205fec'],
-}[index] || ['#22425F', '#070707']
-)
+}[index] || ['#22425F', '#070707'])
 
 @inject('store')
 @observer
@@ -57,21 +56,21 @@ class CoinHeader extends React.Component {
     return `≈${toFixedLocaleString(this.props.coin.totalPrice, 2, true)} ${CoinStore.currencySymbol}`;
   }
 
-  @computed get floatingAsset() {
-    const { accountStore } = this.props.store
-    if (accountStore.isHiddenPrice) {
-      return "*****";
-    }
+  // @computed get floatingAsset() {
+  //   const { accountStore } = this.props.store
+  //   if (accountStore.isHiddenPrice) {
+  //     return "*****";
+  //   }
 
-    const price = toFixedLocaleString(Math.abs(this.props.coin.floatingTotalPrice), 2, true);
-    if (this.props.coin.floatingTotalPrice > 0) {
-      return `+${price}`;
-    } else if (this.props.coin.floatingTotalPrice < 0) {
-      return `-${price}`;
-    } else {
-      return price;
-    }
-  }
+  //   const price = toFixedLocaleString(Math.abs(this.props.coin.floatingTotalPrice), 2, true);
+  //   if (this.props.coin.floatingTotalPrice > 0) {
+  //     return `+${price}`;
+  //   } else if (this.props.coin.floatingTotalPrice < 0) {
+  //     return `-${price}`;
+  //   } else {
+  //     return price;
+  //   }
+  // }
 
   @computed get coinbase() {
     const { accountStore } = this.props.store

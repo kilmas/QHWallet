@@ -23,6 +23,7 @@ class MultiSigAccount extends Account {
       2
     );
   }
+  
   @computed get floatingAsset() {
     return toFixedNumber(
       this.wallets.reduce((sum, wallet) => sum + wallet.floatingAssetPrice, 0),

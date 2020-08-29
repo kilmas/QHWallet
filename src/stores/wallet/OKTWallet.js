@@ -29,15 +29,17 @@ export default class OKTWallet extends Wallet {
 
   constructor(obj) {
     super(obj)
-    this.coins = [this.OKT]
+    if (obj && obj.name) {
+      this.coins = [this.OKT]
+    }
     if (!obj) {
       // this.recoverWallet()
     }
     setTimeout(() => {
-      this.getBalanceTime()
+      this.getBalance()
     }, 3000)
   }
-  
+
   getBalanceTime = async () => {
     await this.getBalance()
     setTimeout(() => {
@@ -52,27 +54,21 @@ export default class OKTWallet extends Wallet {
       let balances
       try {
         balances = await oKClient.getBalance(this.address)
-      } catch(e) {
+      } catch (e) {
         console.warn(e)
         return
       }
-      // const price = await request.getPrice('OKB')
       if (_.isArray(balances)) {
         balances.forEach(item => {
-          if (item.denom === 'tokt') {
-            this.OKT.setBalance(Number(item.amount))
-            this.coins = [this.OKT]
+          if (item.denom === 'tokt' && this.coins[0]) {
+            this.coins[0].balance = Number(item.amount)
+            // const coin = this.coins.find(coin => coin.name === 'OKT')
+            // this.OKT.setBalance(Number(item.amount))
+            // this.coins = [this.OKT]
           }
         })
       }
     }
-  }
-
-  @action
-  getPrice = async () => {
-    setTimeout(() => {
-      this.getPrice()
-    }, 30000)
   }
 
   recoverWallet = mnemonic => {

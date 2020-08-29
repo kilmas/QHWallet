@@ -48,13 +48,15 @@ export default class  FOWallet extends Wallet {
       if (obj.alias) {
         this.alias = obj.alias
       }
+      if (obj.name) {
+        this.coins = [this.FO]
+      }
     }
     if (!this.account) {
       this.account = this.name
     }
-    this.coins = [this.FO]
     setTimeout(() => {
-      this.getBalanceTime()
+      this.getBalance()
     }, 3000)
   }
 
@@ -70,15 +72,16 @@ export default class  FOWallet extends Wallet {
   @action
   getBalance = async () => {
     const { fibos } = Ironman
-    if (this.name && fibos) {
+    if (this.name && this.hasCreated && fibos) {
       try {
         const { rows } = await fibos.getTableRows(true, "eosio.token", this.name, "accounts", "primary", 0, 5000, 5000);
         if (Array.isArray(rows)) {
           rows.forEach(item => {
             const [balance, token] = _.get(item, 'balance.quantity', '').split(' ')
-            if (token === 'FO') {
-              this.FO.setBalance(Number(balance))
-              this.coins = [this.FO]
+            if (token === 'FO' && this.coins[0]) {
+              this.coins[0].balance = Number(balance)
+              // this.FO.setBalance(Number(balance))
+              // this.coins = [this.FO]
             }
           })
         }

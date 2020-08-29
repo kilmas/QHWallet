@@ -173,6 +173,7 @@ export default class Wallet {
       2
     );
   }
+  
   /**
    *今日浮动
    *
@@ -187,6 +188,7 @@ export default class Wallet {
       2
     );
   }
+
   fetchAsset() {
     throw this.constructor.name + "not implemented fetchAsset";
   }
