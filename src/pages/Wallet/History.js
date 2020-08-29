@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableOpacity, StyleSheet, Text, View } from 'react-native'
+import { TouchableOpacity, StyleSheet, Text, View, Platform } from 'react-native'
 import { Flex, Radio, List, Icon, Modal, Tabs, Button, InputItem, Picker, Toast } from '@ant-design/react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Clipboard from '@react-native-community/clipboard'
@@ -533,6 +533,16 @@ class History extends React.Component {
           popup
           visible={this.state.showCross}
           animationType="slide-up"
+          transparent={Platform.OS === 'ios'}
+          styles={{
+            innerContainer: {
+              width: 350,
+              paddingTop: 0,
+            },
+            body: {
+              paddingHorizontal: 1
+            }
+          }}
           maskClosable
           onClose={() => {
             this.setState({ showCross: false, crossInfo: '' })

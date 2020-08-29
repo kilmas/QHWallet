@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Flex, Icon } from '@ant-design/react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { withNavigation } from 'react-navigation';
@@ -42,7 +42,7 @@ class TitleBar extends React.PureComponent {
           borderColor: '#E0E0E0',
           overflow: 'hidden',
         }}>
-        <Flex justify="center" align="center" style={{ marginTop: statusBarHeight, marginBottom: 8 }}>
+        <Flex justify="center" align="center" style={{ marginTop: statusBarHeight, marginBottom: 10 }}>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text
               numberOfLines={1}

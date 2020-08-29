@@ -12,7 +12,7 @@ export function isIPhoneX() {
 
 const getStatusBarHeight = () => {
   if (Platform.OS === 'ios') {
-    return isIPhoneX() ? 40 : 0
+    return isIPhoneX() ? 40 : 20
   }
   return Platform.Version >= 21 ? StatusBar.currentHeight : 0
 }
