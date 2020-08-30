@@ -8,7 +8,7 @@ import { computed } from "mobx";
 import CoinImage from './CoinImage';
 import ClearTitleBar from './ClearTitleBar';
 import { BTCCoin, ETH } from '../stores/wallet/Coin';
-import { toFixedLocaleString } from '../utils/NumberUtil';
+import { toFixedLocaleString, toFixedNumber, toPriceString } from '../utils/NumberUtil';
 import CoinStore from '../stores/wallet/CoinStore';
 import { strings } from '../locales/i18n';
 
@@ -44,17 +44,39 @@ class CoinHeader extends React.Component {
     );
   }
 
-  @computed get totalAsset() {
-    const { accountStore } = this.props.store
-    if (accountStore.isHiddenPrice) {
+  @computed get price() {
+    const { coin } = this.props
+    return (CoinStore[`${coin.name}Price`] || 0)
+  }
+
+  @computed get totalPrice() {
+    const { coin, isHiddenPrice } = this.props
+    if (isHiddenPrice) {
       return "*****";
     }
-
-    if (this.balance == "-") {
+    if (this.balance === "-") {
       return "-";
     }
-    return `≈${toFixedLocaleString(this.props.coin.totalPrice, 2, true)} ${CoinStore.currencySymbol}`;
+    const balance = new BigNumber(`${this.balance}`);
+    if (balance.isLessThan(0)) {
+      return 0;
+    }
+    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.price}`), 2);
+    return `≈ ${CoinStore.currencySymbol} ${toPriceString(totalPrice, 2, 4, true)}`;
   }
+
+
+  // @computed get totalAsset() {
+  //   const { accountStore } = this.props.store
+  //   if (accountStore.isHiddenPrice) {
+  //     return "*****";
+  //   }
+
+  //   if (this.balance == "-") {
+  //     return "-";
+  //   }
+  //   return `≈${toFixedLocaleString(this.props.coin.totalPrice, 2, true)} ${CoinStore.currencySymbol}`;
+  // }
 
   // @computed get floatingAsset() {
   //   const { accountStore } = this.props.store
@@ -72,30 +94,16 @@ class CoinHeader extends React.Component {
   //   }
   // }
 
-  @computed get coinbase() {
-    const { accountStore } = this.props.store
-    if (accountStore.isHiddenPrice) {
-      return "*****";
-    }
-    return `≈${his.props.navigation.state.param.coin.coinbase} BTC`;
-  }
   @computed get hasAvailable() {
     return this.props.coin.hasOwnProperty("available");
   }
+
   @computed get available() {
     const { accountStore } = this.props.store
     if (accountStore.isHiddenPrice) {
       return "*****";
     }
     return this.propss.coin.available;
-  }
-
-  @computed get frozen() {
-    const { accountStore } = this.props.store
-    if (accountStore.isHiddenPrice) {
-      return "*****";
-    }
-    return this.propss.coin.frozen;
   }
 
   render() {
@@ -137,7 +145,7 @@ class CoinHeader extends React.Component {
               {this.balance}
             </Text>
             <Text style={styles.numText}>
-              {this.totalAsset}
+              {this.totalPrice}
             </Text>
           </Flex>
         </Flex>

@@ -35,8 +35,7 @@ class AssetsHeader extends React.Component {
       return "*****";
     }
     const totalAsset = toFixedLocaleString(this.balance, 2, true)
-
-    return accountStore.isHiddenPrice ? "*****" : totalAsset;
+    return totalAsset;
     // return accountStore.isHiddenPrice ? "*****" : 
     // toFixedLocaleString(this.props.account ? 
     // this.props.account.totalAsset: 0, 2, true);
