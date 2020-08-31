@@ -53,6 +53,7 @@ import Ironman from '../../modules/ironman';
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
 import DrawerIcon from '../../components/DrawerIcon';
 import TitleBar from '../../components/TitleBar';
+import { isBiometry } from '../../utils/keychain';
 
 
 const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants;
@@ -1194,58 +1195,64 @@ export class BrowserTab extends React.Component {
     this.setState({ showOptions: !this.state.showOptions });
   };
 
+  transferFo = async (data) => {
+    const {
+      ironman,
+      params = {},
+    } = data
+    if (ironman === 'signProvider') {
+      const { current: currentWebview } = this.webview
+      const { transaction } = params
+      if (transaction) {
+        const { actions } = transaction
+        const cancel = () => {
+          currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+        }
+        const confirm = async (pwd, password) => {
+          if (pwd === password) {
+            const fibos = Ironman.fibos
+            const resp = await fibos.transaction(transaction, { broadcast: false })
+            const {
+              transaction: {
+                signatures
+              }
+            } = resp
+            Toast.success('sign success')
+            currentWebview.postMessage(JSON.stringify({ ...data, data: signatures }))
+          } else {
+            Toast.fail('password fail')
+            currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+          }
+        }
+        const actionsBtn = [{ text: 'Cancel', style: 'cancel', onPress: cancel }, {
+          text: 'Confirm', onPress: async (pwd) => {
+            try {
+              console.log(pwd)
+              const { password } = await SecureKeychain.getGenericPassword();
+              confirm(pwd !== undefined ? pwd : password, password)
+            } catch (error) {
+              cancel()
+            }
+          }
+        }]
+
+        const biometry = await isBiometry()
+        if (biometry) {
+          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel);
+        } else {
+          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn,
+            'secure-text', '', ['', 'Input your password'], cancel);
+        }
+      }
+    }
+  }
+
   onMessage = ({ nativeEvent: { data: strData } }) => {
     try {
       const data = typeof strData === 'string' ? JSON.parse(strData) : strData;
       // fibos
       if (data && data.ironman) {
-        const {
-          ironman,
-          params = {},
-        } = data
-        const fibos = Ironman.fibos
-        if (ironman === 'signProvider') {
-          const { transaction } = params
-          if (transaction) {
-            const { actions } = transaction
-            AntModal.prompt('Sign transaction',
-              `${JSON.stringify(actions)}`,
-              [
-                {
-                  text: 'Cancel', style: 'cancel', onPress: () => {
-                    const { current: currentWebview } = this.webview
-                    currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
-                  }
-                },
-                {
-                  text: 'Confirm', onPress: async (pwd) => {
-                    try {
-                      const { password } = await SecureKeychain.getGenericPassword();
-                      if (pwd === password) {
-                        const resp = await fibos.transaction(transaction, { broadcast: false })
-                        const {
-                          transaction: {
-                            signatures
-                          }
-                        } = resp
-                        Toast.success('sign success')
-                        const { current: currentWebview } = this.webview
-                        currentWebview.postMessage(JSON.stringify({ ...data, data: signatures }))
-                        return
-                      } else {
-                        Toast.fail('password fail')
-                      }
-                    } catch (error) {
-                      Toast.fail('sign fail')
-                      console.warn(error)
-                    }
-                    this.webview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
-                  }
-                },
-              ],
-              'secure-text', '', ['', 'Input your password']);
-          }
-        }
+        this.transferFo(data)
         return
       }
       if (!data || (!data.type && !data.name)) {

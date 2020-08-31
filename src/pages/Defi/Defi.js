@@ -17,6 +17,7 @@ import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Device from '../../utils/devices';
 
 import { SPA_urlChangeListener, JS_WINDOW_INFORMATION, JS_DESELECT_TEXT } from '../../utils/browserScripts';
+import { isBiometry } from '../../utils/keychain'
 
 const { USER_AGENT } = AppConstants
 
@@ -225,61 +226,65 @@ class Defi extends React.Component {
     }
   }
 
+  transferFo = async (data) => {
+    const {
+      ironman,
+      params = {},
+    } = data
+    if (ironman === 'signProvider') {
+      const { transaction } = params
+      if (transaction) {
+        const { actions } = transaction
+        const cancel = () => {
+          this.webview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+        }
+        const confirm = async (pwd, password) => {
+          if (pwd === password) {
+            const fibos = Ironman.fibos
+            const resp = await fibos.transaction(transaction, { broadcast: false })
+            const {
+              transaction: {
+                signatures
+              }
+            } = resp
+            Toast.success('sign success')
+            this.webview.postMessage(JSON.stringify({ ...data, data: signatures }))
+          } else {
+            Toast.fail('password fail')
+            currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+          }
+        }
+        const actionsBtn = [{ text: 'Cancel', style: 'cancel', onPress: cancel }, {
+          text: 'Confirm', onPress: async (pwd) => {
+            try {
+              const { password } = await SecureKeychain.getGenericPassword();
+              confirm(pwd !== undefined ? pwd: password, password)
+            } catch (error) {
+              cancel()
+            }
+          }
+        }]
+
+        const biometry = await isBiometry()
+        if (biometry) {
+          Modal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn , cancel);
+        } else {
+          Modal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn,
+            'secure-text', '', ['', 'Input your password'], cancel);
+        }
+      }
+    }
+  }
+
   onMessage = message => {
     let {
       nativeEvent: { data },
     } = message
-    console.log('message:', data)
 
     try {
       data = typeof data === 'string' ? JSON.parse(data) : data
-      if (data.ironman) {
-        const {
-          ironman,
-          params = {},
-        } = data
-        const fibos = Ironman.fibos
-        if (ironman === 'signProvider') {
-          const { transaction } = params
-          if (transaction) {
-            const { actions } = transaction
-            Modal.prompt('Sign transaction',
-              `${JSON.stringify(actions)}`,
-              [
-                {
-                  text: 'Cancel', style: 'cancel', onPress: () => {
-                    this.webview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
-                  }
-                },
-                {
-                  text: 'Confirm', onPress: async (pwd) => {
-                    try {
-                      const { password } = await SecureKeychain.getGenericPassword();
-                      console.log('pwd', pwd, password)
-                      if (pwd === password) {
-                        const resp = await fibos.transaction(transaction, { broadcast: false })
-                        const {
-                          transaction: {
-                            signatures
-                          }
-                        } = resp
-                        Toast.success('sign success')
-                        this.webview.postMessage(JSON.stringify({ ...data, data: signatures }))
-                        return
-                      } else {
-                        Toast.fail('password fail')
-                      }
-                    } catch (error) {
-                      Toast.fail('sign fail')
-                      console.warn(error)
-                    }
-                    this.webview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
-                  }
-                },
-              ],
-              'secure-text', '', ['', 'Input your password']);
-          }
-        }
+      if (data && data.ironman) {
+        this.transferFo(data)
         return
       }
 

@@ -144,28 +144,24 @@ class SendCoin extends React.Component {
    */
   validateAmount = transaction => { }
 
-  sendAction = async (password, coin) => {
-    if (password) {
-      try {
-        this.setState({ sending: true })
-        if (coin.name === 'FO') {
-          this.transferFO()
-        } else if (coin.name === 'OKT') {
-          this.transferOKT()
-        } else if (coin.name === 'BTC') {
-          const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
-          if (txHex)
-            Toast.info('Push transaction successfully')
-          else {
-            Toast.fail('transfer fail')
-          }
-          this.setState({ sending: false })
+  sendAction = async (coin) => {
+    try {
+      this.setState({ sending: true })
+      if (coin.name === 'FO') {
+        this.transferFO()
+      } else if (coin.name === 'OKT') {
+        this.transferOKT()
+      } else if (coin.name === 'BTC') {
+        const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
+        if (txHex)
+          Toast.info('Push transaction successfully')
+        else {
+          Toast.fail('transfer fail')
         }
-      } catch (e) {
-        console.warn(e)
+        this.setState({ sending: false })
       }
-    } else {
-      Toast.info(strings('password incorret'))
+    } catch (e) {
+      console.warn(e)
     }
   }
 
@@ -374,8 +370,12 @@ class SendCoin extends React.Component {
             loading={this.state.sending}
             disabled={this.state.sending}
             onPress={() => {
-              authSubmit((pwd) => {
-                this.sendAction(pwd, coin)
+              authSubmit((err, pwd) => {
+                if (err) {
+                  Toast.fail(err)
+                  return
+                }
+                this.sendAction(coin)
               })
             }}>
             {strings('next')}

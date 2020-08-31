@@ -21,28 +21,50 @@ const setKeyChain = async (username, password) => {
   }
 }
 
+export const isBiometry = async () => {
+  const biometryChoice = await AsyncStorage.getItem('@QHWallet:biometryChoice');
+  const biometryType = await SecureKeychain.getSupportedBiometryType()
+  if (biometryChoice !== '' && biometryChoice === biometryType) {
+    return true
+  }
+  return false
+}
+
 export const authSubmit = async (callback) => {
   try {
-    const biometryChoice = await AsyncStorage.getItem('@QHWallet:biometryChoice');
-    const { password } = await SecureKeychain.getGenericPassword()
-    const biometryType = await SecureKeychain.getSupportedBiometryType()
-    if (biometryChoice !== '' && biometryChoice === biometryType) {
-      callback(password)
-      return
+    const biometry = await isBiometry()
+    const submit = () => {
+
     }
-    Modal.prompt(
-      'Please input your password',
-      'Save it carefully!',
-      (pwd) => {
-        if (password === pwd) {
-          callback(pwd)
-        } else {
-          callback(null)
-        }
-      },
-      'secure-text',
-      ''
-    )
+    if (biometry) {
+      try {
+        const { password } = await SecureKeychain.getGenericPassword()
+        callback(null, password)
+      } catch (e) {
+        callback('cancel')
+      }
+      return
+    } else {
+      Modal.prompt(
+        'Please input your password',
+        'Save it carefully!',
+        async (pwd) => {
+          try {
+            const { password } = await SecureKeychain.getGenericPassword()
+            if (password === pwd) {
+              callback(null, password)
+            } else {
+              callback('password fail')
+            }
+          } catch (e) {
+            console.warn(e)
+            callback('cancel')
+          }
+        },
+        'secure-text',
+        ''
+      )
+    }
   } catch (error) {
     callback(false)
     console.warn(error);
