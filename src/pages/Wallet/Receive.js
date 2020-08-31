@@ -91,9 +91,9 @@ class Receive extends React.Component {
   }
 
   @computed get address() {
-    if (this.coin instanceof BTCCoin) {
+    if (this.coin.name === 'BTC') {
       return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
-    } else if(this.coin instanceof FO) {
+    } else if(this.coin.name === 'FO') {
       return this.wallet.name || this.account.name;
     }
     return this.wallet && this.wallet.address;

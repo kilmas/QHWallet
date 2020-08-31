@@ -145,9 +145,9 @@ class History extends React.Component {
   }
 
   @computed get address() {
-    if (this.coin instanceof BTCCoin) {
-      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
-    } else if (this.coin instanceof FO) {
+    if (this.coin.name === 'BTC') {
+      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
+    } else if(this.coin.name === 'FO') {
       return (this.wallet && this.wallet.name) || (this.account && this.account.name)
     }
     return this.wallet && this.wallet.address

@@ -1,7 +1,6 @@
 import { action, observable } from 'mobx';
 import { persist } from 'mobx-persist'
 import AppConstants from '../modules/metamask/core/AppConstants';
-import network from '../modules/common/network';
 
 export default class Store {
 
@@ -21,6 +20,8 @@ export default class Store {
     name: 'USD',
     unit: '$',
   };
+
+  @persist @observable passwordSet = false
 
   @observable curdclScale = 2;
 
@@ -103,4 +104,14 @@ export default class Store {
   setEUR = eurRate => {
     this.EUR = eurRate;
   };
+
+  @action
+  setLockTime = (value) => {
+    this.lockTime = value
+  }
+
+  @action
+  setPassword = () => {
+    this.passwordSet = true
+  }
 }

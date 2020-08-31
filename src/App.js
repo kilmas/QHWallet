@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler'
+import 'crypto-js'
 import 'mobx-react-lite/batchingForReactNative'
 import React from 'react'
 import { Platform } from 'react-native'

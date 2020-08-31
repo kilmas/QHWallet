@@ -1,14 +1,14 @@
-import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
-import { Radio } from '@ant-design/react-native';
-import { inject, observer } from 'mobx-react';
-import TitleBar from '../../components/TitleBar';
-import { strings } from '../../locales/i18n';
-import Container from '../../components/Container';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { BGGray } from '../../theme';
+import React from 'react'
+import { Text, TouchableOpacity } from 'react-native'
+import { Radio } from '@ant-design/react-native'
+import { inject, observer } from 'mobx-react'
+import TitleBar from '../../components/TitleBar'
+import { strings } from '../../locales/i18n'
+import Container from '../../components/Container'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { BGGray } from '../../theme'
+import CoinStore from '../../stores/wallet/CoinStore'
 
-export default
 @inject('store')
 @observer
 class Currency extends React.Component {
@@ -27,10 +27,15 @@ class Currency extends React.Component {
         unit: '$',
       },
     ],
-  };
+  }
 
   async componentDidMount() {
-    this.setState({ currency: this.props.store.settings.currency });
+    this.setState({
+      currency: {
+        name: CoinStore.currency,
+        unit: CoinStore.currencySymbol,
+      },
+    })
   }
 
   render() {
@@ -42,13 +47,11 @@ class Currency extends React.Component {
           renderRight={() => (
             <TouchableOpacity
               onPress={async () => {
-                this.props.store.settings.setCurrency(this.state.currency);
-                this.setState({});
-                GlobalNavigation.goBack();
+                // this.props.store.settings.setCurrency(this.state.currency)
+                CoinStore.setCurrency(this.state.currency.name)
+                GlobalNavigation.goBack()
               }}>
-              <Text style={{ color: '#fff', fontSize: 15 }}>
-                {strings('save')}
-              </Text>
+              <Text style={{ color: '#fff', fontSize: 15 }}>{strings('save')}</Text>
             </TouchableOpacity>
           )}
         />
@@ -58,14 +61,15 @@ class Currency extends React.Component {
             checked={this.state.currency.name === name}
             onChange={event => {
               if (event.target.checked) {
-                this.setState({ currency: { name, unit } });
+                this.setState({ currency: { name, unit } })
               }
-            }}
-          >
+            }}>
             {name}
           </Radio.RadioItem>
         ))}
       </Container>
-    );
+    )
   }
 }
+
+export default Currency

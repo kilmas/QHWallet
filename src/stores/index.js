@@ -1,6 +1,6 @@
 import { observable } from 'mobx'
 import AsyncStorage from '@react-native-community/async-storage'
-import { persist, create } from 'mobx-persist'
+import { create } from 'mobx-persist'
 import WalletStore from './wallet'
 import price from './price'
 import common from './common'

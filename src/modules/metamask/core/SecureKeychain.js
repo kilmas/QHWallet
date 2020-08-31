@@ -35,6 +35,7 @@ class SecureKeychain {
   decryptPassword(str) {
     return encryptor.decrypt(privates.get(this).code, str);
   }
+
 }
 let instance;
 

@@ -22,10 +22,6 @@ class WalletSetting extends React.Component {
     }
   }
 
-  componentWillMount() {
-    this._refresh()
-  }
-
   @computed get account() {
     const account = this.props.navigation.getParam('account')
     return account
@@ -106,8 +102,10 @@ class WalletSetting extends React.Component {
     });
   };
 
-
-
+  componentDidMount () {
+    this._refresh()
+  }
+  
   render() {
     if (!this.account) {
       return null

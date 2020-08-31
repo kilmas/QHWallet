@@ -17,7 +17,6 @@ import { HDACCOUNT_FIND_WALELT_TYPE_COINID, BITCOIN_SATOSHI } from '../../config
 import HDAccount from '../../stores/account/HDAccount'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
 import CommonAccount from '../../stores/account/CommonAccount'
-import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Ironman from '../../modules/ironman'
 import OKClient from '../../modules/okchain'
 import { BDCoLor } from '../../theme'
@@ -25,6 +24,7 @@ import { btcRequest } from '../../utils/request'
 import { toFixedNumber, toPriceString } from '../../utils/NumberUtil'
 import CoinStore from '../../stores/wallet/CoinStore'
 import { goBrowser } from '../../utils/common'
+import { authSubmit } from '../../utils/keychain'
 
 const { BNToHex } = util
 
@@ -96,10 +96,10 @@ class SendCoin extends React.Component {
   }
 
   @computed get address() {
-    if (this.coin instanceof BTCCoin) {
-      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
-    } else if (this.coin instanceof FO) {
-      return this.wallet.name || this.account.name
+    if (this.coin.name === 'BTC') {
+      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
+    } else if(this.coin.name === 'FO') {
+      return (this.wallet && this.wallet.name) || (this.account && this.account.name)
     }
     return this.wallet && this.wallet.address
   }
@@ -144,12 +144,29 @@ class SendCoin extends React.Component {
    */
   validateAmount = transaction => { }
 
-  sendAction = async () => {
-    const loading = Toast.loading('Loading', 0, () => {
-      console.log('Load complete !!!')
-    })
-    try {
-    } catch (e) { }
+  sendAction = async (password, coin) => {
+    if (password) {
+      try {
+        this.setState({ sending: true })
+        if (coin.name === 'FO') {
+          this.transferFO()
+        } else if (coin.name === 'OKT') {
+          this.transferOKT()
+        } else if (coin.name === 'BTC') {
+          const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
+          if (txHex)
+            Toast.info('Push transaction successfully')
+          else {
+            Toast.fail('transfer fail')
+          }
+          this.setState({ sending: false })
+        }
+      } catch (e) {
+        console.warn(e)
+      }
+    } else {
+      Toast.info(strings('password incorret'))
+    }
   }
 
   getRecommendFee = () => {
@@ -357,37 +374,9 @@ class SendCoin extends React.Component {
             loading={this.state.sending}
             disabled={this.state.sending}
             onPress={() => {
-              Modal.prompt(
-                'Please Confirm your transation password',
-                'Save it carefully!',
-                async pwd => {
-                  const { password } = await SecureKeychain.getGenericPassword()
-                  if (password === pwd) {
-                    try {
-                      this.setState({ sending: true })
-                      if (coin.name === 'FO') {
-                        this.transferFO()
-                      } else if (coin.name === 'OKT') {
-                        this.transferOKT()
-                      } else if (coin.name === 'BTC') {
-                        const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
-                        if (txHex)
-                          Toast.info('Push transaction successfully')
-                        else {
-                          Toast.fail('transfer fail')
-                        }
-                        this.setState({ sending: false })
-                      }
-                    } catch (e) {
-                      console.warn(e)
-                    }
-                  } else {
-                    Toast.info(strings('password incorret'))
-                  }
-                },
-                'secure-text',
-                ''
-              )
+              authSubmit((pwd) => {
+                this.sendAction(pwd, coin)
+              })
             }}>
             {strings('next')}
           </Button>

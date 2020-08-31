@@ -25,15 +25,24 @@ class Splash extends React.Component {
   }
 
   goNext = async (isInit, currentAccount) => {
-    const credentials = await SecureKeychain.getGenericPassword();
     if (isInit) {
-      if (credentials && currentAccount) {
-        const { KeyringController } = Engine.context;
-        KeyringController.submitPassword(credentials.password);
-        GlobalNavigation.reset('TabDrawer');
-      } else {
-        GlobalNavigation.reset('Welcome');
+      if (currentAccount) {
+        try {
+          const credentials = await SecureKeychain.getGenericPassword();
+          if (credentials) {
+            const { KeyringController } = Engine.context;
+            KeyringController.submitPassword(credentials.password);
+            GlobalNavigation.reset('TabDrawer');
+            return
+          } else {
+            return
+          }
+        } catch (error) {
+          console.warn(error)
+          return
+        }
       }
+      GlobalNavigation.reset('Welcome');
     }
   }
 
@@ -48,6 +57,5 @@ class Splash extends React.Component {
     );
   }
 }
-
 
 export default Splash;

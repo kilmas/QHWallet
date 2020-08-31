@@ -1,4 +1,5 @@
-import { Toast } from "@ant-design/react-native";
+import { Toast, Modal } from "@ant-design/react-native";
+import AsyncStorage from "@react-native-community/async-storage";
 import SecureKeychain from "../modules/metamask/core/SecureKeychain";
 
 const setKeyChain = async (username, password) => {
@@ -17,6 +18,34 @@ const setKeyChain = async (username, password) => {
     console.log("Keychain couldn't be accessed!", error);
     Toast.fail('Create credentials failed');
     return false;
+  }
+}
+
+export const authSubmit = async (callback) => {
+  try {
+    const biometryChoice = await AsyncStorage.getItem('@QHWallet:biometryChoice');
+    const { password } = await SecureKeychain.getGenericPassword()
+    const biometryType = await SecureKeychain.getSupportedBiometryType()
+    if (biometryChoice !== '' && biometryChoice === biometryType) {
+      callback(password)
+      return
+    }
+    Modal.prompt(
+      'Please input your password',
+      'Save it carefully!',
+      (pwd) => {
+        if (password === pwd) {
+          callback(pwd)
+        } else {
+          callback(null)
+        }
+      },
+      'secure-text',
+      ''
+    )
+  } catch (error) {
+    callback(false)
+    console.warn(error);
   }
 }
 
