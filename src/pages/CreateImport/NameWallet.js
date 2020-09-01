@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Text, TextInput } from 'react-native';
 import _ from 'lodash'
 import { Button, Modal, Toast } from '@ant-design/react-native';
 import { inject, observer } from 'mobx-react';
@@ -75,7 +75,7 @@ class NameWallet extends React.Component {
   setPassword = () => {
     Modal.prompt(
       'Set Transaction Password',
-      'Only save password in mobile local!',
+      'Only save password in mobile locally!',
       password1 => {
         if (password1 === '') {
           Toast.info(strings('password is empty!'));

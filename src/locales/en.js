@@ -42,9 +42,9 @@ export default {
   },
 
   "welcome": {
-    "step1": "Open sources, Safety.",
+    "step1": "Open source, safe and secure.",
     "step2": "decentralized, DApp.",
-    "step3": "Simple, found value anywhere.",
+    "step3": "Simple, find value anywhere.",
   },
 
   "wallet": {
@@ -55,8 +55,8 @@ export default {
     "settings": "Wallet Settting",
     "create": 'Create Wallet',
     "import": 'Import Wallet',
-    "policy": 'QHWallet Privacy Policies',
-    "readPolicy": 'I have read and agreed to the Terms of Service and Privacy Policy',
+    "policy": 'QHWallet Privacy Policy',
+    "readPolicy": 'I have read and agree to the Terms of Service and Privacy Policy',
     "nameWallet": 'Name your wallet',
     "setTransactionPassword": 'Set Transaction Password',
     "notes":

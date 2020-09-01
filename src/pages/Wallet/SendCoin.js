@@ -3,7 +3,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import _ from 'lodash'
 import { inject, observer } from 'mobx-react'
 import { util } from '@metamask/controllers'
-import { Flex, Toast, Button, Icon, Modal, Slider } from '@ant-design/react-native'
+import { Flex, Toast, Button, Icon, Slider } from '@ant-design/react-native'
 import { observable, computed } from 'mobx'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import BigNumber from 'bignumber.js'
@@ -11,7 +11,7 @@ import Container from '../../components/Container'
 import { strings } from '../../locales/i18n'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import CoinHeader from '../../components/CoinHeader'
-import { BTCCoin, FO } from '../../stores/wallet/Coin'
+// import { BTCCoin, FO } from '../../stores/wallet/Coin'
 import { HDACCOUNT_FIND_WALELT_TYPE_COINID, BITCOIN_SATOSHI } from '../../config/const'
 // import MultiSigWallet from '../../stores/wallet/MultiSigWallet'
 import HDAccount from '../../stores/account/HDAccount'
@@ -25,6 +25,7 @@ import { toFixedNumber, toPriceString } from '../../utils/NumberUtil'
 import CoinStore from '../../stores/wallet/CoinStore'
 import { goBrowser } from '../../utils/common'
 import { authSubmit } from '../../utils/keychain'
+import { colors } from '../../styles/common'
 
 const { BNToHex } = util
 
@@ -257,6 +258,7 @@ class SendCoin extends React.Component {
             <TextInput
               style={styles.toInput}
               numberOfLines={1}
+              placeholderTextColor={colors.grey100}
               placeholder={strings('Send Address')}
               onChangeText={text => {
                 this.setState({ send: text })
@@ -271,6 +273,7 @@ class SendCoin extends React.Component {
             <TextInput
               style={styles.toInput}
               numberOfLines={1}
+              placeholderTextColor={colors.grey100}
               placeholder={strings('Receiver Address')}
               onChangeText={text => {
                 this.setState({ receiver: text })

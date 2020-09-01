@@ -1,27 +1,21 @@
-import React from 'react';
-import {
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { inject, observer } from 'mobx-react';
-import { Flex, Button, WingBlank, Icon } from '@ant-design/react-native';
-import TitleBar from '../../components/TitleBar';
-import { strings } from '../../locales/i18n';
-import Container from '../../components/Container';
-import { styles, LGColor, BGGray } from '../../theme';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { computed } from 'mobx';
+import React from 'react'
+import { FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { inject, observer } from 'mobx-react'
+import { Flex, Button, WingBlank, Icon } from '@ant-design/react-native'
+import TitleBar from '../../components/TitleBar'
+import { strings } from '../../locales/i18n'
+import Container from '../../components/Container'
+import { styles, LGColor, BGGray } from '../../theme'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { computed } from 'mobx'
 
-export default
 @inject('store')
 @observer
 class Contacts extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      back: false
+      back: false,
     }
   }
 
@@ -42,37 +36,29 @@ class Contacts extends React.Component {
                 <TouchableOpacity
                   onPress={() => {
                     if (this.props.navigation.state.params.mode === 'get') {
-                      GlobalNavigation.goBack();
-                      this.props.navigation.state.params.onSave(address);
+                      GlobalNavigation.goBack()
+                      this.props.navigation.state.params.onSave(address)
                     }
                   }}>
                   <View
                     style={{
                       backgroundColor: '#fff',
                       borderRadius: 10,
-                      padding: 15
+                      padding: 10,
                     }}>
                     <Flex>
-                      <Text>
-                        {strings('settings.name')}:
-                      </Text>
-                      <Text style={{ flex: 1 }}>
-                        {name}
-                      </Text>
+                      <Text>{strings('settings.name')}:</Text>
+                      <Text style={{ flex: 1 }}>{name}</Text>
                     </Flex>
 
                     <Flex style={{ marginTop: 22 }}>
-                      <Text>
-                        {strings('settings.address')}:
-                      </Text>
-                      <Text>
-                        {address}
-                      </Text>
+                      <Text>{strings('settings.address')}:</Text>
+                      <Text style={{width: 280}}>{address}</Text>
                     </Flex>
                     <TouchableOpacity
                       style={{ position: 'absolute', top: 15, right: 15 }}
                       onPress={() => {
-                        this.props.store.settings.removeContacts(index);
+                        this.props.store.settings.removeContacts(index)
                       }}>
                       <Icon name="close" />
                     </TouchableOpacity>
@@ -81,20 +67,24 @@ class Contacts extends React.Component {
               )}
             />
           ) : (
-              <View style={{
+            <View
+              style={{
                 alignItems: 'center',
                 minHeight: 200,
-                justifyContent: 'space-around'
+                justifyContent: 'space-around',
               }}>
-                <Icon name="exclamation-circle" size={100} />
-                <Text>
-                  no contacts yet
-                </Text>
-              </View>
-            )}
-          <Button type="primary" onPress={() => GlobalNavigation.navigate('AddContacts')}>{strings('settings.addContacts')}</Button>
+              <Icon name="exclamation-circle" size={100} />
+              <Text>no contacts yet</Text>
+            </View>
+          )}
+          <Button type="primary" onPress={() => GlobalNavigation.navigate('AddContacts')}>
+            {strings('settings.addContacts')}
+          </Button>
         </WingBlank>
       </Container>
-    );
+    )
   }
 }
+
+export default Contacts
+

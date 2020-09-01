@@ -16,6 +16,7 @@ import SettingStore from './settings'
 import Modals from './modals'
 import MetaMask from '../modules/metamask'
 import { NETWORK_ENV_MAINNET } from '../config/const'
+import { setLocale } from '../locales/i18n'
 
 const hydrate = create({ storage: AsyncStorage, jsonify: true })
 
@@ -23,6 +24,9 @@ const settingStore = new SettingStore();
 hydrate('settingStore', settingStore).then((store) => {
   if (!store.initialRouteName)
     store.setInitialRouteName()
+  if (store.language && store.language.locale) {
+    setLocale(store.language.locale)
+  }
   // console.log('settingStore has been hydrated')
 });
 
