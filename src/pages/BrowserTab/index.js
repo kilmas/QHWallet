@@ -724,6 +724,7 @@ export class BrowserTab extends React.Component {
     let accounts = []
     const { FOAccounts, currentFOID } = this.props.accountStore
 
+    let entryScriptjs = ''
     if (FOAccounts.length) {
       FOAccounts.forEach((item) => {
         if (item.FOWallet.hasCreated) {
@@ -743,10 +744,10 @@ export class BrowserTab extends React.Component {
           }
         }
       })
-      const entryScriptjs = RenderIronman(accounts, publicKey)
-      this.setState({ entryScriptjs })
+      entryScriptjs = RenderIronman(accounts, publicKey)
     }
-    await this.setState({ entryScriptWeb3: entryScriptWeb3 + SPA_urlChangeListener, homepageScripts });
+
+    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: entryScriptWeb3, homepageScripts });
     Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
       if (!this.isTabActive()) return false;
       this.setState({ watchAsset: true, suggestedAssetMeta });
@@ -1227,7 +1228,6 @@ export class BrowserTab extends React.Component {
         const actionsBtn = [{ text: 'Cancel', style: 'cancel', onPress: cancel }, {
           text: 'Confirm', onPress: async (pwd) => {
             try {
-              console.log(pwd)
               const { password } = await SecureKeychain.getGenericPassword();
               confirm(pwd !== undefined ? pwd : password, password)
             } catch (error) {
@@ -1254,8 +1254,7 @@ export class BrowserTab extends React.Component {
       if (data && data.ironman) {
         this.transferFo(data)
         return
-      }
-      if (!data || (!data.type && !data.name)) {
+      } else if (!data || (!data.type && !data.name)) {
         return;
       }
 
@@ -1400,6 +1399,7 @@ export class BrowserTab extends React.Component {
 
   onLoadEnd = () => {
     // Wait for the title, then store the visit
+    this.getPageMeta()
     setTimeout(() => {
       this.props.addToBrowserHistory({
         name: this.state.currentPageTitle,
@@ -1829,6 +1829,11 @@ export class BrowserTab extends React.Component {
 
     if (this.webviewRefIsReady()) {
       // Reset the previous bridges
+
+      if (Device.isAndroid()) {
+        const { current } = this.webview;
+        current && current.injectJavaScript(this.state.entryScriptWeb3);
+      }
       this.backgroundBridges.length && this.backgroundBridges.forEach(bridge => bridge.onDisconnect());
       this.backgroundBridges = [];
       const origin = new URL(nativeEvent.url).origin;
@@ -1882,7 +1887,7 @@ export class BrowserTab extends React.Component {
   };
 
   render() {
-    const { entryScriptWeb3, entryScriptjs, url, forceReload, activated } = this.state;
+    const { entryScriptWeb3, entryScriptjs, url, forceReload, activated, lastError, currentPageTitle } = this.state;
     const isHidden = !this.isTabActive();
 
     return (
@@ -1891,7 +1896,7 @@ export class BrowserTab extends React.Component {
         {...(Device.isAndroid() ? { collapsable: false } : {})}
       >
         <TitleBar
-          title={this.state.inputValue}
+          title={typeof currentPageTitle === 'string' && currentPageTitle || 'Loading..'}
           renderLeft={() => (
             <DrawerIcon dot={false} />
           )}
@@ -1903,10 +1908,10 @@ export class BrowserTab extends React.Component {
           {activated && !forceReload && !!entryScriptWeb3 && (
             <WebView
               renderError={() => (
-                <WebviewError error={this.state.lastError} onReload={this.forceReload} />
+                <WebviewError error={lastError} onReload={this.forceReload} />
               )}
               injectedJavaScript={entryScriptjs}
-              injectedJavaScriptBeforeContentLoaded={entryScriptWeb3}
+              injectedJavaScriptBeforeContentLoaded={Device.isIos() ? entryScriptWeb3: ''}
               onLoadProgress={this.onLoadProgress}
               onLoadStart={this.onLoadStart}
               onLoadEnd={this.onLoadEnd}
@@ -1915,7 +1920,8 @@ export class BrowserTab extends React.Component {
               onNavigationStateChange={this.onPageChange}
               ref={this.webview}
               // use <html></html> for injectedJavaScriptBeforeContentLoaded, and set url
-              source={url ? { uri: url } : { html: '<html></html>' }}
+              // source={url ? { uri: url } : { html: '<html></html>' }}
+              source={{ uri: url }}
               style={styles.webview}
               userAgent={USER_AGENT}
               sendCookies

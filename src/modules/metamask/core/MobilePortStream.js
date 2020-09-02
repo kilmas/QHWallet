@@ -24,7 +24,7 @@ export default class PortDuplexStream extends Duplex {
 	 * @param {Object} msg - Payload from the onMessage listener of Port
 	 */
   _onMessage = function (msg) {
-    console.log("read:", msg)
+    // console.log("read:", msg)
     if (Buffer.isBuffer(msg)) {
       delete msg._isBuffer;
       const data = new Buffer(msg);
@@ -59,7 +59,7 @@ export default class PortDuplexStream extends Duplex {
 	 * @param {Function} cb Called when writing is complete or an error occurs
 	 */
   _write = function (msg, encoding, cb) {
-    console.log("write:", msg)
+    // console.log("write:", msg)
     try {
       if (Buffer.isBuffer(msg)) {
         const data = msg.toJSON();
