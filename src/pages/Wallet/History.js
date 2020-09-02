@@ -251,7 +251,7 @@ class History extends React.Component {
           })
         }
       } catch (error) {
-        console.log(error)
+        console.warn(error)
         Toast.fail(strings('Fibos account is not exist'))
         this.setState({ accountError: true })
       }
@@ -438,7 +438,7 @@ class History extends React.Component {
           )}
         />
         <AssetsAction {...actions} />
-        <Tabs tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]}>
+        <Tabs swipeable={false} usePaged={false} tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]}>
           <View>
             <KeyboardAwareScrollView>
               {coin.name === 'ETH' ? <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />

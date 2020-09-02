@@ -12,6 +12,12 @@ export default class EngineStore {
     this.backgroundState[key] = Engine.state[key]
   }
 
+  accountStore = null
+
+  setAccountStore (accountStore) {
+    this.accountStore = accountStore
+  }
+
   @action
   initBGstate() {
     [

@@ -3,7 +3,7 @@ import { TouchableOpacity, View, StyleSheet, Text, BackHandler } from 'react-nat
 import URL from 'url-parse'
 import { inject, observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import { Icon, Toast, Modal, Flex } from '@ant-design/react-native'
+import { Icon, Toast, Modal, Flex, Tabs } from '@ant-design/react-native'
 import { computed } from 'mobx'
 import WebView from 'react-native-webview'
 import TitleBar from '../../components/TitleBar'
@@ -258,7 +258,7 @@ class Defi extends React.Component {
           text: 'Confirm', onPress: async (pwd) => {
             try {
               const { password } = await SecureKeychain.getGenericPassword();
-              confirm(pwd !== undefined ? pwd: password, password)
+              confirm(pwd !== undefined ? pwd : password, password)
             } catch (error) {
               cancel()
             }
@@ -267,7 +267,7 @@ class Defi extends React.Component {
 
         const biometry = await isBiometry()
         if (biometry) {
-          Modal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn , cancel);
+          Modal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel);
         } else {
           Modal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn,
             'secure-text', '', ['', 'Input your password'], cancel);
@@ -387,61 +387,52 @@ class Defi extends React.Component {
     return (
       <Container>
         <TitleBar
-          title={this.state.title || 'OpenDex'}
+          title={'Defi'}
           renderLeft={() => <DrawerIcon dot={this.props.store.common.newVersion} />}
           renderRight={() => (
-            <Flex>
-              <TouchableOpacity
-                onPress={() => {
-                  this.setState({
-                    webUri: 'https://dex.fo/mobile',
-                    title: 'Defi'
-                  })
-                }}>
-                <Text style={{ marginRight: 8, color: '#fff' }}>Defi</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  this.setState({
-                    webUri: 'https://www.okex.me/dex-test/spot/trade',
-                    title: 'OpenDex'
-                  })
-                  this.reload()
-                }}>
-                <Icon name="reload" />
-              </TouchableOpacity>
-            </Flex>
+            <TouchableOpacity
+              onPress={() => {
+                this.reload()
+              }}>
+              <Icon name="reload" />
+            </TouchableOpacity>
           )}
         />
-        <View style={{ flex: 1 }}>{!!entryScriptjs &&
-          <WebView
-            bounces={false}
-            directionalLockEnabled
-            source={{ uri: webUri }}
-            scrollEnabled={false}
-            overScrollMode={'never'}
-            ref={r => {
-              this.webview = r
-            }}
-            style={{ backgroundColor: '#fff' }}
-            containerStyle={{ backgroundColor: '#152' }}
-            renderError={() => <WebviewError error={this.state.lastError} onReload={this.forceReload} />}
-            injectedJavaScript={entryScriptjs}
-            // injectedJavaScriptBeforeContentLoaded={entryScriptjs}
-            onLoadProgress={this.onLoadProgress}
-            onLoadStart={this.onLoadStart}
-            onLoadEnd={this.onLoadEnd}
-            onError={this.onError}
-            onMessage={this.onMessage}
-            onNavigationStateChange={this.onPageChange}
-            userAgent={USER_AGENT}
-            sendCookies
-            javascriptEnabled
-            allowsInlineMediaPlayback
-            useWebkit
-          />
-        }
-        </View>
+        <Tabs tabs={[{ title: 'Dex.fo' }, { title: 'Open Dex' }, { title: 'DE OTC' }]} swipeable={false} usePaged={false} initialPage={0} tabBarPosition="top">
+          {
+            ['https://dex.fo/mobile', 'https://www.oklink.com/eth/defi/', 'https://deotc.qingah.com',].map(uri => (
+              <View key={uri} style={{ flex: 1 }}>{!!entryScriptjs &&
+                <WebView
+                  bounces={false}
+                  directionalLockEnabled
+                  source={{ uri }}
+                  scrollEnabled={false}
+                  overScrollMode={'never'}
+                  ref={r => {
+                    this.webview = r
+                  }}
+                  style={{ backgroundColor: '#fff' }}
+                  containerStyle={{ backgroundColor: '#152' }}
+                  renderError={() => <WebviewError error={this.state.lastError} onReload={this.forceReload} />}
+                  injectedJavaScript={entryScriptjs}
+                  // injectedJavaScriptBeforeContentLoaded={entryScriptjs}
+                  onLoadProgress={this.onLoadProgress}
+                  onLoadStart={this.onLoadStart}
+                  onLoadEnd={this.onLoadEnd}
+                  onError={this.onError}
+                  onMessage={this.onMessage}
+                  onNavigationStateChange={this.onPageChange}
+                  userAgent={USER_AGENT}
+                  sendCookies
+                  javascriptEnabled
+                  allowsInlineMediaPlayback
+                  useWebkit
+                />
+              }
+              </View>
+            ))
+          }
+        </Tabs>
       </Container>
     )
   }

@@ -13,8 +13,8 @@ export default class Store {
   @persist @observable initialRouteName = null
 
   @persist('object') @observable language = {
-    name: 'English',
-    locale: 'en',
+    name: '简体中文',
+    locale: 'zh',
   };
   @persist('object') @observable currency = {
     name: 'USD',
@@ -23,14 +23,9 @@ export default class Store {
 
   @persist @observable passwordSet = false
 
-  @observable curdclScale = 2;
-
   @observable username = '';
   @observable email = '';
   @observable exchangeRate = 1;
-  @observable USDRate = 1;
-  @observable CNYRate = 7.05177;
-  @observable EURRate = 0.916124;
 
   @action
   setInitialRouteName = (initialRouteName = "Wallet") => {
@@ -68,41 +63,6 @@ export default class Store {
   @action
   setLanguage = language => {
     this.language = language;
-  };
-
-  @action
-  setCurrency = async currency => {
-    this.currency = currency;
-    currency.name === 'USD'
-      ? (this.exchangeRate = this.USDRate)
-      : currency.name === 'CNY'
-        ? (this.exchangeRate = this.CNYRate)
-        : (this.exchangeRate = this.EURRate);
-  };
-
-  @action
-  setUsername = username => {
-    this.username = username;
-  };
-
-  @action
-  setEmail = email => {
-    this.email = email;
-  };
-
-  @action
-  setUSD = usdRate => {
-    this.USD = usdRate;
-  };
-
-  @action
-  setCNY = cnyRate => {
-    this.CNY = cnyRate;
-  };
-
-  @action
-  setEUR = eurRate => {
-    this.EUR = eurRate;
   };
 
   @action

@@ -381,7 +381,8 @@ class Drawer extends React.Component {
               style={{
                 marginLeft: 17,
                 height: 49,
-                justifyContent: 'space-between',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
               <TouchableOpacity
                 onPress={() => {
@@ -394,20 +395,6 @@ class Drawer extends React.Component {
                     maxWidth: 150,
                   }}>
                   {strings('Select Chain')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  this.setState({ visible: true })
-                }}>
-                <Text
-                  style={{
-                    fontSize: 17,
-                    color: '#95A1F1',
-                    maxWidth: 150,
-                    flexWrap: 'wrap',
-                  }}>
-                  {strings('Select Account')}
                 </Text>
               </TouchableOpacity>
             </View>

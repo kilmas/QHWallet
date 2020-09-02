@@ -44,6 +44,7 @@ hydrate('walletStore', walletStore).then(() => {
 const engineStore = new EngineStore();
 hydrate('engineStore', engineStore).then((store) => {
   MetaMask.initalizeEngine(store);
+  store.setAccountStore(accountStore)
   setTimeout(() => {
     store.initBGstate()
   }, 3000)
