@@ -13,6 +13,6 @@ export default class Bookmarks {
 
   @action
   removeBookmark = bookmark => {
-    this.bookmarks.filter(item => item.url !== bookmark.url);
+    this.bookmarks = this.bookmarks.filter(item => item.url !== bookmark.url);
   };
 }

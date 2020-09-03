@@ -2,6 +2,7 @@ import { observable, action, toJS, reaction } from "mobx";
 import { persist } from 'mobx-persist'
 import _ from "lodash";
 import Engine from "../modules/metamask/core/Engine";
+import { renderFromWei } from "../utils/number";
 
 export default class EngineStore {
 
@@ -10,6 +11,18 @@ export default class EngineStore {
   @action
   updateBGstate(key) {
     this.backgroundState[key] = Engine.state[key]
+    if (key === 'AccountTrackerController') {
+      if (this.accountStore) {
+        const accounts = _.get(Engine.state[key], 'accounts')
+        this.accountStore.ETHAccounts.forEach(account=> {
+          const selectedAddress = account.ETHWallet && account.ETHWallet.address
+          if (accounts[selectedAddress]) {
+            const balance = renderFromWei(accounts[selectedAddress].balance)
+            account.ETHWallet.setBalance(balance)
+          }
+        })
+      }
+    }
   }
 
   accountStore = null
@@ -61,7 +74,5 @@ export default class EngineStore {
       pkey = pkey.substr(2);
     }
     const res = await KeyringController.importAccountWithStrategy('privateKey', [private_key]);
-    console.log(res)
   }
-
 }

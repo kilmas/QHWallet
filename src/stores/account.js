@@ -117,24 +117,6 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get OKTAccounts() {
-    // let currentOKT
-    // const CommonOKT = this.CommonAccounts.filter(item => {
-    //   // if (item.id === this.currentOKTID) {
-    //   //   currentOKT = item
-    //   //   return false
-    //   // }
-    //   if (item.walletType === 'OKT') {
-    //     return true
-    //   }
-    //   return false
-    // })
-    // const HDOKT = this.HDAccounts.filter(item => {
-    //   if (item.id === this.currentOKTID) {
-    //     currentOKT = item
-    //     return false
-    //   }
-    //   return true
-    // })
     const CommonOKT = this.CommonAccounts.filter(item => item.walletType === 'OKT')
     return _.compact([...this.HDAccounts, ...CommonOKT])
   }

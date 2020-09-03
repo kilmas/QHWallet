@@ -532,5 +532,12 @@ export default {
 		"message": "We weren't able to load that page.",
 		"reason": "Reason",
 		"try_again": "Try again"
+  },
+  "add_favorite": {
+		"title": "Add Favorite",
+		"title_label": "Name",
+		"url_label": "Url",
+		"add_button": "Add",
+		"cancel_button": "Cancel"
 	},
 };

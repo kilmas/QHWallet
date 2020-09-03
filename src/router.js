@@ -44,6 +44,7 @@ import Confirm from './pages/SendFlow/Confirm'
 import Amount from './pages/SendFlow/Amount'
 import SendTo from './pages/SendFlow/SendTo'
 import VoteList from './pages/Wallet/VoteList'
+import AddBookmark from './pages/AddBookmark'
 
 let RouterContainer
 
@@ -157,6 +158,15 @@ const routerFun = (initialRouteName) => {
         })
       },
       VoteList,
+      AddBookmarkView: {
+        screen: createStackNavigator({
+          AddBookmark: {
+            screen: AddBookmark
+          }
+        }, {
+          headerMode: 'none',
+        })
+      },
     },
     {
       headerMode: 'none',

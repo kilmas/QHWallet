@@ -1,6 +1,6 @@
 import { DeviceEventEmitter } from 'react-native'
 import { persist } from 'mobx-persist'
-import { observable, computed, action, reaction } from 'mobx'
+import { observable, computed, action, reaction, when } from 'mobx'
 import _ from 'lodash'
 import CryptoJS from 'crypto-js'
 import { crypto } from '@okchain/javascript-sdk'
@@ -32,12 +32,9 @@ export default class OKTWallet extends Wallet {
     if (obj && obj.name) {
       this.coins = [this.OKT]
     }
-    if (!obj) {
-      // this.recoverWallet()
-    }
-    setTimeout(() => {
-      this.getBalance()
-    }, 3000)
+    when(() => !!this.address, () => {
+      this.getBalanceTime()
+    })
   }
 
   getBalanceTime = async () => {
@@ -93,9 +90,7 @@ export default class OKTWallet extends Wallet {
           pwd,
           path,
         }
-
         const act = new OKTWallet(obj)
-        act.getBalance()
         resolve(act)
       } catch (error) {
         reject(error)
@@ -120,7 +115,6 @@ export default class OKTWallet extends Wallet {
           source: WALLET_SOURCE_PK,
         }
         let act = new OKTWallet(obj)
-        act.getBalance()
         DeviceEventEmitter.emit('accountOnChange')
         resolve(act)
       } catch (error) {

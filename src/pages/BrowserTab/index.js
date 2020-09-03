@@ -1896,7 +1896,7 @@ export class BrowserTab extends React.Component {
         {...(Device.isAndroid() ? { collapsable: false } : {})}
       >
         <TitleBar
-          title={typeof currentPageTitle === 'string' && currentPageTitle || 'Loading..'}
+          title={(typeof currentPageTitle === 'string' && currentPageTitle) || 'Loading..'}
           renderLeft={() => (
             <DrawerIcon dot={false} />
           )}
@@ -1905,7 +1905,7 @@ export class BrowserTab extends React.Component {
           )}
         />
         <View style={styles.webview}>
-          {activated && !forceReload && !!entryScriptWeb3 && (
+          {url && activated && !forceReload && !!entryScriptWeb3 && (
             <WebView
               renderError={() => (
                 <WebviewError error={lastError} onReload={this.forceReload} />

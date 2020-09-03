@@ -36,6 +36,14 @@ export default class ETHWallet extends Wallet {
     }
     this.startObserve();
   }
+
+  @action
+  setBalance = (balance) => {
+    if (this.coins[0]) {
+      this.coins[0].balance = Number(balance)
+    }
+  }
+
   static create(name, pwd) {
     return new Promise(async (resolve, reject) => {
       let obj = {

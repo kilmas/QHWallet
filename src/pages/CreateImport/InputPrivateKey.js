@@ -69,7 +69,7 @@ class InputPrivateKey extends React.Component {
         return
       }
     } else if (type === 'ETH') {
-      // this.props.store.engine.importAccountFromPrivateKey(pk)
+      this.props.store.engine.importAccountFromPrivateKey(pk)
       // return
     }
     this._importPK(name, type)

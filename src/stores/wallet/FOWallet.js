@@ -1,6 +1,6 @@
-import {  DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter } from "react-native";
 import { persist } from 'mobx-persist'
-import { observable, computed, action } from "mobx";
+import { observable, computed, action, when } from "mobx";
 import CryptoJS from 'crypto-js';
 import * as bip32 from 'bip32';
 import * as bip39 from 'bip39';
@@ -17,7 +17,7 @@ import { FO } from "./Coin";
 import Ironman from '../../modules/ironman'
 import { fibosRequest } from "../../utils/request";
 
-export default class  FOWallet extends Wallet {
+export default class FOWallet extends Wallet {
 
   @persist @observable index = 0;
 
@@ -55,9 +55,9 @@ export default class  FOWallet extends Wallet {
     if (!this.account) {
       this.account = this.name
     }
-    setTimeout(() => {
-      this.getBalance()
-    }, 3000)
+    when(() => !!this.id, () => {
+      this.getBalanceTime()
+    })
   }
 
   getBalanceTime = async () => {
@@ -131,7 +131,7 @@ export default class  FOWallet extends Wallet {
     this.type = COIN_TYPE_FO
   }
 
-  getPublicKey = (mnemonic) =>{
+  getPublicKey = (mnemonic) => {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
     const node = bip32.fromSeed(seed);
     const path = `m/44'/${COIN_ID_FO}'/0'/0/${this.index}`
@@ -140,7 +140,7 @@ export default class  FOWallet extends Wallet {
     const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey); // 公钥
     return pubkey
   }
-  
+
   static import(mnemonic, pwd, name = "") {
     this.pwd = pwd
     return new Promise(async (resolve, reject) => {
@@ -187,7 +187,6 @@ export default class  FOWallet extends Wallet {
           source: WALLET_SOURCE_PK
         };
         let act = new FOWallet(obj);
-        act.getBalance();
         DeviceEventEmitter.emit("accountOnChange");
         resolve(act);
       } catch (error) {
@@ -200,9 +199,9 @@ export default class  FOWallet extends Wallet {
     return FIBOS.modules.ecc.privateToPublic(pk);
   }
 
-  static importKS(ks, pwd, name, note) {}
-  static backupMnemonic(mnemonic) {};
-  drop = text => {};
+  static importKS(ks, pwd, name, note) { }
+  static backupMnemonic(mnemonic) { };
+  drop = text => { };
   async isVaildPassword(pwd) {
     return true;
   }
