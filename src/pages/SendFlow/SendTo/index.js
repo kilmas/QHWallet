@@ -420,7 +420,7 @@ class SendFlow extends React.Component {
     this.setState({ toInputHighlighted: !toInputHighlighted })
   }
 
-  render = () => {
+  render() {
     const { isPaymentChannelTransaction } = this.props
     const {
       fromSelectedAddress,

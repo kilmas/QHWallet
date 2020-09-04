@@ -226,7 +226,7 @@ class Asset extends React.Component {
     this.setState({ refreshing: false });
   };
 
-  render = () => {
+  render() {
     const {
       navigation: {
         state: { params }

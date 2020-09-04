@@ -46,7 +46,7 @@ export default class AddAsset extends React.Component {
     navigation: PropTypes.object
   };
 
-  render = () => {
+  render() {
     const {
       navigation: {
         state: {

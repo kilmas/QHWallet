@@ -82,48 +82,50 @@ export default class AddBookmark extends React.Component {
     current && current.focus()
   }
 
-  render = () => (
-    <Container>
-      <TitleBar title={strings('add_favorite.title')} />
+  render() {
+    return (
+      <Container>
+        <TitleBar title={strings('add_favorite.title')} />
 
-      <SafeAreaView style={styles.wrapper} testID={'add-bookmark-screen'}>
-        <ActionView
-          cancelText={strings('add_favorite.cancel_button')}
-          confirmText={strings('add_favorite.add_button')}
-          onCancelPress={this.cancelAddBookmark}
-          onConfirmPress={this.addBookmark}>
-          <View>
-            <View style={styles.rowWrapper}>
-              <Text style={fontStyles.normal}>{strings('add_favorite.title_label')}</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder={''}
-                placeholderTextColor={colors.grey100}
-                value={this.state.title}
-                onChangeText={this.onTitleChange}
-                testID={'add-bookmark-title'}
-                onSubmitEditing={this.jumpToUrl}
-                returnKeyType={'next'}
-              />
-              <Text style={styles.warningText}>{this.state.warningSymbol}</Text>
+        <SafeAreaView style={styles.wrapper} testID={'add-bookmark-screen'}>
+          <ActionView
+            cancelText={strings('add_favorite.cancel_button')}
+            confirmText={strings('add_favorite.add_button')}
+            onCancelPress={this.cancelAddBookmark}
+            onConfirmPress={this.addBookmark}>
+            <View>
+              <View style={styles.rowWrapper}>
+                <Text style={fontStyles.normal}>{strings('add_favorite.title_label')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={''}
+                  placeholderTextColor={colors.grey100}
+                  value={this.state.title}
+                  onChangeText={this.onTitleChange}
+                  testID={'add-bookmark-title'}
+                  onSubmitEditing={this.jumpToUrl}
+                  returnKeyType={'next'}
+                />
+                <Text style={styles.warningText}>{this.state.warningSymbol}</Text>
+              </View>
+              <View style={styles.rowWrapper}>
+                <Text style={fontStyles.normal}>{strings('add_favorite.url_label')}</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={''}
+                  value={this.state.url}
+                  onChangeText={this.onUrlChange}
+                  testID={'add-bookmark-url'}
+                  ref={this.urlInput}
+                  onSubmitEditing={this.addToken}
+                  returnKeyType={'done'}
+                />
+                <Text style={styles.warningText}>{this.state.warningDecimals}</Text>
+              </View>
             </View>
-            <View style={styles.rowWrapper}>
-              <Text style={fontStyles.normal}>{strings('add_favorite.url_label')}</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder={''}
-                value={this.state.url}
-                onChangeText={this.onUrlChange}
-                testID={'add-bookmark-url'}
-                ref={this.urlInput}
-                onSubmitEditing={this.addToken}
-                returnKeyType={'done'}
-              />
-              <Text style={styles.warningText}>{this.state.warningDecimals}</Text>
-            </View>
-          </View>
-        </ActionView>
-      </SafeAreaView>
-    </Container>
-  )
+          </ActionView>
+        </SafeAreaView>
+      </Container>
+    )
+  }
 }

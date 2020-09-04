@@ -73,7 +73,7 @@ class AddressElement extends React.Component {
     }
   }
 
-  render = () => {
+  render() {
     const { onAccountPress, onAccountLongPress } = this.props
     const { name, address } = this.state
     const primaryLabel = name && name[0] !== ' ' ? name : renderShortAddress(address)

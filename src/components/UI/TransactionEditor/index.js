@@ -568,7 +568,7 @@ class TransactionEditor extends React.Component {
     return this.props.navigation.pop();
   };
 
-  render = () => {
+  render() {
     const { mode, transactionConfirmed, transaction } = this.props;
 
     return (

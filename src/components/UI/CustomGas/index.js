@@ -382,7 +382,7 @@ class CustomGas extends PureComponent {
     );
   };
 
-  render = () => {
+  render() {
     if (this.state.ready) {
       const { advancedCustomGas } = this.state;
       const { gasError } = this.props;

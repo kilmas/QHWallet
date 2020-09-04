@@ -63,7 +63,7 @@ export default class SearchTokenAutocomplete extends PureComponent {
     );
   };
 
-  render = () => {
+  render() {
     const { searchResults, selectedAsset, searchQuery } = this.state;
     const { address, symbol, decimals } = selectedAsset;
 

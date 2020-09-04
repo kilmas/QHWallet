@@ -224,7 +224,7 @@ class Approval extends React.Component {
     return transaction;
   }
 
-  render = () => {
+  render() {
     const { transaction } = this.props;
     const { mode } = this.state;
     return (

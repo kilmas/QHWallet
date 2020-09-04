@@ -369,7 +369,7 @@ class AccountInput extends PureComponent {
     // nice to have
   }
 
-  render = () => {
+  render() {
     const { value, ensRecipient, address } = this.state
     const { placeholder, isOpen } = this.props
     return (

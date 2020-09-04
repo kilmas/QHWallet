@@ -903,7 +903,7 @@ class Amount extends React.Component {
     )
   }
 
-  render = () => {
+  render() {
     const { estimatedTotalGas } = this.state
     const {
       selectedAsset,

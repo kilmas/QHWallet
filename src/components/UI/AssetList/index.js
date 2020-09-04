@@ -55,7 +55,7 @@ export default class AssetList extends PureComponent {
     handleSelectAsset(searchResults[key]);
   };
 
-  render = () => {
+  render() {
     const { searchResults = [], handleSelectAsset, selectedAsset } = this.props;
 
     return (

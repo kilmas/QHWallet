@@ -158,7 +158,7 @@ class AddCustomCollectible extends React.Component {
     }
   };
 
-  render = () => {
+  render() {
     const { address, tokenId } = this.state;
 
     return (

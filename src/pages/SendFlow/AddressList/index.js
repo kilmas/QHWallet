@@ -201,6 +201,7 @@ class AddressList extends React.Component {
       }
     })
     Object.keys(addressBookTree)
+      .slice()
       .sort()
       .forEach(initial => {
         contactElements.push(initial)
@@ -248,7 +249,7 @@ class AddressList extends React.Component {
     return <AddressElement address={element.address} name={element.name} onAccountPress={onAccountPress} onAccountLongPress={onAccountLongPress} />
   }
 
-  render = () => {
+  render() {
     const { processedRecentsList, contactElements } = this.state
     const { onlyRenderAddressBook } = this.props
     return (
@@ -263,12 +264,9 @@ class AddressList extends React.Component {
   }
 }
 
-
-
 export default inject(({ store: state }) => ({
   addressBook: state.engine.backgroundState.AddressBookController.addressBook,
   identities: state.engine.backgroundState.PreferencesController.identities,
   network: state.engine.backgroundState.NetworkController.network,
   transactions: state.engine.backgroundState.TransactionController.transactions,
-
 }))(observer(AddressList))

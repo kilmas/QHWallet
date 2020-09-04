@@ -57,7 +57,7 @@ class TransactionReviewData extends React.Component {
     actionKey: PropTypes.string
   };
 
-  render = () => {
+  render() {
     const {
       transaction: { data },
       actionKey

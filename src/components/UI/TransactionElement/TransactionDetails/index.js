@@ -213,7 +213,7 @@ class TransactionDetails extends React.Component {
     </Button>
   );
 
-  render = () => {
+  render() {
     const {
       transactionObject,
       transactionObject: {

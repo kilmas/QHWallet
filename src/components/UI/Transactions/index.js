@@ -122,7 +122,7 @@ class Transactions extends React.Component {
   };
 
   state = {
-    selectedTx: (new Map(): Map<string, boolean>),
+    selectedTx: new Map(), // (new Map(): Map<string, boolean>),
     ready: false,
     refreshing: false,
     cancelIsOpen: false,
@@ -164,7 +164,7 @@ class Transactions extends React.Component {
   componentWillUnmount() {
     this.mounted = false;
   }
-
+  
   scrollToIndex = index => {
     if (!this.scrolling && (this.props.headerHeight || index)) {
       this.scrolling = true;
@@ -319,7 +319,7 @@ class Transactions extends React.Component {
     />
   );
 
-  render = () => {
+  render() {
     if (!this.state.ready || this.props.loading) {
       return this.renderLoader();
     }

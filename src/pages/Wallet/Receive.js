@@ -1,31 +1,23 @@
-import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
+import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import QRCode from 'react-native-qrcode-svg'
 import Clipboard from '@react-native-community/clipboard'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { observable, computed } from "mobx";
-import { inject, observer, Observer } from "mobx-react";
-import { Flex, Icon } from '@ant-design/react-native';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { Toast } from '@ant-design/react-native';
-import Container from '../../components/Container';
-import { strings } from '../../locales/i18n';
-import { styles as themeStyles, BGGray } from '../../theme';
-import CoinHeader from '../../components/CoinHeader';
-import HDAccount from '../../stores/account/HDAccount';
-import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const';
-import { BTCCoin, FO } from '../../stores/wallet/Coin';
-import CommonAccount from '../../stores/account/CommonAccount';
-import MultiSigAccount from '../../stores/account/MultiSigAccount';
-
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { observable, computed } from 'mobx'
+import { inject, observer } from 'mobx-react'
+import { Flex, Icon } from '@ant-design/react-native'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { Toast } from '@ant-design/react-native'
+import Container from '../../components/Container'
+import { strings } from '../../locales/i18n'
+import { styles as themeStyles, BGGray } from '../../theme'
+import CoinHeader from '../../components/CoinHeader'
+import HDAccount from '../../stores/account/HDAccount'
+import { HDACCOUNT_FIND_WALELT_TYPE_COINID } from '../../config/const'
+import CommonAccount from '../../stores/account/CommonAccount'
+import MultiSigAccount from '../../stores/account/MultiSigAccount'
 
 class Receive extends React.Component {
-
   @computed get accounts() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
@@ -60,20 +52,20 @@ class Receive extends React.Component {
     return this.accounts.find(item => item.id === this.accountID)
   }
 
-  @observable amount = -1;
-  @observable reason = "";
-  @observable selectedCoinID = this.props.navigation.state.params.coinID !== undefined ? this.props.navigation.state.params.coinID : this.wallet.defaultCoin.id;
+  @observable amount = -1
+  @observable reason = ''
+  @observable selectedCoinID = this.props.navigation.state.params.coinID !== undefined ? this.props.navigation.state.params.coinID : this.wallet.defaultCoin.id
 
   @computed get wallet() {
     const walletID = this.props.navigation.getParam('walletID')
 
     let wallet
     if (this.account instanceof HDAccount) {
-      wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID);
+      wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     } else if (this.account instanceof CommonAccount) {
-      wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID);
+      wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)
     } else if (this.account instanceof MultiSigAccount) {
-      return this.account.findWallet(walletID);
+      return this.account.findWallet(walletID)
     }
     return wallet
   }
@@ -81,70 +73,54 @@ class Receive extends React.Component {
   @computed get coin() {
     let coin
     if (this.account instanceof HDAccount) {
-      coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0];
+      coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0]
     } else if (this.account instanceof CommonAccount) {
-      coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0];
+      coin = this.account.findCoin(this.selectedCoinID) || this.account.coins[0]
     } else if (this.account instanceof MultiSigAccount) {
-      return this.wallet.findCoin(this.selectedCoinID);
+      return this.wallet.findCoin(this.selectedCoinID)
     }
     return coin
   }
 
   @computed get address() {
     if (this.coin.name === 'BTC') {
-      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
-    } else if(this.coin.name === 'FO') {
-      return this.wallet.name || this.account.name;
+      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
+    } else if (this.coin.name === 'FO') {
+      return this.wallet.name || this.account.name
     }
-    return this.wallet && this.wallet.address;
+    return this.wallet && this.wallet.address
   }
 
   get sheetOptions() {
-    return [
-      strings("wallet-title-address"),
-      strings("wallet-receive-sheet-new-normal"),
-      strings("common-cancel"),
-    ];
+    return [strings('wallet-title-address'), strings('wallet-receive-sheet-new-normal'), strings('common-cancel')]
   }
 
-  handleSelectorRef = ref => (this.selector = ref);
+  handleSelectorRef = ref => (this.selector = ref)
 
   constructor(props) {
-    super(props);
+    super(props)
   }
-  componentWillUnmount() {
-    this.unreaction && this.unreaction();
-  }
-  async componentDidMount() { }
+
+  async componentDidMount() {}
 
   render() {
-    const { coin, onSave } = this.props.navigation.state.params;
-    const btcPrice = 10
+    const { coin, onSave } = this.props.navigation.state.params
     return (
       <Container>
         <CoinHeader
           coin={coin}
           title={`${strings('wallet.receive')} ${coin.name}`}
           onLeftPress={() => {
-            GlobalNavigation.goBack();
-            onSave && onSave();
+            GlobalNavigation.goBack()
+            onSave && onSave()
           }}
         />
-        <KeyboardAwareScrollView
-          scrollEnabled={true}
-          contentContainerStyle={styles.content}>
+        <KeyboardAwareScrollView scrollEnabled={true} contentContainerStyle={styles.content}>
           <Flex justify="center" style={styles.QRCode}>
-            <QRCode
-              value={this.address}
-              size={256}
-              backgroundColor={BGGray}
-              logoBackgroundColor="transparent"
-            />
+            <QRCode value={this.address} size={256} backgroundColor={BGGray} logoBackgroundColor="transparent" />
           </Flex>
           <View style={styles.addressView}>
-            <Text style={styles.addressTitle}>
-              {strings( `Your ${coin.name} address`)}
-            </Text>
+            <Text style={styles.addressTitle}>{strings(`Your ${coin.name} address`)}</Text>
           </View>
           <Flex justify="between" style={styles.addressFlex}>
             <Text numberOfLines={2} ellipsizeMode={'tail'} style={styles.addressText}>
@@ -152,17 +128,15 @@ class Receive extends React.Component {
             </Text>
             <TouchableOpacity
               onPress={() => {
-                Clipboard.setString(this.address);
-                Toast.info(strings('Copied!'));
+                Clipboard.setString(this.address)
+                Toast.info(strings('Copied!'))
               }}>
-              <Icon
-                name="copy"
-              />
+              <Icon name="copy" />
             </TouchableOpacity>
           </Flex>
         </KeyboardAwareScrollView>
       </Container>
-    );
+    )
   }
 }
 
@@ -202,9 +176,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'left',
     color: '#707070',
-  }
-});
-
+  },
+})
 
 export default inject(({ store: state }) => ({
   settings: state.settings,

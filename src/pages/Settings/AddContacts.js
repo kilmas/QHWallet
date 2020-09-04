@@ -17,7 +17,6 @@ class AddContacts extends React.Component {
     address: '',
   }
   _refresh(address) {
-    console.log(address)
     this.setState({ address: address })
   }
 
@@ -30,7 +29,7 @@ class AddContacts extends React.Component {
           renderRight={() => (
             <TouchableOpacity
               onPress={() =>
-                GlobalNavigation.navigate('ScanQRCode', {
+                GlobalNavigation.navigate('ScanImage', {
                   onSave: address => {
                     this._refresh(address)
                   },

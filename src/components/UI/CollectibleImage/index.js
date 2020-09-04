@@ -58,7 +58,7 @@ export default class CollectibleImage extends PureComponent {
     this.setState({ fallbackImage: `https://storage.opensea.io/${address.toLowerCase()}/${tokenId}.png` });
   };
 
-  render = () => {
+  render() {
     const {
       collectible: { image, address, tokenId },
       renderFull,

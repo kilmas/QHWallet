@@ -1,7 +1,7 @@
 import React from 'react'
 import { TouchableOpacity, InteractionManager } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { Icon, List, Button } from '@ant-design/react-native'
+import { Icon, List, Button, Toast } from '@ant-design/react-native'
 import { inject, observer } from 'mobx-react'
 import { computed } from 'mobx'
 import TitleBar from '../../components/TitleBar'
@@ -129,7 +129,9 @@ class WalletSetting extends React.Component {
         />
         <KeyboardAwareScrollView>
           <List renderHeader={this.account.name}>
-            <List.Item arrow="horizontal" extra="" onPress={() => { }}>
+            <List.Item arrow="horizontal" extra="" onPress={() => {
+              Toast.info('Coming soon')
+            }}>
               {strings('wallet.changeWalletName')}
             </List.Item>
             <List.Item

@@ -803,7 +803,7 @@ class Confirm extends React.Component {
     this.scrollView = ref
   }
 
-  render = () => {
+  render() {
     const { transactionToName, selectedAsset, paymentRequest } = this.props.transactionState
     const { showHexData, isPaymentChannelTransaction, primaryCurrency } = this.props
     const {

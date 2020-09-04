@@ -233,7 +233,7 @@ class Tokens extends React.Component {
     );
   }
 
-  render = () => {
+  render() {
     const { tokens } = this.props;
     return (
       <View style={styles.wrapper}>

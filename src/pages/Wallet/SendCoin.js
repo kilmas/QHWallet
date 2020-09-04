@@ -195,13 +195,11 @@ class SendCoin extends React.Component {
     const { oKClient } = OKClient
     const { receiver, memo, amount } = this.state
     const transaction = await oKClient.sendSendTransaction(receiver, Number(amount).toFixed(8), 'tokt', memo)
-    console.log(transaction)
     if (transaction) {
       const {
         result: { txhash: transactionId },
       } = transaction
       if (this.wallet.getBalance) {
-        console.log('getBalance')
         this.wallet.getBalance()
       }
       this.setState({ transactionId, sending: false })
@@ -282,7 +280,7 @@ class SendCoin extends React.Component {
             />
             <TouchableOpacity
               onPress={() =>
-                GlobalNavigation.navigate('ScanQRCode', {
+                GlobalNavigation.navigate('ScanImage', {
                   onSave: address => {
                     this._refresh(address)
                   },

@@ -74,7 +74,7 @@ export default class WebsiteIcon extends PureComponent {
     await this.setState({ renderIconUrlError: true });
   };
 
-  render = () => {
+  render() {
     const { renderIconUrlError } = this.state;
     const { viewStyle, style, textStyle, transparent, url } = this.props;
     const apiLogoUrl = { uri: this.getIconUrl(url) };

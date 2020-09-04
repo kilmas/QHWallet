@@ -28,7 +28,7 @@ class Welcome extends React.Component {
                 ? require('../../images/Common/open_source.png')
                 : this.state.step === 1
                   ? require('../../images/Common/decentralized.png')
-                  : require('../../images/Common/frog.png')
+                  : require('../../images/Common/fund.png')
             }
             resizeMode={'contain'}
             style={{

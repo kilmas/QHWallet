@@ -84,7 +84,7 @@ export default class TransactionSummary extends PureComponent {
       );
   };
 
-  render = () => {
+  render() {
     const { amount, fee, totalAmount, secondaryTotalAmount, gasEstimationReady, onEditPress } = this.props;
     return (
       <View style={styles.summaryWrapper}>

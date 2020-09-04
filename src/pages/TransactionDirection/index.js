@@ -156,7 +156,7 @@ class TransactionDirection extends React.Component {
     </View>
   );
 
-  render = () => {
+  render() {
     const {
       transaction: { from, to },
       identities

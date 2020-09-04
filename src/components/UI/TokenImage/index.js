@@ -44,7 +44,7 @@ export default class TokenElement extends Component {
     return nextProps.asset.address !== this.props.asset.address;
   }
 
-  render = () => {
+  render() {
     const { asset, containerStyle, iconStyle, logoDefined } = this.props;
     if (!logoDefined && !asset.logo) {
       const checksumAddress = toChecksumAddress(asset.address);

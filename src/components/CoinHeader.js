@@ -25,9 +25,8 @@ const bgCoin = index => ({
 @observer
 class CoinHeader extends React.Component {
 
-  @computed get balance() {
+  @computed get showBalance() {
     const { accountStore } = this.props.store
-
     if (accountStore.isHiddenPrice) {
       return "*****";
     }
@@ -44,13 +43,17 @@ class CoinHeader extends React.Component {
     );
   }
 
+  @computed get balance() {
+    return this.props.coin.balance
+  }
+
   @computed get price() {
     const { coin } = this.props
     return (CoinStore[`${coin.name}Price`] || 0)
   }
 
   @computed get totalPrice() {
-    const { coin, isHiddenPrice } = this.props
+    const { isHiddenPrice } = this.props
     if (isHiddenPrice) {
       return "*****";
     }
@@ -142,7 +145,7 @@ class CoinHeader extends React.Component {
               {strings('balance')}
             </Text>
             <Text style={styles.numText}>
-              {this.balance}
+              {this.showBalance}
             </Text>
             <Text style={styles.numText}>
               {this.totalPrice}

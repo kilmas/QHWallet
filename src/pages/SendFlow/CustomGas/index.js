@@ -499,7 +499,7 @@ class CustomGas extends React.Component {
     )
   }
 
-  render = () => {
+  render() {
     if (this.state.ready) {
       const { advancedCustomGas } = this.state
       const { toggleCustomGasModal } = this.props

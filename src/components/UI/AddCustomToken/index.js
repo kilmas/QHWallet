@@ -164,7 +164,7 @@ export default class AddCustomToken extends PureComponent {
     current && current.focus();
   };
 
-  render = () => {
+  render() {
     const { address, symbol, decimals } = this.state;
     return (
       <View style={styles.wrapper} testID={'add-custom-token-screen'}>

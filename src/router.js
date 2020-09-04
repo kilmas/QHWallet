@@ -45,6 +45,7 @@ import Amount from './pages/SendFlow/Amount'
 import SendTo from './pages/SendFlow/SendTo'
 import VoteList from './pages/Wallet/VoteList'
 import AddBookmark from './pages/AddBookmark'
+import ScanImage from './pages/Wallet/ScanImage'
 
 let RouterContainer
 
@@ -167,6 +168,7 @@ const routerFun = (initialRouteName) => {
           headerMode: 'none',
         })
       },
+      ScanImage,
     },
     {
       headerMode: 'none',

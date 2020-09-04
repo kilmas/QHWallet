@@ -168,7 +168,7 @@ class TransactionReviewSummary extends React.Component {
     return values[assetType] || values.default;
   };
 
-  render = () => {
+  render() {
     const { actionKey } = this.props;
     const { assetAmount, conversionRate, fiatValue, approveTransaction } = this.state;
     return (

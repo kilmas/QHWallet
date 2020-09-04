@@ -141,7 +141,7 @@ class AccountApproval extends React.Component {
     }
   }
 
-  render = () => {
+  render() {
     const { currentPageInformation } = this.props
     return (
       <View style={styles.root}>

@@ -46,7 +46,7 @@ export default class SelectableAsset extends PureComponent {
     icon: PropTypes.object
   };
 
-  render = () => {
+  render() {
     const { onPress, title, subTitle, icon, asset } = this.props;
     const disable = onPress ? undefined : true;
     return (

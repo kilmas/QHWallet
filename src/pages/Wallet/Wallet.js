@@ -87,13 +87,17 @@ const cellStyles = StyleSheet.create({
 @observer
 class CoinCell extends React.Component {
   @computed get balance() {
+    const { coin } = this.props
+    const balance = (coin.others || []).reduce((total, coin) => total + coin.balance, coin.balance)
+    return balance
+  }
+
+  @computed get showBalance() {
     const { isHiddenPrice, coin } = this.props
     if (isHiddenPrice) {
       return "*****";
     }
-
-    const balance = (coin.others || []).reduce((total, coin) => total + coin.balance, coin.balance)
-    const bigNumber = new BigNumber(`${balance}`);
+    const bigNumber = new BigNumber(`${this.balance}`);
     if (bigNumber.isLessThan(0)) {
       return "-"
     }
@@ -106,7 +110,7 @@ class CoinCell extends React.Component {
   }
 
   @computed get totalPrice() {
-    const { coin, isHiddenPrice } = this.props
+    const { isHiddenPrice } = this.props
     if (isHiddenPrice) {
       return "*****";
     }
@@ -151,7 +155,7 @@ class CoinCell extends React.Component {
           </Flex>
           <View style={cellStyles.rightView}>
             <Text style={cellStyles.coinBalance}>
-              {this.balance}
+              {this.showBalance}
             </Text>
             <Text ellipsizeMode={'tail'} style={cellStyles.coinTotal}>
               {this.totalPrice}

@@ -702,7 +702,7 @@ class Approve extends React.Component {
 	Toast.show(strings('transactions.address_copied_to_clipboard'), 1500);
   }
 
-  render = () => {
+  render() {
     const {
       transaction,
       transaction: { data },

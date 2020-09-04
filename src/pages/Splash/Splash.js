@@ -1,23 +1,22 @@
-import React from 'react';
-import { Image } from 'react-native';
-import { when } from "mobx";
-import { inject, observer } from 'mobx-react';
-import Container from '../../components/Container';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { styles as themeStyles } from '../../theme';
-import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
-import Engine from '../../modules/metamask/core/Engine';
+import React from 'react'
+import { Image, ActivityIndicator } from 'react-native'
+import { when } from 'mobx'
+import { inject, observer } from 'mobx-react'
+import Container from '../../components/Container'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { styles as themeStyles } from '../../theme'
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
+import Engine from '../../modules/metamask/core/Engine'
 
 @inject('store')
 @observer
 class Splash extends React.Component {
-
   componentDidMount() {
     // SecureKeychain.resetGenericPassword()
     const { accountStore } = this.props.store
     when(
       () => accountStore.isInit,
-      isInit => {
+      () => {
         this.goNext(true, accountStore.currentAccount)
       }
     )
@@ -28,11 +27,11 @@ class Splash extends React.Component {
     if (isInit) {
       if (currentAccount) {
         try {
-          const credentials = await SecureKeychain.getGenericPassword();
+          const credentials = await SecureKeychain.getGenericPassword()
           if (credentials) {
-            const { KeyringController } = Engine.context;
-            KeyringController.submitPassword(credentials.password);
-            GlobalNavigation.reset('TabDrawer');
+            const { KeyringController } = Engine.context
+            KeyringController.submitPassword(credentials.password)
+            GlobalNavigation.reset('TabDrawer')
             return
           } else {
             return
@@ -42,20 +41,19 @@ class Splash extends React.Component {
           return
         }
       }
-      GlobalNavigation.reset('Welcome');
+      GlobalNavigation.reset('Welcome')
     }
   }
 
   render() {
+    const { accountStore } = this.props.store
+
     return (
       <Container style={themeStyles.center}>
-        <Image
-          source={require('../../images/starting.png')}
-          resizeMode="contain"
-        />
-      </Container >
-    );
+        {!accountStore.isInit ? <ActivityIndicator /> : <Image source={require('../../images/starting.png')} resizeMode="contain" />}
+      </Container>
+    )
   }
 }
 
-export default Splash;
+export default Splash

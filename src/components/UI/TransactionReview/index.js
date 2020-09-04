@@ -130,7 +130,7 @@ class TransactionReview extends React.Component {
         );
   };
 
-  render = () => {
+  render() {
     const { transactionConfirmed} = this.props;
     const { actionKey, error} = this.state;
     return (

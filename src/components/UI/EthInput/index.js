@@ -672,7 +672,7 @@ class EthInput extends PureComponent {
     });
   };
 
-  render = () => {
+  render() {
     const { assets } = this.state;
     const { isOpen } = this.props;
     const selectAssets = assets && assets.length > 1;

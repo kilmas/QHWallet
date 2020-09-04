@@ -73,7 +73,7 @@ export default class AssetSearch extends PureComponent {
     this.props.onSearch({ searchQuery, results });
   };
 
-  render = () => {
+  render() {
     const { searchQuery, inputWidth } = this.state;
 
     return (
