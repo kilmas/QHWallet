@@ -24,7 +24,7 @@
     "@ant-design/react-native": "^4.0.0",
     "@metamask/controllers": "^2.0.0",
     "@metamask/inpage-provider": "^5.0.2",
-    "@okchain/javascript-sdk": "^0.0.3",
+    "@okchain/javascript-sdk": "git+https://github.com/kilmas/okchain-javascript-sdk.git",
     "@react-native-community/async-storage": "^1.6.2",
     "@react-native-community/cameraroll": "^1.7.1",
     "@react-native-community/clipboard": "^1.2.3",
