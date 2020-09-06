@@ -9,7 +9,7 @@ const setKeyChain = async (username, password) => {
   try {
     const credentials = await SecureKeychain.getGenericPassword();
     if (credentials) {
-      console.log('Credentials successfully loaded for user ', credentials);
+      console.log('Credentials successfully loaded for user ');
       return true;
     } else {
       console.log('No credentials stored');

@@ -18,6 +18,7 @@ import Device from '../../utils/devices';
 
 import { SPA_urlChangeListener, JS_WINDOW_INFORMATION, JS_DESELECT_TEXT } from '../../utils/browserScripts';
 import { isBiometry } from '../../utils/keychain'
+import WebviewProgressBar from '../../components/UI/WebviewProgressBar'
 
 const { USER_AGENT } = AppConstants
 
@@ -84,7 +85,8 @@ class Defi extends React.Component {
       suggestedAssetMeta: undefined,
       lastError: null,
       lastUrlBeforeHome: null,
-      webUri: 'https://www.okex.me/dex-test/spot/trade'
+      webUri: 'https://www.okex.me/dex-test/spot/trade',
+      webviewKey: 0,
     }
   }
 
@@ -350,17 +352,11 @@ class Defi extends React.Component {
     }
   }
 
-  renderLoader = () => (
-    <View style={styles.loader}>
-      <ActivityIndicator size="small" />
-    </View>
-  )
   onPageChange = (data) => {
     // console.log("onPageChange", data)
   }
 
   reload = () => {
-    // console.log('reload')
     this.webview && this.webview.reload()
   }
 
@@ -382,8 +378,16 @@ class Defi extends React.Component {
     })
   }
 
+  renderProgressBar = () => (
+    <View style={styles.progressBarWrapper}>
+      <WebviewProgressBar progress={this.state.progress} />
+    </View>
+  );
+
+
   render() {
     const { entryScriptjs, webUri } = this.state
+    const urls = ['https://dex.fo/mobile', 'https://deotc.bitewd.com',]
     return (
       <Container>
         <TitleBar
@@ -398,10 +402,14 @@ class Defi extends React.Component {
             </TouchableOpacity>
           )}
         />
-        <Tabs tabs={[{ title: 'Dex.fo' }, { title: 'Open Dex' }, { title: 'DE OTC' }]} swipeable={false} usePaged={false} initialPage={0} tabBarPosition="top">
+        {this.renderProgressBar()}
+        <Tabs onTabClick={(index, key) => {
+          this.setState({ webviewKey: key })
+        }} tabs={[{ title: 'Dex.fo' }, { title: 'DE OTC' }]} swipeable={false} usePaged={false} initialPage={0} tabBarPosition="top">
           {
-            ['https://dex.fo/mobile', 'https://www.oklink.com/eth/defi/', 'https://deotc.qingah.com',].map(uri => (
-              <View key={uri} style={{ flex: 1 }}>{!!entryScriptjs &&
+            urls.map((uri, index) => (
+              <View key={uri} style={{ flex: 1 }}>
+                {this.state.webviewKey === index && !!entryScriptjs &&
                 <WebView
                   bounces={false}
                   directionalLockEnabled
@@ -448,6 +456,15 @@ const styles = StyleSheet.create({
   webview: {
     zIndex: 1,
     backgroundColor: '#ffd',
+  },
+  progressBarWrapper: {
+    height: 3,
+    width: '100%',
+    // left: 0,
+    // right: 0,
+    // top: 0,
+    // position: 'absolute',
+    // zIndex: 999999
   },
 })
 
