@@ -221,7 +221,6 @@ class SendCoin extends React.Component {
   }
 
   handleGasChange = (value) => {
-    console.log(value)
     this.setState({ gasFee: value })
   }
 

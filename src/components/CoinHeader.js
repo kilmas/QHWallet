@@ -19,6 +19,7 @@ const bgCoin = index => ({
   ETH: ['#7f86a3', '#60688c'],
   FO: ['#99dfff', '#33bfff'],
   OKT: ['#5894f4', '#205fec'],
+  EOS: ['#fff', '#0b102d'],
 }[index] || ['#22425F', '#070707'])
 
 @inject('store')

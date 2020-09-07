@@ -29,6 +29,8 @@ class Splash extends React.Component {
         try {
           const credentials = await SecureKeychain.getGenericPassword()
           if (credentials) {
+            const { accountStore } = this.props.store
+            accountStore.setPwd(true)
             const { KeyringController } = Engine.context
             KeyringController.submitPassword(credentials.password)
             GlobalNavigation.reset('TabDrawer')

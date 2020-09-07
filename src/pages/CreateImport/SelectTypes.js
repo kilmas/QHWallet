@@ -1,14 +1,14 @@
-import React from 'react';
-import { Image, Text, TouchableOpacity } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { inject, observer } from 'mobx-react';
-import { Flex, Icon } from '@ant-design/react-native';
-import Container from '../../components/Container';
-import { strings } from '../../locales/i18n';
-import TitleBar from '../../components/TitleBar';
-import { styles as themeStyle } from '../../theme';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { getIcon } from '../../stores/wallet/Coin';
+import React from 'react'
+import { Image, Text, TouchableOpacity } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { inject, observer } from 'mobx-react'
+import { Flex, Icon } from '@ant-design/react-native'
+import Container from '../../components/Container'
+import { strings } from '../../locales/i18n'
+import TitleBar from '../../components/TitleBar'
+import { styles as themeStyle } from '../../theme'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { getIcon } from '../../stores/wallet/Coin'
 
 const btns = [
   {
@@ -31,63 +31,68 @@ const btns = [
     name: 'OKT',
     type: 'OKT',
   },
-];
+  {
+    icon: { uri: getIcon('EOS') },
+    name: 'EOS',
+    type: 'EOS',
+  },
+]
 
-export default
 @inject('store')
 @observer
 class SelectTypes extends React.Component {
   state = {
     password: '',
-  };
+  }
 
   render() {
     return (
       <Container>
         <TitleBar title={strings('wallet.import')} />
         <KeyboardAwareScrollView style={themeStyle.pt26}>
-          {btns.map(
-            ({ icon, name, type }, index) => (
-              <TouchableOpacity key={index.toString()} onPress={() =>
+          {btns.map(({ icon, name, type }, index) => (
+            <TouchableOpacity
+              key={index.toString()}
+              onPress={() =>
                 GlobalNavigation.navigate('InputPrivateKey', {
                   type,
                   name: this.props.navigation.state.params.name,
                 })
               }>
-                <Flex
+              <Flex
+                style={{
+                  backgroundColor: '#F0F7FF',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: 15,
+                  marginBottom: 15,
+                  borderRadius: 5,
+                }}>
+                <Image
+                  source={icon}
+                  resizeMode="contain"
                   style={{
-                    backgroundColor: '#F0F7FF',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: 15,
-                    marginBottom: 15,
-                    borderRadius: 5
+                    width: 25,
+                    height: 25,
+                    marginRight: 25,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    color: '#4a4a4a',
+                    flex: 1,
                   }}>
-                  <Image
-                    source={icon}
-                    resizeMode="contain"
-                    style={{
-                      width: 25,
-                      height: 25,
-                      marginRight: 25,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      color: '#4a4a4a',
-                      flex: 1,
-                    }}>
-                    {name}
-                  </Text>
-                  <Icon name="right" />
-                </Flex>
-              </TouchableOpacity>
-
-            ),
-          )}
+                  {name}
+                </Text>
+                <Icon name="right" />
+              </Flex>
+            </TouchableOpacity>
+          ))}
         </KeyboardAwareScrollView>
       </Container>
-    );
+    )
   }
 }
+
+export default SelectTypes

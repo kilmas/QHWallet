@@ -12,7 +12,6 @@ import GlobalNavigation from "../../../utils/GlobalNavigation";
 @observer
 class AssetsAction extends Component {
   render() {
-    const { accountStore } = this.props.store
     const { onVote, onSave, onSwapNetwork, onTransfer, onTools, onCreate, onCopyPubKey, onReceive, onScan, onCross, onCrossOKT } = this.props;
     return (
       <Flex justify="around" style={styles.sendView}>

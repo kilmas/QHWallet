@@ -36,6 +36,12 @@ export default class CoinImage extends React.Component {
           source={{ uri: FO_ICON }}
           style={{ width: 65, height: 65 }}
         />;
+      case 'EOS':
+          return icon && <Image
+            resizeMode="contain"
+            source={{ uri: icon }}
+            style={{ width: 65, height: 65 }}
+          />;
       case 'OKT':
           return icon && <Image
             resizeMode="contain"

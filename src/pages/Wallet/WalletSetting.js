@@ -29,12 +29,13 @@ class WalletSetting extends React.Component {
 
   @computed get current() {
     const { accountStore: {
-      currentETHID, currentFOID, currentOKTID
+      currentETHID, currentFOID, currentOKTID, currentEOSID
     } } = this.props
     const { id } = this.account
     if (id === currentFOID
       || id === currentETHID
-      || id === currentETHID
+      || id === currentOKTID
+      || id === currentEOSID
       || this.props.navigation.getParam('type') === 'current')
       return true
   }
@@ -171,6 +172,8 @@ class WalletSetting extends React.Component {
                 const account = this.account
                 if (account.walletType === 'FO') {
                   accountStore.setCurrentFOID(account.id)
+                } else if (account.walletType === 'EOS') {
+                  accountStore.setCurrentEOSID(account.id)
                 } else if (account.walletType === 'OKT') {
                   accountStore.setCurrentOKTID(account.id)
                 } else if (account.walletType === 'ETH') {

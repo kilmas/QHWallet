@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import { observable, computed, action, reaction } from 'mobx'
 import { persist } from 'mobx-persist'
-import AsyncStorage from '@react-native-community/async-storage'
 import { crypto } from '@okchain/javascript-sdk'
 import {
   ACCOUNT_TYPE_HD,
@@ -10,10 +9,10 @@ import {
   // ACCOUNT_TYPE_HD_IMPORT,
   // ACCOUNT_DEFAULT_ID_HD,
   // ACCOUNT_DEFAULT_ID_MULTISIG,
-  NETWORK_ENV_MAINNET,
+  // NETWORK_ENV_MAINNET,
 } from '../config/const'
 import Account from './account/Account'
-import network from '../modules/common/network'
+// import network from '../modules/common/network'
 import HDAccount from './account/HDAccount'
 import AccountStorage from './account/AccountStorage'
 import CommonAccount from './account/CommonAccount'
@@ -21,13 +20,17 @@ import MultiSigAccount from './account/MultiSigAccount'
 import Ironman from '../modules/ironman'
 import SecureKeychain from '../modules/metamask/core/SecureKeychain'
 import OKClient from '../modules/okchain'
+import Scatter from '../modules/scatter'
+import EOSWallet from './wallet/EOSWallet'
 
 class AccountStore {
   @persist @observable isHiddenPrice = false
   @observable showDefaultIndex = true
 
   @observable isInit = false
-  
+
+  @observable pwd = false
+
   @persist @observable currentAccountID = null
   /**
    *
@@ -43,6 +46,8 @@ class AccountStore {
   @persist @observable currentBTCID = null
 
   @persist @observable currentOKTID = null
+
+  @persist @observable currentEOSID = null
 
   /**
    *
@@ -85,30 +90,18 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get FOAccounts() {
-    // let currentFO
-    // const CommonFO = this.CommonAccounts.filter(item => {
-    //   if (item.id === this.currentFOID) {
-    //     currentFO = item
-    //     return false
-    //   }
-    //   if (item.walletType === 'FO') {
-    //     return true
-    //   }
-    //   return false
-    // })
-    // const HDFO = this.HDAccounts.filter(item => {
-    //   if (item.id === this.currentFOID) {
-    //     currentFO = item
-    //     return false
-    //   }
-    //   if (item.FOWallet.hasCreated) {
-    //     return true
-    //   }
-    //   return false
-    // })
     const CommonFO = this.CommonAccounts.filter(item => item.walletType === 'FO')
     return _.compact([...this.HDAccounts, ...CommonFO])
-    // return _.compact([currentFO, ...HDFO, ...CommonFO])
+  }
+
+  /**
+ *
+ * @type { Array.<Account> }
+ * @memberof AccountStore
+ */
+  @computed get EOSAccounts() {
+    const CommonEOS = this.CommonAccounts.filter(item => item.walletType === 'EOS')
+    return _.compact([...this.HDAccounts, ...CommonEOS])
   }
 
   /**
@@ -122,11 +115,11 @@ class AccountStore {
   }
 
 
-    /**
-   *
-   * @type { Array.<Account> }
-   * @memberof AccountStore
-   */
+  /**
+ *
+ * @type { Array.<Account> }
+ * @memberof AccountStore
+ */
   @computed get ETHAccounts() {
     const CommonOKT = this.CommonAccounts.filter(item => item.walletType === 'ETH')
     return _.compact([...this.HDAccounts, ...CommonOKT])
@@ -153,6 +146,9 @@ class AccountStore {
         if (!this.currentOKTID) {
           this.currentOKTID = currentAccountID
         }
+        if (!this.currentEOSID) {
+          this.currentEOSID = currentAccountID
+        }
       }
     )
 
@@ -162,6 +158,20 @@ class AccountStore {
         this.setIronman()
       }
     )
+
+    reaction(
+      () => this.currentEOSID,
+      () => {
+        this.setScatter()
+      }
+    )
+
+    reaction(() => this.pwd, () => {
+      this.setIronman()
+      this.setScatter()
+      this.setOKClient()
+    })
+
   }
 
   @action
@@ -195,10 +205,34 @@ class AccountStore {
     this.isInit = true
   }
 
+
+  @action
+  setPwd(pwd) {
+    this.pwd = true
+  }
+
+  getPwd() {
+    return SecureKeychain.getInstance().getPassword()
+  }
+
+  @action
+  checkHdAccount() {
+    const password = this.getPwd()
+    this.HDAccounts.forEach(hdAccount => {
+      if (!hdAccount.EOSWallet) {
+        AccountStorage.getDataByID(hdAccount.id, password).then(({ mnemonic }) => {
+          EOSWallet.import(mnemonic, password, hdAccount.name, fetch).then(wallet => {
+            hdAccount.EOSWallet = wallet
+          })
+        })
+      }
+    })
+  }
+
   setIronman = async () => {
-    const keychain = await SecureKeychain.getGenericPassword()
-    if (keychain && this.FOAccounts.length) {
-      const { privateKey } = await AccountStorage.getDataByID(this.currentFOID, keychain.password)
+    const password = this.getPwd()
+    if (password && this.FOAccounts.length) {
+      const { privateKey } = await AccountStorage.getDataByID(this.currentFOID, password)
       Ironman.init({
         chainId: '6aa7bd33b6b45192465afa3553dedb531acaaff8928cf64b70bd4c5e49b7ec6a',
         keyProvider: privateKey,
@@ -211,10 +245,26 @@ class AccountStore {
     }
   }
 
+  setScatter = async () => {
+    const password = this.getPwd()
+    if (password && this.EOSAccounts.length) {
+      const { privateKey } = await AccountStorage.getDataByID(this.currentEOSID, password)
+      Scatter.init({
+        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
+        keyProvider: privateKey,
+        httpEndpoint: 'https://api.eoslaomao.com',
+        logger: {
+          log: null,
+          error: null,
+        },
+      })
+    }
+  }
+
   setOKClient = async () => {
-    const keychain = await SecureKeychain.getGenericPassword()
-    if (keychain && this.OKTAccounts.length) {
-      const keyObj = await AccountStorage.getDataByID(this.currentOKTID, keychain.password)
+    const password = this.getPwd()
+    if (password && this.OKTAccounts.length) {
+      const keyObj = await AccountStorage.getDataByID(this.currentOKTID, password)
       let privateKey
       if (keyObj.type === 'HD') {
         privateKey = crypto.getPrivateKeyFromMnemonic(keyObj.mnemonic)
@@ -256,6 +306,8 @@ class AccountStore {
           break
         case 'OKT':
           this.currentOKTID = account.id
+        case 'EOS':
+          this.currentEOSID = account.id
           break
         default:
           console.log('walletType fail')
@@ -293,6 +345,10 @@ class AccountStore {
 
   @action setCurrentETHID = currentETHID => {
     this.currentETHID = currentETHID
+  }
+
+  @action setCurrentEOSID = currentEOSID => {
+    this.currentEOSID = currentEOSID
   }
 
   @action setHiddenPrice = isHiddenPrice => {

@@ -23,7 +23,7 @@ import Ironman from '../../modules/ironman'
 import resolveRegister, { contractRegister } from '../../modules/metamask/cross'
 import Engine from '../../modules/metamask/core/Engine'
 import CommonAccount from '../../stores/account/CommonAccount'
-import { FO, BTCCoin } from '../../stores/wallet/Coin'
+// import { FO, BTCCoin } from '../../stores/wallet/Coin'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import { goBrowser } from '../../utils/common'
 
@@ -80,6 +80,8 @@ class History extends React.Component {
       return accountStore.OKTAccounts
     } else if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
+    } else if (coin.name === 'EOS') {
+      return accountStore.EOSAccounts
     }
     return []
   }
@@ -95,7 +97,9 @@ class History extends React.Component {
       return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
-    }
+    } else if (coin.name === 'EOS') {
+      return accountStore.currentEOSID
+    } 
     return null
   }
 
@@ -110,11 +114,11 @@ class History extends React.Component {
     // return accountStore.match(this.accountID)
   }
 
-  componentDidMount = async () => {
+  componentDidMount = () => {
     const coin = this.props.navigation.getParam('coin')
     if (coin.name === 'FO') {
       if (this.account instanceof HDAccount) {
-        const { password } = await SecureKeychain.getGenericPassword()
+        const password = SecureKeychain.getInstance().getPassword()
         this.account.checkFOAccount(password)
       }
     }
@@ -147,7 +151,7 @@ class History extends React.Component {
   @computed get address() {
     if (this.coin.name === 'BTC') {
       return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
-    } else if(this.coin.name === 'FO') {
+    } else if(this.coin.name === 'FO' || this.coin.name === 'EOS') {
       return (this.wallet && this.wallet.name) || (this.account && this.account.name)
     }
     return this.wallet && this.wallet.address
@@ -403,6 +407,18 @@ class History extends React.Component {
         actions = {
           ...actions,
           onTools: () => goBrowser(this.props.navigation, `https://see.fo/tools`),
+        }
+      }
+    } else if (coin.name === 'EOS') {
+      if (!this.wallet.hasCreated) {
+        actions = {
+          onCopyPubKey: this.onCopyPubKey,
+          onCreate: () => goBrowser(this.props.navigation, `https://eospark.com/`),
+        }
+      } else {
+        actions = {
+          ...actions,
+          onTools: () => goBrowser(this.props.navigation, `https://eospark.com/`),
         }
       }
     } else if (coin.name === 'OKT') {

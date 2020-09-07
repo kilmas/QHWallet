@@ -8,6 +8,7 @@ import { strings } from '../../locales/i18n';
 import TitleBar from '../../components/TitleBar';
 import GlobalNavigation from '../../utils/GlobalNavigation';
 import { styles as themeStyles } from '../../theme';
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
 
 @inject('store')
 @observer

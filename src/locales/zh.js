@@ -199,7 +199,7 @@ export default {
     "auth_prompt_title": "请求授权",
     "auth_prompt_desc": "请授权验证使用钱包",
     "fingerprint_prompt_title": "请求授权",
-    "fingerprint_prompt_desc": "使用你的指纹解锁钱包",
+    "fingerprint_prompt_desc": "使用你的指纹/FaceID解锁钱包",
     "fingerprint_prompt_cancel": "取消"
   },
   "autocomplete": {

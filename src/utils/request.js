@@ -346,6 +346,35 @@ export const fibosRequest = {
   },
 }
 
+export const eosRequest = {
+  getAddressByKey: async (key) => {
+    try {
+      const {
+        data,
+      } = await axios.get(`https://eospark.com/api/v2/permission/address/${key}`)
+      return data
+    } catch (err) {
+      console.warn(err)
+    }
+  },
+  getPrice: async () => {
+    let price = 0
+    try {
+      const {
+        data: { data },
+      } = await fibosApi.post('/1.0/app/tokenpair/getSwapRankOnChain', { tokenx: 'FO@eosio', tokeny: 'FOUSDT@eosio' })
+      if (Array.isArray(data)) {
+        const totalWeights = data[data.length - 1]
+        const { tokenx_quantity, tokeny_quantity } = totalWeights
+        price = tokenx_quantity / tokeny_quantity
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+    return price
+  },
+}
+
 const OK_API_URL = 'https://www.okex.me'
 export const okChainRequest = {
   getValidators: () => axios.get(`${OK_API_URL}/okchain/v1/staking/validators?status=all`),

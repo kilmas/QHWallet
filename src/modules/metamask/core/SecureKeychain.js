@@ -6,9 +6,12 @@ const privates = new WeakMap();
 const encryptor = new Encryptor();
 const defaultOptions = {
   service: 'com.qhwallet',
-  fingerprintPromptTitle: strings('authentication.fingerprint_prompt_title'),
-  fingerprintPromptDesc: strings('authentication.fingerprint_prompt_desc'),
-  fingerprintPromptCancel: strings('authentication.fingerprint_prompt_cancel')
+  authenticationPrompt: {
+    title: strings('authentication.auth_prompt_desc'),
+    // subtitle: '',
+    description: strings('authentication.fingerprint_prompt_desc'),
+    cancel: strings('authentication.fingerprint_prompt_cancel'),
+  }
 };
 
 /**
@@ -36,6 +39,13 @@ class SecureKeychain {
     return encryptor.decrypt(privates.get(this).code, str);
   }
 
+  setPassword(pwd) {
+    privates.set(this, { ...privates.get(this), pwd });
+  }
+
+  getPassword() {
+    return privates.get(this).pwd;
+  }
 }
 let instance;
 
@@ -66,6 +76,7 @@ export default {
       if (keychainObject.password) {
         const encryptedPassword = keychainObject.password;
         const decrypted = await instance.decryptPassword(encryptedPassword);
+        instance.setPassword(decrypted.password)
         keychainObject.password = decrypted.password;
         instance.isAuthenticating = false;
         return keychainObject;

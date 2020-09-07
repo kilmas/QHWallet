@@ -199,7 +199,7 @@ export default {
     "auth_prompt_title": "Authentication required",
     "auth_prompt_desc": "Please authenticate in order to use QHWallet",
     "fingerprint_prompt_title": "Authentication required",
-    "fingerprint_prompt_desc": "Use your fingerprint to unlock QHWallet",
+    "fingerprint_prompt_desc": "Use your fingerprint / Face ID to unlock QHWallet",
     "fingerprint_prompt_cancel": "Cancel"
   },
   "autocomplete": {

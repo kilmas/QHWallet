@@ -10,8 +10,9 @@ import TitleBar from '../../components/TitleBar'
 import { styles as themeStyles, BGGray } from '../../theme'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import CommonAccount from '../../stores/account/CommonAccount'
-import { fibosRequest } from '../../utils/request'
+import { fibosRequest, eosRequest } from '../../utils/request'
 import FOWallet from '../../stores/wallet/FOWallet'
+import EOSWallet from '../../stores/wallet/EOSWallet'
 
 @inject('store')
 @observer
@@ -53,6 +54,26 @@ class InputPrivateKey extends React.Component {
             text: account,
             onPress: () => {
               this._importPK(account, type, name)
+            },
+          }))
+          if (operations.length) {
+            Modal.operation(operations)
+          }
+        }
+      } catch (error) {
+        console.warn(error)
+      }
+      return
+    } else if (type === 'EOS') {
+      try {
+        const {
+          data: { permissions },
+        } = await eosRequest.getAddressByKey(EOSWallet.privateToPublic(pk))
+        if (_.isArray(permissions)) {
+          const operations = permissions.map(account => ({
+            text: account.account_name,
+            onPress: () => {
+              this._importPK(account.account_name, type, name)
             },
           }))
           if (operations.length) {

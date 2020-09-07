@@ -158,7 +158,7 @@ class Security extends React.Component {
         }
       } else {
         await SecureKeychain.setGenericPassword(this.state.credentials.username, password, {
-          accessControl: SecureKeychain.ACCESS_CONTROL.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+          accessible: SecureKeychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
         })
         await AsyncStorage.removeItem('@QHWallet:biometryChoice')
         await AsyncStorage.removeItem('@QHWallet:passcodeChoice')

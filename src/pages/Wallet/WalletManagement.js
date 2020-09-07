@@ -34,7 +34,11 @@ class WalletManagement extends React.Component {
       if (id === accountStore.currentFOID) {
         return `Current ${walletType}`
       }
-    } else if ((walletType === 'OKT')) {
+    }  if (walletType === 'EOS') {
+      if (id === accountStore.currentEOSID) {
+        return `Current ${walletType}`
+      }
+    }  else if ((walletType === 'OKT')) {
       if (id === accountStore.currentOKTID) {
         return `Current ${walletType}`
       }
