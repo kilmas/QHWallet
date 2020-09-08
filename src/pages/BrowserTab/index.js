@@ -1312,10 +1312,11 @@ export class BrowserTab extends React.Component {
       if (data) {
         if (data.ironman) {
           this.transferFo(data)
+          return
         } else if (data.scatter) {
           this.transferEOS(data)
+          return
         }
-        return
       } else if (!data || (!data.type && !data.name)) {
         return
       }
