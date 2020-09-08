@@ -1,24 +1,23 @@
-import FIBOS from 'fibos.js';
+import FIBOS from 'fibos.js'
 
-let instance;
+let instance
 
 const Ironman = {
   get fibos() {
-    return instance;
+    return instance
   },
   init(config = {}) {
     instance = FIBOS({
-      chainId: config.chainId || "6aa7bd33b6b45192465afa3553dedb531acaaff8928cf64b70bd4c5e49b7ec6a",
-      keyProvider: config.keyProvider || "KeyProvider",
-      httpEndpoint: config.httpEndpoint || "https://to-rpc.fibos.io",
+      chainId: config.chainId || '6aa7bd33b6b45192465afa3553dedb531acaaff8928cf64b70bd4c5e49b7ec6a',
+      keyProvider: config.keyProvider,
+      httpEndpoint: config.httpEndpoint || 'https://to-rpc.fibos.io',
       logger: {
         log: null,
-        error: null
-      }
-    });
-    return instance;
+        error: null,
+      },
+    })
+    return instance
   },
+}
 
-};
-
-export default Ironman;
+export default Ironman

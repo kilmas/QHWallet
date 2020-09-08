@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   Text,
   ActivityIndicator,
@@ -11,65 +11,66 @@ import {
   Linking,
   Keyboard,
   BackHandler,
-} from 'react-native';
-import { inject, observer } from 'mobx-react';
-import { Icon, Modal as AntModal, Toast } from '@ant-design/react-native';
-import { withNavigation } from 'react-navigation';
-import { WebView } from 'react-native-webview';
-import Branch from 'react-native-branch';
-import Share from 'react-native-share';
-import PropTypes from 'prop-types';
-import createAsyncMiddleware from 'json-rpc-engine/src/createAsyncMiddleware';
-import { ethErrors } from 'eth-json-rpc-errors';
-import URL from 'url-parse';
-import Modal from 'react-native-modal';
+} from 'react-native'
+import { inject, observer } from 'mobx-react'
+import { Icon, Modal as AntModal, Toast } from '@ant-design/react-native'
+import { withNavigation } from 'react-navigation'
+import { WebView } from 'react-native-webview'
+import Branch from 'react-native-branch'
+import Share from 'react-native-share'
+import PropTypes from 'prop-types'
+import createAsyncMiddleware from 'json-rpc-engine/src/createAsyncMiddleware'
+import { ethErrors } from 'eth-json-rpc-errors'
+import URL from 'url-parse'
+import Modal from 'react-native-modal'
 
-import Networks from '../../utils/networks';
-import Device from '../../utils/devices';
-import { resemblesAddress } from '../../utils/address';
-import { SPA_urlChangeListener, JS_WINDOW_INFORMATION, JS_DESELECT_TEXT } from '../../utils/browserScripts';
-import onUrlSubmit, { getHost, getUrlObj } from '../../utils/browser';
+import Networks from '../../utils/networks'
+import Device from '../../utils/devices'
+import { resemblesAddress } from '../../utils/address'
+import { SPA_urlChangeListener, JS_WINDOW_INFORMATION, JS_DESELECT_TEXT } from '../../utils/browserScripts'
+import onUrlSubmit, { getHost, getUrlObj } from '../../utils/browser'
 
-import Engine from '../../modules/metamask/core/Engine';
-import DrawerStatusTracker from '../../modules/metamask/core/DrawerStatusTracker';
-import BackgroundBridge from '../../modules/metamask/core/BackgroundBridge';
-import AppConstants from '../../modules/metamask/core/AppConstants';
-import DeeplinkManager from '../../modules/metamask/core/DeeplinkManager';
-import EntryScriptWeb3 from '../../modules/metamask/core/EntryScriptWeb3';
-import { colors, baseStyles, fontStyles } from '../../styles/common';
+import Engine from '../../modules/metamask/core/Engine'
+import DrawerStatusTracker from '../../modules/metamask/core/DrawerStatusTracker'
+import BackgroundBridge from '../../modules/metamask/core/BackgroundBridge'
+import AppConstants from '../../modules/metamask/core/AppConstants'
+import DeeplinkManager from '../../modules/metamask/core/DeeplinkManager'
+import EntryScriptWeb3 from '../../modules/metamask/core/EntryScriptWeb3'
+import { colors, baseStyles, fontStyles } from '../../styles/common'
 
-import BrowserBottomBar from '../../components/UI/BrowserBottomBar';
-import PhishingModal from '../../components/UI/PhishingModal';
-import WebviewProgressBar from '../../components/UI/WebviewProgressBar';
-import UrlAutocomplete from '../../components/UI/UrlAutocomplete';
-import AccountApproval from '../../components/UI/AccountApproval';
-import WebviewError from '../../components/UI/WebviewError';
-import WatchAssetRequest from '../../components/UI/WatchAssetRequest';
-import OnboardingWizard from '../../components/UI/OnboardingWizard';
+import BrowserBottomBar from '../../components/UI/BrowserBottomBar'
+import PhishingModal from '../../components/UI/PhishingModal'
+import WebviewProgressBar from '../../components/UI/WebviewProgressBar'
+import UrlAutocomplete from '../../components/UI/UrlAutocomplete'
+import AccountApproval from '../../components/UI/AccountApproval'
+import WebviewError from '../../components/UI/WebviewError'
+import WatchAssetRequest from '../../components/UI/WatchAssetRequest'
+import OnboardingWizard from '../../components/UI/OnboardingWizard'
 import Button from '../../components/UI/Button'
-import { strings } from '../../locales/i18n';
-import RenderIronman from '../../modules/ironman/RenderIronman';
-import Ironman from '../../modules/ironman';
-import SecureKeychain from '../../modules/metamask/core/SecureKeychain';
-import DrawerIcon from '../../components/DrawerIcon';
-import TitleBar from '../../components/TitleBar';
-import { isBiometry } from '../../utils/keychain';
+import { strings } from '../../locales/i18n'
+import RenderIronman from '../../modules/ironman/RenderIronman'
+import Ironman from '../../modules/ironman'
+import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
+import DrawerIcon from '../../components/DrawerIcon'
+import TitleBar from '../../components/TitleBar'
+import { isBiometry } from '../../utils/keychain'
+import RenderScatter from '../../modules/scatter/RenderScatter'
+import Scatter from '../../modules/scatter'
 
-
-const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants;
-const HOMEPAGE_HOST = 'dapp.qingah.com';
+const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants
+const HOMEPAGE_HOST = 'dapp.qingah.com'
 
 const styles = StyleSheet.create({
   wrapper: {
     ...baseStyles.flexGrow,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
   },
   hide: {
     flex: 0,
     opacity: 0,
     display: 'none',
     width: 0,
-    height: 0
+    height: 0,
   },
   progressBarWrapper: {
     height: 3,
@@ -78,13 +79,13 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     position: 'absolute',
-    zIndex: 999999
+    zIndex: 999999,
   },
   loader: {
     backgroundColor: colors.white,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   optionsOverlay: {
     position: 'absolute',
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     left: 0,
-    right: 0
+    right: 0,
   },
   optionsWrapper: {
     position: 'absolute',
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 10,
     paddingBottom: 5,
-    paddingTop: 10
+    paddingTop: 10,
   },
   optionsWrapperAndroid: {
     shadowColor: colors.grey400,
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 3,
     bottom: 65,
-    right: 5
+    right: 5,
   },
   optionsWrapperIos: {
     shadowColor: colors.grey400,
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 3,
     bottom: 90,
-    right: 5
+    right: 5,
   },
   option: {
     paddingVertical: 10,
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginTop: Device.isAndroid() ? 0 : -5
+    marginTop: Device.isAndroid() ? 0 : -5,
   },
   optionText: {
     fontSize: 16,
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 3,
     color: colors.blue,
-    ...fontStyles.fontPrimary
+    ...fontStyles.fontPrimary,
   },
   optionIconWrapper: {
     flex: 0,
@@ -146,28 +147,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.blue000,
     padding: 3,
     marginRight: 10,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   optionIcon: {
     color: colors.blue,
     textAlign: 'center',
     alignSelf: 'center',
-    fontSize: 18
+    fontSize: 18,
   },
   webview: {
     ...baseStyles.flexGrow,
-    zIndex: 1
+    zIndex: 1,
   },
   urlModalContent: {
     flexDirection: 'row',
     paddingTop: Device.isAndroid() ? 10 : Device.isIphoneX() ? 50 : 27,
     paddingHorizontal: 10,
     backgroundColor: colors.white,
-    height: Device.isAndroid() ? 59 : Device.isIphoneX() ? 87 : 65
+    height: Device.isAndroid() ? 59 : Device.isIphoneX() ? 87 : 65,
   },
   urlModal: {
     justifyContent: 'flex-start',
-    margin: 0
+    margin: 0,
   },
   urlInput: {
     ...fontStyles.normal,
@@ -178,16 +179,16 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     textAlign: 'left',
     flex: 1,
-    height: Device.isAndroid() ? 40 : 30
+    height: Device.isAndroid() ? 40 : 30,
   },
   cancelButton: {
     marginTop: 7,
-    marginLeft: 10
+    marginLeft: 10,
   },
   cancelButtonText: {
     fontSize: 14,
     color: colors.blue,
-    ...fontStyles.normal
+    ...fontStyles.normal,
   },
   iconCloseButton: {
     borderRadius: 300,
@@ -201,20 +202,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
-    marginRight: 5
+    marginRight: 5,
   },
   iconClose: {
     color: colors.white,
-    fontSize: 18
+    fontSize: 18,
   },
   bottomModal: {
     justifyContent: 'flex-end',
-    margin: 0
+    margin: 0,
   },
   fullScreenModal: {
-    flex: 1
-  }
-});
+    flex: 1,
+  },
+})
 
 /**
  * Complete Web browser component with URL entry and history management
@@ -222,127 +223,127 @@ const styles = StyleSheet.create({
  */
 export class BrowserTab extends React.Component {
   static defaultProps = {
-    defaultProtocol: 'https://'
-  };
+    defaultProtocol: 'https://',
+  }
 
   static propTypes = {
-		/**
-		 * The ID of the current tab
-		 */
+    /**
+     * The ID of the current tab
+     */
     id: PropTypes.number,
-		/**
-		 * The ID of the active tab
-		 */
+    /**
+     * The ID of the active tab
+     */
     activeTab: PropTypes.number,
-		/**
-		 * InitialUrl
-		 */
+    /**
+     * InitialUrl
+     */
     initialUrl: PropTypes.string,
-		/**
-		 * Called to approve account access for a given hostname
-		 */
+    /**
+     * Called to approve account access for a given hostname
+     */
     approveHost: PropTypes.func,
-		/**
-		 * Map of hostnames with approved account access
-		 */
+    /**
+     * Map of hostnames with approved account access
+     */
     approvedHosts: PropTypes.object,
-		/**
-		 * Protocol string to append to URLs that have none
-		 */
+    /**
+     * Protocol string to append to URLs that have none
+     */
     defaultProtocol: PropTypes.string,
-		/**
-		 * A string that of the chosen ipfs gateway
-		 */
+    /**
+     * A string that of the chosen ipfs gateway
+     */
     ipfsGateway: PropTypes.string,
-		/**
-		 * Object containing the information for the current transaction
-		 */
+    /**
+     * Object containing the information for the current transaction
+     */
     transaction: PropTypes.object,
-		/**
-		 * react-navigation object used to switch between screens
-		 */
+    /**
+     * react-navigation object used to switch between screens
+     */
     navigation: PropTypes.object,
-		/**
-		 * A string representing the network type
-		 */
+    /**
+     * A string representing the network type
+     */
     networkType: PropTypes.string,
-		/**
-		 * A string representing the network id
-		 */
+    /**
+     * A string representing the network id
+     */
     network: PropTypes.string,
-		/**
-		 * Indicates whether privacy mode is enabled
-		 */
+    /**
+     * Indicates whether privacy mode is enabled
+     */
     privacyMode: PropTypes.bool,
-		/**
-		 * A string that represents the selected address
-		 */
+    /**
+     * A string that represents the selected address
+     */
     selectedAddress: PropTypes.string,
-		/**
-		 * whitelisted url to bypass the phishing detection
-		 */
+    /**
+     * whitelisted url to bypass the phishing detection
+     */
     whitelist: PropTypes.array,
-		/**
-		 * Url coming from an external source
-		 * For ex. deeplinks
-		 */
+    /**
+     * Url coming from an external source
+     * For ex. deeplinks
+     */
     url: PropTypes.string,
-		/**
-		 * Function to toggle the network switcher modal
-		 */
+    /**
+     * Function to toggle the network switcher modal
+     */
     toggleNetworkModal: PropTypes.func,
-		/**
-		 * Function to open a new tab
-		 */
+    /**
+     * Function to open a new tab
+     */
     newTab: PropTypes.func,
-		/**
-		 * Function to store bookmarks
-		 */
+    /**
+     * Function to store bookmarks
+     */
     addBookmark: PropTypes.func,
-		/**
-		 * Function to remove bookmarks
-		 */
+    /**
+     * Function to remove bookmarks
+     */
     removeBookmark: PropTypes.func,
-		/**
-		 * Array of bookmarks
-		 */
+    /**
+     * Array of bookmarks
+     */
     bookmarks: PropTypes.array,
-		/**
-		 * String representing the current search engine
-		 */
+    /**
+     * String representing the current search engine
+     */
     searchEngine: PropTypes.string,
-		/**
-		 * Function to store the a page in the browser history
-		 */
+    /**
+     * Function to store the a page in the browser history
+     */
     addToBrowserHistory: PropTypes.func,
-		/**
-		 * Function to store the a website in the browser whitelist
-		 */
+    /**
+     * Function to store the a website in the browser whitelist
+     */
     addToWhitelist: PropTypes.func,
-		/**
-		 * Function to update the tab information
-		 */
+    /**
+     * Function to update the tab information
+     */
     updateTabInfo: PropTypes.func,
-		/**
-		 * Function to update the tab information
-		 */
+    /**
+     * Function to update the tab information
+     */
     showTabs: PropTypes.func,
-		/**
-		 * Action to set onboarding wizard step
-		 */
+    /**
+     * Action to set onboarding wizard step
+     */
     setOnboardingWizardStep: PropTypes.func,
-		/**
-		 * Current onboarding wizard step
-		 */
+    /**
+     * Current onboarding wizard step
+     */
     wizardStep: PropTypes.number,
-		/**
-		 * the current version of the app
-		 */
-    app_version: PropTypes.string
-  };
+    /**
+     * the current version of the app
+     */
+    app_version: PropTypes.string,
+  }
 
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       approvedOrigin: false,
@@ -373,36 +374,36 @@ export class BrowserTab extends React.Component {
       showApprovalDialogHostname: undefined,
       showOptions: false,
       lastUrlBeforeHome: null,
-      entryScriptjs: ''
-    };
+      entryScriptjs: '',
+    }
   }
-  backgroundBridges = [];
-  webview = React.createRef();
-  inputRef = React.createRef();
-  sessionENSNames = {};
-  ensIgnoreList = [];
-  snapshotTimer = null;
-  goingBack = false;
-  wizardScrollAdjusted = false;
-  isReloading = false;
-  approvalRequest;
-  analyticsDistinctId;
+  backgroundBridges = []
+  webview = React.createRef()
+  inputRef = React.createRef()
+  sessionENSNames = {}
+  ensIgnoreList = []
+  snapshotTimer = null
+  goingBack = false
+  wizardScrollAdjusted = false
+  isReloading = false
+  approvalRequest
+  analyticsDistinctId
 
-	/**
-	 * Check that page metadata is available and call callback
-	 * if not, get metadata first
-	 */
+  /**
+   * Check that page metadata is available and call callback
+   * if not, get metadata first
+   */
   checkForPageMeta = callback => {
-    const { currentPageTitle } = this.state;
+    const { currentPageTitle } = this.state
     if (!currentPageTitle || currentPageTitle !== {}) {
       // We need to get the title to add bookmark
-      const { current } = this.webview;
-      current && current.injectJavaScript(JS_WINDOW_INFORMATION);
+      const { current } = this.webview
+      current && current.injectJavaScript(JS_WINDOW_INFORMATION)
     }
     setTimeout(() => {
-      callback();
-    }, 500);
-  };
+      callback()
+    }, 500)
+  }
 
   getPageMeta() {
     return new Promise(resolve => {
@@ -410,22 +411,22 @@ export class BrowserTab extends React.Component {
         resolve({
           meta: {
             title: this.state.currentPageTitle || '',
-            url: this.state.currentPageUrl || ''
-          }
+            url: this.state.currentPageUrl || '',
+          },
         })
-      );
-    });
+      )
+    })
   }
 
   async componentDidMount() {
-    this.mounted = true;
+    this.mounted = true
     if (this.isTabActive()) {
-      this.initialReload();
-      return;
+      this.initialReload()
+      return
     } else if (this.isTabActive() && this.isENSUrl(this.state.url)) {
-      this.go(this.state.inputValue);
+      this.go(this.state.inputValue)
     }
-    this.init();
+    this.init()
   }
 
   initializeBackgroundBridge = (url, isMainFrame) => {
@@ -433,225 +434,212 @@ export class BrowserTab extends React.Component {
       webview: this.webview,
       url,
       getRpcMethodMiddleware: this.getRpcMethodMiddleware.bind(this),
-      isMainFrame
-    });
-    this.backgroundBridges.push(newBridge);
-  };
+      isMainFrame,
+    })
+    this.backgroundBridges.push(newBridge)
+  }
 
   notifyConnection = (payload, hostname, restricted = true) => {
-    const { privacyMode, approvedHosts } = this.props;
+    const { privacyMode, approvedHosts } = this.props
 
     // TODO:permissions move permissioning logic elsewhere
     this.backgroundBridges.forEach(bridge => {
       if (bridge.hostname === hostname && (!restricted || !privacyMode || approvedHosts[bridge.hostname])) {
-        bridge.sendNotification(payload);
+        bridge.sendNotification(payload)
       }
-    });
-  };
+    })
+  }
 
   notifyAllConnections = (payload, restricted = true) => {
-    const { privacyMode, approvedHosts } = this.props;
-    const { fullHostname } = this.state;
+    const { privacyMode, approvedHosts } = this.props
+    const { fullHostname } = this.state
 
     // TODO:permissions move permissioning logic elsewhere
     this.backgroundBridges.forEach(bridge => {
       if (bridge.hostname === fullHostname && (!privacyMode || !restricted || approvedHosts[bridge.hostname])) {
-        bridge.sendNotification(payload);
+        bridge.sendNotification(payload)
       }
-    });
-  };
+    })
+  }
 
   getRpcMethodMiddleware = ({ hostname }) =>
     // all user facing RPC calls not implemented by the provider
     createAsyncMiddleware(async (req, res, next) => {
       const rpcMethods = {
         eth_requestAccounts: async () => {
-          const { params } = req;
-          const { approvedHosts, privacyMode, selectedAddress } = this.props;
+          const { params } = req
+          const { approvedHosts, privacyMode, selectedAddress } = this.props
 
           if (!privacyMode || ((!params || !params.force) && approvedHosts[hostname])) {
-            res.result = [selectedAddress];
+            res.result = [selectedAddress]
           } else {
             if (!this.state.showApprovalDialog) {
               setTimeout(async () => {
                 if (!this.state.showApprovalDialog) {
-                  await this.getPageMeta();
+                  await this.getPageMeta()
                   this.setState({
                     showApprovalDialog: true,
-                    showApprovalDialogHostname: hostname
-                  });
+                    showApprovalDialogHostname: hostname,
+                  })
                 }
-              }, 1000); // TODO: how long does this actually have to be?
+              }, 1000) // TODO: how long does this actually have to be?
             }
 
             const approved = await new Promise((resolve, reject) => {
-              this.approvalRequest = { resolve, reject };
-            });
+              this.approvalRequest = { resolve, reject }
+            })
 
             if (approved) {
-              res.result = [selectedAddress.toLowerCase()];
+              res.result = [selectedAddress.toLowerCase()]
             } else {
-              throw ethErrors.provider.userRejectedRequest('User denied account authorization.');
+              throw ethErrors.provider.userRejectedRequest('User denied account authorization.')
             }
           }
         },
 
         eth_accounts: async () => {
-          const { approvedHosts, privacyMode, selectedAddress } = this.props;
-          const isEnabled = !privacyMode || approvedHosts[hostname];
+          const { approvedHosts, privacyMode, selectedAddress } = this.props
+          const isEnabled = !privacyMode || approvedHosts[hostname]
           if (isEnabled) {
-            res.result = [selectedAddress.toLowerCase()];
+            res.result = [selectedAddress.toLowerCase()]
           } else {
-            res.result = [];
+            res.result = []
           }
         },
 
         eth_sign: async () => {
-          const { MessageManager } = Engine.context;
-          const pageMeta = await this.getPageMeta();
+          const { MessageManager } = Engine.context
+          const pageMeta = await this.getPageMeta()
           const rawSig = await MessageManager.addUnapprovedMessageAsync({
             data: req.params[1],
             from: req.params[0],
-            ...pageMeta
-          });
+            ...pageMeta,
+          })
 
-          res.result = rawSig;
+          res.result = rawSig
         },
 
         personal_sign: async () => {
-          const { PersonalMessageManager } = Engine.context;
-          const firstParam = req.params[0];
-          const secondParam = req.params[1];
+          const { PersonalMessageManager } = Engine.context
+          const firstParam = req.params[0]
+          const secondParam = req.params[1]
           const params = {
             data: firstParam,
-            from: secondParam
-          };
-
-          if (resemblesAddress(firstParam) && !resemblesAddress(secondParam)) {
-            params.data = secondParam;
-            params.from = firstParam;
+            from: secondParam,
           }
 
-          const pageMeta = await this.getPageMeta();
+          if (resemblesAddress(firstParam) && !resemblesAddress(secondParam)) {
+            params.data = secondParam
+            params.from = firstParam
+          }
+
+          const pageMeta = await this.getPageMeta()
           const rawSig = await PersonalMessageManager.addUnapprovedMessageAsync({
             ...params,
-            ...pageMeta
-          });
+            ...pageMeta,
+          })
 
-          res.result = rawSig;
+          res.result = rawSig
         },
 
         eth_signTypedData: async () => {
-          const { TypedMessageManager } = Engine.context;
-          const pageMeta = await this.getPageMeta();
+          const { TypedMessageManager } = Engine.context
+          const pageMeta = await this.getPageMeta()
           const rawSig = await TypedMessageManager.addUnapprovedMessageAsync(
             {
               data: req.params[0],
               from: req.params[1],
-              ...pageMeta
+              ...pageMeta,
             },
             'V1'
-          );
+          )
 
-          res.result = rawSig;
+          res.result = rawSig
         },
 
         eth_signTypedData_v3: async () => {
-          const { TypedMessageManager } = Engine.context;
-          const data = JSON.parse(req.params[1]);
-          const chainId = data.domain.chainId;
-          const activeChainId =
-            this.props.networkType === 'rpc'
-              ? this.props.network
-              : Networks[this.props.networkType].networkId;
+          const { TypedMessageManager } = Engine.context
+          const data = JSON.parse(req.params[1])
+          const chainId = data.domain.chainId
+          const activeChainId = this.props.networkType === 'rpc' ? this.props.network : Networks[this.props.networkType].networkId
 
           // eslint-disable-next-line eqeqeq
           if (chainId && chainId != activeChainId) {
-            throw ethErrors.rpc.invalidRequest(
-              `Provided chainId (${chainId}) must match the active chainId (${activeChainId})`
-            );
+            throw ethErrors.rpc.invalidRequest(`Provided chainId (${chainId}) must match the active chainId (${activeChainId})`)
           }
 
-          const pageMeta = await this.getPageMeta();
+          const pageMeta = await this.getPageMeta()
           const rawSig = await TypedMessageManager.addUnapprovedMessageAsync(
             {
               data: req.params[1],
               from: req.params[0],
-              ...pageMeta
+              ...pageMeta,
             },
             'V3'
-          );
+          )
 
-          res.result = rawSig;
+          res.result = rawSig
         },
 
         eth_signTypedData_v4: async () => {
-          const { TypedMessageManager } = Engine.context;
-          const data = JSON.parse(req.params[1]);
-          const chainId = data.domain.chainId;
-          const activeChainId =
-            this.props.networkType === 'rpc'
-              ? this.props.network
-              : Networks[this.props.networkType].networkId;
+          const { TypedMessageManager } = Engine.context
+          const data = JSON.parse(req.params[1])
+          const chainId = data.domain.chainId
+          const activeChainId = this.props.networkType === 'rpc' ? this.props.network : Networks[this.props.networkType].networkId
 
           // eslint-disable-next-line eqeqeq
           if (chainId && chainId != activeChainId) {
-            throw ethErrors.rpc.invalidRequest(
-              `Provided chainId (${chainId}) must match the active chainId (${activeChainId})`
-            );
+            throw ethErrors.rpc.invalidRequest(`Provided chainId (${chainId}) must match the active chainId (${activeChainId})`)
           }
 
-          const pageMeta = await this.getPageMeta();
+          const pageMeta = await this.getPageMeta()
           const rawSig = await TypedMessageManager.addUnapprovedMessageAsync(
             {
               data: req.params[1],
               from: req.params[0],
-              ...pageMeta
+              ...pageMeta,
             },
             'V4'
-          );
+          )
 
-          res.result = rawSig;
+          res.result = rawSig
         },
 
         web3_clientVersion: async () => {
-          res.result = `MetaMask/${this.props.app_version}/Beta/Mobile`;
+          res.result = `MetaMask/${this.props.app_version}/Beta/Mobile`
         },
 
         wallet_scanQRCode: async () => {
           this.props.navigation.navigate('QRScanner', {
             onScanSuccess: data => {
-              let result = data;
+              let result = data
               if (data.target_address) {
-                result = data.target_address;
+                result = data.target_address
               } else if (data.scheme) {
-                result = JSON.stringify(data);
+                result = JSON.stringify(data)
               }
-              res.result = result;
+              res.result = result
             },
             onScanError: e => {
-              throw ethErrors.rpc.internal(e.toString());
-            }
-          });
+              throw ethErrors.rpc.internal(e.toString())
+            },
+          })
         },
 
         wallet_watchAsset: async () => {
           const {
             options: { address, decimals, image, symbol },
-            type
-          } = req;
-          const { AssetsController } = Engine.context;
-          const suggestionResult = await AssetsController.watchAsset(
-            { address, symbol, decimals, image },
-            type
-          );
+            type,
+          } = req
+          const { AssetsController } = Engine.context
+          const suggestionResult = await AssetsController.watchAsset({ address, symbol, decimals, image }, type)
 
-          res.result = suggestionResult.result;
+          res.result = suggestionResult.result
         },
 
         metamask_removeFavorite: async () => {
           if (!this.isHomepage()) {
-            throw ethErrors.provider.unauthorized('Forbidden.');
+            throw ethErrors.provider.unauthorized('Forbidden.')
           }
 
           Alert.alert(strings('browser.remove_bookmark_title'), strings('browser.remove_bookmark_msg'), [
@@ -659,82 +647,84 @@ export class BrowserTab extends React.Component {
               text: strings('browser.cancel'),
               onPress: () => {
                 res.result = {
-                  favorites: this.props.bookmarks
-                };
+                  favorites: this.props.bookmarks,
+                }
               },
-              style: 'cancel'
+              style: 'cancel',
             },
             {
               text: strings('browser.yes'),
               onPress: () => {
-                const bookmark = { url: req.params[0] };
-                this.props.removeBookmark(bookmark);
+                const bookmark = { url: req.params[0] }
+                this.props.removeBookmark(bookmark)
                 // remove bookmark from homepage
-                this.refreshHomeScripts();
+                this.refreshHomeScripts()
                 res.result = {
-                  favorites: this.props.bookmarks
-                };
-              }
-            }
-          ]);
+                  favorites: this.props.bookmarks,
+                }
+              },
+            },
+          ])
         },
 
         metamask_showTutorial: async () => {
-          this.wizardScrollAdjusted = false;
-          this.props.setOnboardingWizardStep(1);
-          this.props.navigation.navigate('WalletView');
+          this.wizardScrollAdjusted = false
+          this.props.setOnboardingWizardStep(1)
+          this.props.navigation.navigate('WalletView')
 
-          res.result = true;
+          res.result = true
         },
 
         metamask_showAutocomplete: async () => {
-          this.fromHomepage = true;
+          this.fromHomepage = true
           this.setState(
             {
-              autocompleteInputValue: ''
+              autocompleteInputValue: '',
             },
             () => {
-              this.showUrlModal(true);
+              this.showUrlModal(true)
               setTimeout(() => {
-                this.fromHomepage = false;
-              }, 1500);
+                this.fromHomepage = false
+              }, 1500)
             }
-          );
+          )
 
-          res.result = true;
-        }
-      };
+          res.result = true
+        },
+      }
 
       if (!rpcMethods[req.method]) {
-        return next();
+        return next()
       }
-      await rpcMethods[req.method]();
-    });
+      await rpcMethods[req.method]()
+    })
 
   init = async () => {
-    const entryScriptWeb3 = await EntryScriptWeb3.get();
+    const entryScriptWeb3 = await EntryScriptWeb3.get()
 
     const homepageScripts = `
       window.__mmFavorites = ${JSON.stringify(this.props.bookmarks)};
       window.__mmSearchEngine = "${this.props.searchEngine}";
-    `;
-
+    `
 
     let publicKey
     let accounts = []
-    const { FOAccounts, currentFOID } = this.props.accountStore
+    const { FOAccounts, currentFOID, EOSAccounts, currentEOSID } = this.props.accountStore
 
     let entryScriptjs = ''
     if (FOAccounts.length) {
-      FOAccounts.forEach((item) => {
+      FOAccounts.forEach(item => {
         if (item.FOWallet.hasCreated) {
           if (currentFOID === item.id) {
             publicKey = item.FOWallet.address
-            accounts = [{
-              name: item.FOWallet.name || item.name,
-              blockchain: 'fibos',
-              authority: `active`,
-            }, ...accounts]
+            accounts = [
+              {
+                name: item.FOWallet.name || item.name,
+                blockchain: 'fibos',
+                authority: `active`,
+              },
+              ...accounts,
+            ]
           } else {
             accounts.push({
               name: item.FOWallet.name || item.name,
@@ -747,93 +737,118 @@ export class BrowserTab extends React.Component {
       entryScriptjs = RenderIronman(accounts, publicKey)
     }
 
-    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: entryScriptWeb3, homepageScripts });
-    Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
-      if (!this.isTabActive()) return false;
-      this.setState({ watchAsset: true, suggestedAssetMeta });
-    });
-
-    // Deeplink handling
-    this.unsubscribeFromBranch = Branch.subscribe(this.handleDeeplinks);
-    // Check if there's a deeplink pending from launch
-    const pendingDeeplink = DeeplinkManager.getPendingDeeplink();
-    if (pendingDeeplink) {
-      // Expire it to avoid duplicate actions
-      DeeplinkManager.expireDeeplink();
-      // Handle it
-      setTimeout(() => {
-        this.handleBranchDeeplink(pendingDeeplink);
-      }, 1000);
+    if (EOSAccounts.length) {
+      EOSAccounts.forEach(item => {
+        if (item.EOSWallet.hasCreated) {
+          if (currentEOSID === item.id) {
+            publicKey = item.EOSWallet.address
+            accounts = [
+              {
+                name: item.EOSWallet.name || item.name,
+                blockchain: 'eos',
+                authority: `active`,
+              },
+              ...accounts,
+            ]
+          } else {
+            accounts.push({
+              name: item.EOSWallet.name || item.name,
+              blockchain: 'eos',
+              authority: `active`,
+            })
+          }
+        }
+      })
+      entryScriptjs += RenderScatter(accounts, publicKey)
     }
 
-    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide);
+    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: entryScriptWeb3, homepageScripts })
+    Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
+      if (!this.isTabActive()) return false
+      this.setState({ watchAsset: true, suggestedAssetMeta })
+    })
+
+    // Deeplink handling
+    this.unsubscribeFromBranch = Branch.subscribe(this.handleDeeplinks)
+    // Check if there's a deeplink pending from launch
+    const pendingDeeplink = DeeplinkManager.getPendingDeeplink()
+    if (pendingDeeplink) {
+      // Expire it to avoid duplicate actions
+      DeeplinkManager.expireDeeplink()
+      // Handle it
+      setTimeout(() => {
+        this.handleBranchDeeplink(pendingDeeplink)
+      }, 1000)
+    }
+
+    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide)
 
     // Listen to network changes
-    Engine.context.TransactionController.hub.on('networkChange', this.reload);
+    Engine.context.TransactionController.hub.on('networkChange', this.reload)
 
-    BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBackPress);
+    BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBackPress)
 
     if (Device.isAndroid()) {
-      DrawerStatusTracker.hub.on('drawer::open', this.drawerOpenHandler);
+      DrawerStatusTracker.hub.on('drawer::open', this.drawerOpenHandler)
     }
 
     // Handle hardwareBackPress event only for browser, not components rendered on top
     this.props.navigation.addListener('willFocus', () => {
-      BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBackPress);
-    });
+      BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBackPress)
+    })
     this.props.navigation.addListener('willBlur', () => {
-      BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBackPress);
-    });
-  };
+      BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBackPress)
+    })
+  }
 
   drawerOpenHandler = () => {
-    this.dismissTextSelectionIfNeeded();
-  };
+    this.dismissTextSelectionIfNeeded()
+  }
 
   handleDeeplinks = async ({ error, params }) => {
-    if (!this.isTabActive()) return false;
+    if (!this.isTabActive()) return false
     if (error) {
-      console.error(error, 'Error from Branch');
-      return;
+      console.error(error, 'Error from Branch')
+      return
     }
     if (params['+non_branch_link']) {
-      this.handleBranchDeeplink(params['+non_branch_link']);
+      this.handleBranchDeeplink(params['+non_branch_link'])
     } else if (params.spotlight_identifier) {
       setTimeout(() => {
         this.props.navigation.setParams({
           url: params.spotlight_identifier,
           silent: false,
-          showUrlModal: false
-        });
-      }, 1000);
+          showUrlModal: false,
+        })
+      }, 1000)
     }
-  };
+  }
 
   handleBranchDeeplink(deeplink_url) {
-    console.log('Branch Deeplink detected!', deeplink_url);
+    console.log('Branch Deeplink detected!', deeplink_url)
     DeeplinkManager.parse(deeplink_url, url => {
-      this.openNewTab(url);
-    });
+      this.openNewTab(url)
+    })
   }
 
   handleAndroidBackPress = () => {
-    if (!this.isTabActive()) return false;
+    if (!this.isTabActive()) return false
 
     if (this.isHomepage() && this.props.navigation.getParam('url', null) === null) {
-      return false;
+      return false
     }
-    this.goBack();
-    return true;
-  };
+    this.goBack()
+    return true
+  }
 
   async loadUrl() {
-    if (!this.isTabActive()) return;
-    const { navigation } = this.props;
+    if (!this.isTabActive()) return
+    const { navigation } = this.props
     if (navigation) {
-      const url = navigation.getParam('url', null);
-      const silent = navigation.getParam('silent', false);
+      const url = navigation.getParam('url', null)
+      const silent = navigation.getParam('silent', false)
       if (url && !silent) {
-        await this.go(url);
+        await this.go(url)
       }
     }
   }
@@ -843,263 +858,261 @@ export class BrowserTab extends React.Component {
       window.__mmFavorites = ${JSON.stringify(this.props.bookmarks)};
       window.__mmSearchEngine="${this.props.searchEngine}";
 	  window.postMessage('updateFavorites', '*');
-	`;
+	`
     this.setState({ homepageScripts }, () => {
-      const { current } = this.webview;
+      const { current } = this.webview
       if (current) {
-        current.injectJavaScript(homepageScripts);
+        current.injectJavaScript(homepageScripts)
       }
-    });
-  };
+    })
+  }
 
   setTabActive() {
-    this.setState({ activated: true });
+    this.setState({ activated: true })
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      approvedHosts: prevApprovedHosts,
-      navigation: prevNavigation,
-      selectedAddress: prevSelectedAddress
-    } = prevProps;
-    const { approvedHosts, navigation, selectedAddress } = this.props;
+    const { approvedHosts: prevApprovedHosts, navigation: prevNavigation, selectedAddress: prevSelectedAddress } = prevProps
+    const { approvedHosts, navigation, selectedAddress } = this.props
 
     // If tab wasn't activated and we detect an tab change
     // we need to check if it's time to activate the tab
     if (!this.state.activated && prevProps.activeTab !== this.props.activeTab) {
       if (this.props.id === this.props.activeTab) {
-        this.setTabActive();
+        this.setTabActive()
       }
     }
 
     if (prevNavigation && navigation) {
-      const prevUrl = prevNavigation.getParam('url', null);
-      const currentUrl = navigation.getParam('url', null);
+      const prevUrl = prevNavigation.getParam('url', null)
+      const currentUrl = navigation.getParam('url', null)
       if (currentUrl && prevUrl !== currentUrl && currentUrl !== this.state.url) {
-        this.loadUrl();
+        this.loadUrl()
       }
     }
 
-    const numApprovedHosts = Object.keys(approvedHosts).length;
-    const prevNumApprovedHosts = Object.keys(prevApprovedHosts).length;
+    const numApprovedHosts = Object.keys(approvedHosts).length
+    const prevNumApprovedHosts = Object.keys(prevApprovedHosts).length
 
     // this will happen if the approved hosts were cleared
     if (numApprovedHosts === 0 && prevNumApprovedHosts > 0) {
       this.notifyAllConnections(
         {
           method: NOTIFICATION_NAMES.accountsChanged,
-          result: []
+          result: [],
         },
         false
-      ); // notification should be sent regardless of approval status
+      ) // notification should be sent regardless of approval status
     }
 
     if (numApprovedHosts > 0 && selectedAddress !== prevSelectedAddress) {
       this.notifyAllConnections({
         method: NOTIFICATION_NAMES.accountsChanged,
-        result: [selectedAddress]
-      });
+        result: [selectedAddress],
+      })
     }
   }
 
   componentWillUnmount() {
-    this.mounted = false;
-    this.backgroundBridges.forEach(bridge => bridge.onDisconnect());
+    this.mounted = false
+    this.backgroundBridges.forEach(bridge => bridge.onDisconnect())
     // Remove all Engine listeners
-    Engine.context.AssetsController.hub.removeAllListeners();
-    Engine.context.TransactionController.hub.removeListener('networkChange', this.reload);
-    this.keyboardDidHideListener && this.keyboardDidHideListener.remove();
+    Engine.context.AssetsController.hub.removeAllListeners()
+    Engine.context.TransactionController.hub.removeListener('networkChange', this.reload)
+    this.keyboardDidHideListener && this.keyboardDidHideListener.remove()
     if (Device.isAndroid()) {
-      BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBackPress);
-      DrawerStatusTracker && DrawerStatusTracker.hub && DrawerStatusTracker.hub.removeAllListeners();
+      BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBackPress)
+      DrawerStatusTracker && DrawerStatusTracker.hub && DrawerStatusTracker.hub.removeAllListeners()
     }
     if (this.unsubscribeFromBranch) {
-      this.unsubscribeFromBranch();
-      this.unsubscribeFromBranch = null;
+      this.unsubscribeFromBranch()
+      this.unsubscribeFromBranch = null
     }
   }
 
   keyboardDidHide = () => {
-    if (!this.isTabActive()) return false;
+    if (!this.isTabActive()) return false
     if (!this.fromHomepage) {
-      const showUrlModal =
-        (this.props.navigation && this.props.navigation.getParam('showUrlModal', false)) || false;
+      const showUrlModal = (this.props.navigation && this.props.navigation.getParam('showUrlModal', false)) || false
       if (showUrlModal) {
-        this.hideUrlModal();
+        this.hideUrlModal()
       }
     }
-  };
+  }
 
   isENSUrl(url) {
-    const { hostname } = new URL(url);
-    const tld = hostname.split('.').pop();
+    const { hostname } = new URL(url)
+    const tld = hostname.split('.').pop()
     if (AppConstants.supportedTLDs.indexOf(tld.toLowerCase()) !== -1) {
       // Make sure it's not in the ignore list
       if (this.ensIgnoreList.indexOf(hostname) === -1) {
-        return true;
+        return true
       }
     }
-    return false;
+    return false
   }
 
   isAllowedUrl = hostname => {
-    const { PhishingController } = Engine.context;
-    const { whitelist } = this.props;
-    return (whitelist && whitelist.includes(hostname)) || !PhishingController.test(hostname);
-  };
+    const { PhishingController } = Engine.context
+    const { whitelist } = this.props
+    return (whitelist && whitelist.includes(hostname)) || !PhishingController.test(hostname)
+  }
 
   handleNotAllowedUrl = urlToGo => {
-    this.blockedUrl = urlToGo;
+    this.blockedUrl = urlToGo
     setTimeout(() => {
-      this.setState({ showPhishingModal: true });
-    }, 500);
-  };
+      this.setState({ showPhishingModal: true })
+    }, 500)
+  }
 
   updateTabInfo(url) {
-    this.isTabActive() && this.props.updateTabInfo(url, this.props.id);
+    this.isTabActive() && this.props.updateTabInfo(url, this.props.id)
   }
 
   go = async url => {
-    const hasProtocol = url.match(/^[a-z]*:\/\//) || this.isHomepage(url);
-    const sanitizedURL = hasProtocol ? url : `${this.props.defaultProtocol}${url}`;
-    const { hostname, query, pathname } = new URL(sanitizedURL);
+    const hasProtocol = url.match(/^[a-z]*:\/\//) || this.isHomepage(url)
+    const sanitizedURL = hasProtocol ? url : `${this.props.defaultProtocol}${url}`
+    const { hostname, query, pathname } = new URL(sanitizedURL)
 
-    let contentId, contentUrl, contentType;
-    const urlToGo = contentUrl || sanitizedURL;
+    let contentId, contentUrl, contentType
+    const urlToGo = contentUrl || sanitizedURL
 
     if (this.isAllowedUrl(hostname)) {
-      this.setState({
-        // url: urlToGo,
-        progress: 0,
-        ipfsWebsite: !!contentUrl,
-        inputValue: sanitizedURL,
-        currentEnsName: hostname,
-        contentId,
-        contentType,
-        hostname: this.formatHostname(hostname),
-        fullHostname: hostname
-      }, () => {
-        // confirm inject web3
-        setTimeout(() => {
-          this.setState({
-            url: urlToGo
-          });
-        }, 1)
-      });
+      this.setState(
+        {
+          // url: urlToGo,
+          progress: 0,
+          ipfsWebsite: !!contentUrl,
+          inputValue: sanitizedURL,
+          currentEnsName: hostname,
+          contentId,
+          contentType,
+          hostname: this.formatHostname(hostname),
+          fullHostname: hostname,
+        },
+        () => {
+          // confirm inject web3
+          setTimeout(() => {
+            this.setState({
+              url: urlToGo,
+            })
+          }, 1)
+        }
+      )
 
-      this.props.navigation.setParams({ url: this.state.inputValue, silent: true });
+      this.props.navigation.setParams({ url: this.state.inputValue, silent: true })
 
-      this.updateTabInfo(sanitizedURL);
-      return sanitizedURL;
+      this.updateTabInfo(sanitizedURL)
+      return sanitizedURL
     }
-    this.handleNotAllowedUrl(urlToGo);
-    return null;
-  };
+    this.handleNotAllowedUrl(urlToGo)
+    return null
+  }
 
   onUrlInputSubmit = async (input = null) => {
-    this.toggleOptionsIfNeeded();
-    const inputValue = (typeof input === 'string' && input) || this.state.autocompleteInputValue;
-    const { defaultProtocol, searchEngine } = this.props;
+    this.toggleOptionsIfNeeded()
+    const inputValue = (typeof input === 'string' && input) || this.state.autocompleteInputValue
+    const { defaultProtocol, searchEngine } = this.props
     if (inputValue !== '') {
-      const sanitizedInput = onUrlSubmit(inputValue, searchEngine, defaultProtocol);
-      const url = await this.go(sanitizedInput);
-      this.hideUrlModal(url);
+      const sanitizedInput = onUrlSubmit(inputValue, searchEngine, defaultProtocol)
+      const url = await this.go(sanitizedInput)
+      this.hideUrlModal(url)
     } else {
-      this.hideUrlModal();
+      this.hideUrlModal()
     }
     // Analytics.trackEvent(ANALYTICS_EVENT_OPTS.BROWSER_SEARCH);
-  };
+  }
 
   goBack = () => {
-    if (!this.canGoBack()) return;
+    if (!this.canGoBack()) return
 
-    this.toggleOptionsIfNeeded();
-    this.goingBack = true;
+    this.toggleOptionsIfNeeded()
+    this.goingBack = true
     setTimeout(() => {
-      this.goingBack = false;
-    }, 500);
+      this.goingBack = false
+    }, 500)
 
-    const { current } = this.webview;
-    const { lastUrlBeforeHome } = this.state;
+    const { current } = this.webview
+    const { lastUrlBeforeHome } = this.state
 
     if (this.isHomepage() && lastUrlBeforeHome) {
-      this.go(lastUrlBeforeHome);
+      this.go(lastUrlBeforeHome)
     } else {
-      current && current.goBack();
+      current && current.goBack()
     }
 
     setTimeout(() => {
       this.props.navigation.setParams({
         ...this.props.navigation.state.params,
-        url: this.state.inputValue
-      });
-    }, 100);
+        url: this.state.inputValue,
+      })
+    }, 100)
     // Need to wait for nav_change & onPageChanged
     setTimeout(() => {
       this.setState({
         forwardEnabled: true,
-        currentPageTitle: null
-      });
-    }, 1000);
-  };
+        currentPageTitle: null,
+      })
+    }, 1000)
+  }
 
   goBackToHomepage = async () => {
     // this.go('https://cross.fo');
     // return
-    this.toggleOptionsIfNeeded();
-    const lastUrlBeforeHome = this.state.inputValue;
+    this.toggleOptionsIfNeeded()
+    const lastUrlBeforeHome = this.state.inputValue
     // await this.setState({ url: null })
-    await this.go(HOMEPAGE_URL);
+    await this.go(HOMEPAGE_URL)
     if (lastUrlBeforeHome === HOMEPAGE_URL) {
-      this.reload();
+      this.reload()
     } else {
-      this.forceReload();
+      this.forceReload()
     }
     setTimeout(() => {
       this.props.navigation.setParams({
         ...this.props.navigation.state.params,
-        url: HOMEPAGE_URL
-      });
-    }, 100);
+        url: HOMEPAGE_URL,
+      })
+    }, 100)
     // Analytics.trackEvent(ANALYTICS_EVENT_OPTS.DAPP_HOME);
     setTimeout(() => {
-      this.setState({ lastUrlBeforeHome });
-    }, 1000);
-  };
+      this.setState({ lastUrlBeforeHome })
+    }, 1000)
+  }
 
   goForward = async () => {
-    const { current } = this.webview;
-    const { lastUrlBeforeHome } = this.state;
+    const { current } = this.webview
+    const { lastUrlBeforeHome } = this.state
     if (lastUrlBeforeHome) {
-      this.go(lastUrlBeforeHome);
+      this.go(lastUrlBeforeHome)
     } else if (this.canGoForward()) {
-      this.toggleOptionsIfNeeded();
-      current && current.goForward && current.goForward();
+      this.toggleOptionsIfNeeded()
+      current && current.goForward && current.goForward()
     }
 
-    const forwardEnabled = current && current.canGoForward && (await current.canGoForward());
-    this.setState({ forwardEnabled });
-  };
+    const forwardEnabled = current && current.canGoForward && (await current.canGoForward())
+    this.setState({ forwardEnabled })
+  }
 
   reload = () => {
-    this.toggleOptionsIfNeeded();
-    const { current } = this.webview;
-    current && current.reload();
-  };
+    this.toggleOptionsIfNeeded()
+    const { current } = this.webview
+    current && current.reload()
+  }
 
   forceReload = initialReload => {
-    this.isReloading = true;
+    this.isReloading = true
 
-    this.toggleOptionsIfNeeded();
+    this.toggleOptionsIfNeeded()
     // As we're reloading to other url we should remove this callback
-    this.approvalRequest = undefined;
-    const url2Reload = this.state.inputValue;
+    this.approvalRequest = undefined
+    const url2Reload = this.state.inputValue
 
     // If it is the first time the component is being mounted, there should be no cache problem and no need for remounting the component
     if (initialReload) {
-      this.isReloading = false;
-      this.go(url2Reload);
-      return;
+      this.isReloading = false
+      this.go(url2Reload)
+      return
     }
 
     // Force unmount the webview to avoid caching problems
@@ -1108,140 +1121,185 @@ export class BrowserTab extends React.Component {
       // this.webview.current = null;
       setTimeout(() => {
         this.setState({ forceReload: false }, () => {
-          this.isReloading = false;
-          this.go(url2Reload);
-        });
-      }, 300);
-    });
-  };
+          this.isReloading = false
+          this.go(url2Reload)
+        })
+      }, 300)
+    })
+  }
 
   initialReload = () => {
     if (this.webview && this.webview.current) {
-      this.webview.current.stopLoading();
+      this.webview.current.stopLoading()
     }
-    this.forceReload(true);
-    this.init();
-  };
+    this.forceReload(true)
+    this.init()
+  }
 
   addBookmark = () => {
-    this.toggleOptionsIfNeeded();
+    this.toggleOptionsIfNeeded()
     this.checkForPageMeta(() =>
       this.props.navigation.push('AddBookmarkView', {
         title: this.state.currentPageTitle || '',
         url: this.state.inputValue,
         onAddBookmark: async ({ name, url }) => {
-          this.props.addBookmark({ name, url });
+          this.props.addBookmark({ name, url })
           const homepageScripts = `
             window.__mmFavorites = ${JSON.stringify(this.props.bookmarks)};
             window.__mmSearchEngine="${this.props.searchEngine}";
-          `;
-          this.setState({ homepageScripts });
-        }
+          `
+          this.setState({ homepageScripts })
+        },
       })
-    );
-  };
+    )
+  }
 
   share = () => {
-    this.toggleOptionsIfNeeded();
+    this.toggleOptionsIfNeeded()
     Share.open({
-      url: this.state.inputValue
+      url: this.state.inputValue,
     }).catch(err => {
-      console.log('Error while trying to share address', err);
-    });
-  };
+      console.log('Error while trying to share address', err)
+    })
+  }
 
   switchNetwork = () => {
-    this.toggleOptionsIfNeeded();
+    this.toggleOptionsIfNeeded()
     setTimeout(() => {
-      this.props.toggleNetworkModal();
-    }, 300);
-  };
+      this.props.toggleNetworkModal()
+    }, 300)
+  }
 
   onNewTabPress = () => {
-    this.openNewTab();
-  };
+    this.openNewTab()
+  }
   openNewTab = url => {
-    this.toggleOptionsIfNeeded();
+    this.toggleOptionsIfNeeded()
     setTimeout(() => {
-      this.props.newTab(url);
-    }, 300);
-  };
+      this.props.newTab(url)
+    }, 300)
+  }
 
   openInBrowser = () => {
-    this.toggleOptionsIfNeeded();
-    Linking.openURL(this.state.inputValue).catch(error =>
-      console.log('Error while trying to open external link: ${url}', error)
-    );
-  };
+    this.toggleOptionsIfNeeded()
+    Linking.openURL(this.state.inputValue).catch(error => console.log('Error while trying to open external link: ${url}', error))
+  }
 
   dismissTextSelectionIfNeeded() {
     if (this.isTabActive() && Device.isAndroid()) {
-      const { current } = this.webview;
+      const { current } = this.webview
       if (current) {
         setTimeout(() => {
-          current.injectJavaScript(JS_DESELECT_TEXT);
-        }, 50);
+          current.injectJavaScript(JS_DESELECT_TEXT)
+        }, 50)
       }
     }
   }
 
   toggleOptionsIfNeeded() {
     if (this.state.showOptions) {
-      this.toggleOptions();
+      this.toggleOptions()
     }
   }
 
   toggleOptions = () => {
-    this.dismissTextSelectionIfNeeded();
-    this.setState({ showOptions: !this.state.showOptions });
-  };
+    this.dismissTextSelectionIfNeeded()
+    this.setState({ showOptions: !this.state.showOptions })
+  }
 
-  transferFo = async (data) => {
-    const {
-      ironman,
-      params = {},
-    } = data
+  transferFo = async data => {
+    const { ironman, params = {} } = data
     if (ironman === 'signProvider') {
       const { current: currentWebview } = this.webview
       const { transaction } = params
       if (transaction) {
         const { actions } = transaction
         const cancel = () => {
-          currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+          currentWebview.postMessage(JSON.stringify({ ...data, msg: 'cancel' }))
         }
         const confirm = async (pwd, password) => {
           if (pwd === password) {
             const fibos = Ironman.fibos
             const resp = await fibos.transaction(transaction, { broadcast: false })
             const {
-              transaction: {
-                signatures
-              }
+              transaction: { signatures },
             } = resp
             Toast.success('sign success')
             currentWebview.postMessage(JSON.stringify({ ...data, data: signatures }))
           } else {
             Toast.fail('password fail')
-            currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+            currentWebview.postMessage(JSON.stringify({ ...data, msg: 'password fail' }))
           }
         }
-        const actionsBtn = [{ text: 'Cancel', style: 'cancel', onPress: cancel }, {
-          text: 'Confirm', onPress: async (pwd) => {
-            try {
-              const { password } = await SecureKeychain.getGenericPassword();
-              confirm(pwd !== undefined ? pwd : password, password)
-            } catch (error) {
-              cancel()
-            }
-          }
-        }]
+        const actionsBtn = [
+          { text: 'Cancel', style: 'cancel', onPress: cancel },
+          {
+            text: 'Confirm',
+            onPress: async pwd => {
+              try {
+                const { password } = await SecureKeychain.getGenericPassword()
+                confirm(pwd !== undefined ? pwd : password, password)
+              } catch (error) {
+                currentWebview.postMessage(JSON.stringify({ ...data, msg: 'sign fail' }))
+              }
+            },
+          },
+        ]
 
         const biometry = await isBiometry()
         if (biometry) {
-          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel);
+          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel)
         } else {
-          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn,
-            'secure-text', '', ['', 'Input your password'], cancel);
+          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, 'secure-text', '', ['', 'Input your password'], cancel)
+        }
+      }
+    }
+  }
+
+  transferEOS = async data => {
+    const { scatter, params = {} } = data
+    if (scatter === 'signProvider') {
+      const { current: currentWebview } = this.webview
+      const { transaction } = params
+      if (transaction) {
+        const { actions } = transaction
+        const cancel = () => {
+          currentWebview.postMessage(JSON.stringify({ ...data, msg: 'cancel' }))
+        }
+        const confirm = async (pwd, password) => {
+          if (pwd === password) {
+            const eosjs = Scatter.eosjs
+            const resp = await eosjs.transaction(transaction, { broadcast: false })
+            const {
+              transaction: { signatures },
+            } = resp
+            Toast.success('sign success')
+            currentWebview.postMessage(JSON.stringify({ ...data, data: signatures }))
+          } else {
+            Toast.fail('password fail')
+            currentWebview.postMessage(JSON.stringify({ ...data, msg: 'fail' }))
+          }
+        }
+        const actionsBtn = [
+          { text: 'Cancel', style: 'cancel', onPress: cancel },
+          {
+            text: 'Confirm',
+            onPress: async pwd => {
+              try {
+                const { password } = await SecureKeychain.getGenericPassword()
+                confirm(pwd !== undefined ? pwd : password, password)
+              } catch (error) {
+                cancel()
+              }
+            },
+          },
+        ]
+
+        const biometry = await isBiometry()
+        if (biometry) {
+          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel)
+        } else {
+          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, 'secure-text', '', ['', 'Input your password'], cancel)
         }
       }
     }
@@ -1249,46 +1307,50 @@ export class BrowserTab extends React.Component {
 
   onMessage = ({ nativeEvent: { data: strData } }) => {
     try {
-      const data = typeof strData === 'string' ? JSON.parse(strData) : strData;
+      const data = typeof strData === 'string' ? JSON.parse(strData) : strData
       // fibos
-      if (data && data.ironman) {
-        this.transferFo(data)
+      if (data) {
+        if (data.ironman) {
+          this.transferFo(data)
+        } else if (data.scatter) {
+          this.transferEOS(data)
+        }
         return
       } else if (!data || (!data.type && !data.name)) {
-        return;
+        return
       }
 
       if (data.name) {
         this.backgroundBridges.forEach(bridge => {
           if (bridge.isMainFrame) {
-            const { origin } = data && data.origin && new URL(data.origin);
-            bridge.url === origin && bridge.onMessage(data);
+            const { origin } = data && data.origin && new URL(data.origin)
+            bridge.url === origin && bridge.onMessage(data)
           } else {
-            bridge.url === data.origin && bridge.onMessage(data);
+            bridge.url === data.origin && bridge.onMessage(data)
           }
-        });
-        return;
+        })
+        return
       }
 
       switch (data.type) {
         case 'FRAME_READY': {
-          const { url } = data.payload;
-          this.onFrameLoadStarted(url);
-          break;
+          const { url } = data.payload
+          this.onFrameLoadStarted(url)
+          break
         }
 
         case 'NAV_CHANGE': {
-          const { url, title } = data.payload;
+          const { url, title } = data.payload
           this.setState({
             inputValue: url,
             autocompletInputValue: url,
             currentPageTitle: title,
-            forwardEnabled: false
-          });
-          this.setState({ lastUrlBeforeHome: null });
-          this.props.navigation.setParams({ url: data.payload.url, silent: true, showUrlModal: false });
-          this.updateTabInfo(data.payload.url);
-          break;
+            forwardEnabled: false,
+          })
+          this.setState({ lastUrlBeforeHome: null })
+          this.props.navigation.setParams({ url: data.payload.url, silent: true, showUrlModal: false })
+          this.updateTabInfo(data.payload.url)
+          break
         }
 
         case 'GET_TITLE_FOR_BOOKMARK':
@@ -1296,106 +1358,97 @@ export class BrowserTab extends React.Component {
             this.setState({
               currentPageTitle: data.payload.title,
               currentPageUrl: data.payload.url,
-              currentPageIcon: data.payload.icon
-            });
+              currentPageIcon: data.payload.icon,
+            })
           }
-          break;
+          break
       }
     } catch (e) {
-      console.error(e, `Browser::onMessage on ${this.state.inputValue}`);
+      console.error(e, `Browser::onMessage on ${this.state.inputValue}`)
     }
-  };
+  }
 
   onShouldStartLoadWithRequest = ({ url, navigationType }) => {
     if (Device.isIos()) {
-      return true;
+      return true
     }
     if (this.isENSUrl(url) && navigationType === 'other') {
-      this.go(url.replace('http://', 'https://'));
-      return false;
+      this.go(url.replace('http://', 'https://'))
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
   onPageChange = ({ url }) => {
     if (this.isHomepage(url)) {
-      this.refreshHomeScripts();
+      this.refreshHomeScripts()
     }
-    if (url === this.state.url && !this.isHomepage(url)) return;
-    const { ipfsGateway } = this.props;
-    const data = {};
-    const urlObj = new URL(url);
+    if (url === this.state.url && !this.isHomepage(url)) return
+    const { ipfsGateway } = this.props
+    const data = {}
+    const urlObj = new URL(url)
     if (urlObj.protocol.indexOf('http') === -1) {
-      return;
+      return
     }
 
     if (this.resolvingENSUrl) {
-      return;
+      return
     }
 
     if (!this.isHomepage(url)) {
-      this.setState({ lastUrlBeforeHome: null });
+      this.setState({ lastUrlBeforeHome: null })
     }
 
     if (!this.state.showPhishingModal && !this.isAllowedUrl(urlObj.hostname)) {
-      this.handleNotAllowedUrl(url);
+      this.handleNotAllowedUrl(url)
     }
 
-    data.fullHostname = urlObj.hostname;
+    data.fullHostname = urlObj.hostname
 
     if (this.isENSUrl(url)) {
-      this.go(url.replace('http://', 'https://'));
-      const { current } = this.webview;
-      current && current.stopLoading();
-      return;
+      this.go(url.replace('http://', 'https://'))
+      const { current } = this.webview
+      current && current.stopLoading()
+      return
     } else if (url.search(`${AppConstants.IPFS_OVERRIDE_PARAM}=false`) === -1) {
       if (this.state.contentType === 'ipfs-ns') {
-        data.inputValue = url.replace(
-          `${ipfsGateway}${this.state.contentId}/`,
-          `https://${this.state.currentEnsName}/`
-        );
+        data.inputValue = url.replace(`${ipfsGateway}${this.state.contentId}/`, `https://${this.state.currentEnsName}/`)
       } else {
-        data.inputValue = url.replace(
-          `${AppConstants.SWARM_GATEWAY_URL}${this.state.contentId}/`,
-          `https://${this.state.currentEnsName}/`
-        );
+        data.inputValue = url.replace(`${AppConstants.SWARM_GATEWAY_URL}${this.state.contentId}/`, `https://${this.state.currentEnsName}/`)
       }
     } else {
-      data.inputValue = url;
-      data.hostname = this.formatHostname(urlObj.hostname);
+      data.inputValue = url
+      data.hostname = this.formatHostname(urlObj.hostname)
     }
 
-    const { fullHostname, inputValue, hostname } = data;
-    if (
-      fullHostname !== this.state.fullHostname ||
-      url.search(`${AppConstants.IPFS_OVERRIDE_PARAM}=false`) !== -1
-    ) {
+    const { fullHostname, inputValue, hostname } = data
+    if (fullHostname !== this.state.fullHostname || url.search(`${AppConstants.IPFS_OVERRIDE_PARAM}=false`) !== -1) {
       if (this.isTabActive()) {
-        this.props.navigation.setParams({ url, silent: true, showUrlModal: false });
+        this.props.navigation.setParams({ url, silent: true, showUrlModal: false })
       }
     }
 
-    this.updateTabInfo(inputValue);
+    this.updateTabInfo(inputValue)
     this.setState({
       fullHostname,
       inputValue,
       autocompleteInputValue: inputValue,
       hostname,
-      forwardEnabled: false
-    });
-  };
+      forwardEnabled: false,
+    })
+  }
 
   formatHostname(hostname) {
-    return hostname.toLowerCase().replace('www.', '');
+    return hostname.toLowerCase().replace('www.', '')
   }
 
   onURLChange = inputValue => {
-    this.setState({ autocompleteInputValue: inputValue });
-  };
+    this.setState({ autocompleteInputValue: inputValue })
+  }
 
   onLoadProgress = ({ nativeEvent: { progress } }) => {
-    this.setState({ progress });
-  };
+    this.setState({ progress })
+  }
 
   onLoadEnd = () => {
     // Wait for the title, then store the visit
@@ -1403,47 +1456,42 @@ export class BrowserTab extends React.Component {
     setTimeout(() => {
       this.props.addToBrowserHistory({
         name: this.state.currentPageTitle,
-        url: this.state.inputValue
-      });
-    }, 500);
+        url: this.state.inputValue,
+      })
+    }, 500)
 
     // Let's wait for potential redirects that might break things
     if (!this.initialUrl || this.isHomepage(this.initialUrl)) {
       setTimeout(() => {
-        this.initialUrl = this.state.inputValue;
-      }, 1000);
+        this.initialUrl = this.state.inputValue
+      }, 1000)
     }
 
-    const { current } = this.webview;
+    const { current } = this.webview
     // Inject favorites on the homepage
     if (this.isHomepage() && current) {
-      const js = this.state.homepageScripts;
-      current.injectJavaScript(js);
+      const js = this.state.homepageScripts
+      current.injectJavaScript(js)
     }
-  };
+  }
 
   onError = ({ nativeEvent: errorInfo }) => {
-    this.setState({ lastError: errorInfo });
-  };
+    this.setState({ lastError: errorInfo })
+  }
 
   renderLoader = () => (
     <View style={styles.loader}>
       <ActivityIndicator size="small" />
     </View>
-  );
+  )
 
   renderOptions = () => {
-    const { showOptions } = this.state;
+    const { showOptions } = this.state
     if (showOptions) {
       return (
         <TouchableWithoutFeedback onPress={this.toggleOptions}>
           <View style={styles.optionsOverlay}>
-            <View
-              style={[
-                styles.optionsWrapper,
-                Device.isAndroid() ? styles.optionsWrapperAndroid : styles.optionsWrapperIos
-              ]}
-            >
+            <View style={[styles.optionsWrapper, Device.isAndroid() ? styles.optionsWrapperAndroid : styles.optionsWrapperIos]}>
               <Button onPress={this.onNewTabPress} style={styles.option}>
                 <View style={styles.optionIconWrapper}>
                   <Icon name="plus" size={18} style={styles.optionIcon} />
@@ -1464,12 +1512,12 @@ export class BrowserTab extends React.Component {
             </View>
           </View>
         </TouchableWithoutFeedback>
-      );
+      )
     }
-  };
+  }
 
   renderNonHomeOptions = () => {
-    if (this.isHomepage()) return null;
+    if (this.isHomepage()) return null
 
     return (
       <React.Fragment>
@@ -1508,16 +1556,16 @@ export class BrowserTab extends React.Component {
           </Text>
         </Button>
       </React.Fragment>
-    );
-  };
+    )
+  }
 
   showTabs = () => {
-    this.props.showTabs();
-  };
+    this.props.showTabs()
+  }
 
   renderBottomBar = () => {
-    const canGoBack = this.canGoBack();
-    const canGoForward = this.canGoForward();
+    const canGoBack = this.canGoBack()
+    const canGoForward = this.canGoForward()
     return (
       <BrowserBottomBar
         canGoBack={canGoBack}
@@ -1529,70 +1577,70 @@ export class BrowserTab extends React.Component {
         toggleOptions={this.toggleOptions}
         goHome={this.goBackToHomepage}
       />
-    );
-  };
+    )
+  }
 
   isHttps() {
-    return this.state.inputValue.toLowerCase().substr(0, 6) === 'https:';
+    return this.state.inputValue.toLowerCase().substr(0, 6) === 'https:'
   }
 
   showUrlModal = (home = false) => {
-    if (!this.isTabActive()) return false;
+    if (!this.isTabActive()) return false
     const params = {
       ...this.props.navigation.state.params,
-      showUrlModal: true
-    };
+      showUrlModal: true,
+    }
 
     if (!home) {
-      params.url = this.state.inputValue;
-      this.setState({ autocompleteInputValue: this.state.inputValue });
+      params.url = this.state.inputValue
+      this.setState({ autocompleteInputValue: this.state.inputValue })
     }
-    this.props.navigation.setParams(params);
-  };
+    this.props.navigation.setParams(params)
+  }
 
   hideUrlModal = url => {
-    const urlParam = typeof url === 'string' && url ? url : this.props.navigation.state.params.url;
+    const urlParam = typeof url === 'string' && url ? url : this.props.navigation.state.params.url
     this.props.navigation.setParams({
       ...this.props.navigation.state.params,
       url: urlParam,
-      showUrlModal: false
-    });
+      showUrlModal: false,
+    })
 
     if (this.isHomepage()) {
-      const { current } = this.webview;
-      const blur = `document.getElementsByClassName('autocomplete-input')[0].blur();`;
-      current && current.injectJavaScript(blur);
+      const { current } = this.webview
+      const blur = `document.getElementsByClassName('autocomplete-input')[0].blur();`
+      current && current.injectJavaScript(blur)
     }
-  };
+  }
 
   clearInputText = () => {
-    const { current } = this.inputRef;
-    current && current.clear();
-  };
+    const { current } = this.inputRef
+    current && current.clear()
+  }
 
   onAutocomplete = link => {
     this.setState({ inputValue: link, autocompleteInputValue: link }, () => {
-      this.onUrlInputSubmit(link);
-      this.updateTabInfo(link);
-    });
-  };
+      this.onUrlInputSubmit(link)
+      this.updateTabInfo(link)
+    })
+  }
 
   renderProgressBar = () => (
     <View style={styles.progressBarWrapper}>
       <WebviewProgressBar progress={this.state.progress} />
     </View>
-  );
+  )
 
   renderUrlModal = () => {
-    const showUrlModal = (this.props.navigation && this.props.navigation.getParam('showUrlModal', false)) || false;
+    const showUrlModal = (this.props.navigation && this.props.navigation.getParam('showUrlModal', false)) || false
 
     if (showUrlModal && this.inputRef) {
       setTimeout(() => {
-        const { current } = this.inputRef;
+        const { current } = this.inputRef
         if (current && !current.isFocused()) {
-          current.focus();
+          current.focus()
         }
-      }, 300);
+      }, 300)
     }
 
     return (
@@ -1606,8 +1654,7 @@ export class BrowserTab extends React.Component {
         backdropOpacity={0.7}
         animationInTiming={300}
         animationOutTiming={300}
-        useNativeDriver
-      >
+        useNativeDriver>
         <View style={styles.urlModalContent} testID={'url-modal'}>
           <TextInput
             keyboardType="web-search"
@@ -1631,30 +1678,22 @@ export class BrowserTab extends React.Component {
               <Icon name="close" size={20} style={[styles.icon, styles.iconClose]} />
             </TouchableOpacity>
           ) : (
-              <TouchableOpacity
-                style={styles.cancelButton}
-                testID={'cancel-url-button'}
-                onPress={this.hideUrlModal}
-              >
-                <Text style={styles.cancelButtonText}>{strings('browser.cancel')}</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={styles.cancelButton} testID={'cancel-url-button'} onPress={this.hideUrlModal}>
+              <Text style={styles.cancelButtonText}>{strings('browser.cancel')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <UrlAutocomplete
-          onSubmit={this.onAutocomplete}
-          input={this.state.autocompleteInputValue}
-          onDismiss={this.hideUrlModal}
-        />
+        <UrlAutocomplete onSubmit={this.onAutocomplete} input={this.state.autocompleteInputValue} onDismiss={this.hideUrlModal} />
       </Modal>
-    );
-  };
+    )
+  }
 
   onCancelWatchAsset = () => {
-    this.setState({ watchAsset: false });
-  };
+    this.setState({ watchAsset: false })
+  }
 
   renderWatchAssetModal = () => {
-    const { watchAsset, suggestedAssetMeta } = this.state;
+    const { watchAsset, suggestedAssetMeta } = this.state
     return (
       <Modal
         isVisible={watchAsset}
@@ -1667,43 +1706,28 @@ export class BrowserTab extends React.Component {
         onBackdropPress={this.onCancelWatchAsset}
         onSwipeComplete={this.onCancelWatchAsset}
         swipeDirection={'down'}
-        propagateSwipe
-      >
-        <WatchAssetRequest
-          onCancel={this.onCancelWatchAsset}
-          onConfirm={this.onCancelWatchAsset}
-          suggestedAssetMeta={suggestedAssetMeta}
-        />
+        propagateSwipe>
+        <WatchAssetRequest onCancel={this.onCancelWatchAsset} onConfirm={this.onCancelWatchAsset} suggestedAssetMeta={suggestedAssetMeta} />
       </Modal>
-    );
-  };
+    )
+  }
 
   onAccountsConfirm = () => {
-    const { approveHost, selectedAddress } = this.props;
-    this.setState({ showApprovalDialog: false, showApprovalDialogHostname: undefined });
-    approveHost(this.state.fullHostname);
-    this.approvalRequest && this.approvalRequest.resolve && this.approvalRequest.resolve([selectedAddress]);
-  };
+    const { approveHost, selectedAddress } = this.props
+    this.setState({ showApprovalDialog: false, showApprovalDialogHostname: undefined })
+    approveHost(this.state.fullHostname)
+    this.approvalRequest && this.approvalRequest.resolve && this.approvalRequest.resolve([selectedAddress])
+  }
 
   onAccountsReject = () => {
-    this.setState({ showApprovalDialog: false, showApprovalDialogHostname: undefined });
-    this.approvalRequest &&
-      this.approvalRequest.reject &&
-      this.approvalRequest.reject(new Error('User rejected account access'));
-  };
+    this.setState({ showApprovalDialog: false, showApprovalDialogHostname: undefined })
+    this.approvalRequest && this.approvalRequest.reject && this.approvalRequest.reject(new Error('User rejected account access'))
+  }
 
   renderApprovalModal = () => {
-    const {
-      showApprovalDialogHostname,
-      currentPageTitle,
-      currentPageUrl,
-      currentPageIcon,
-      inputValue
-    } = this.state;
-    const url =
-      currentPageUrl && currentPageUrl.length && currentPageUrl !== 'localhost' ? currentPageUrl : inputValue;
-    const showApprovalDialog =
-      this.state.showApprovalDialog && showApprovalDialogHostname === new URL(url).hostname;
+    const { showApprovalDialogHostname, currentPageTitle, currentPageUrl, currentPageIcon, inputValue } = this.state
+    const url = currentPageUrl && currentPageUrl.length && currentPageUrl !== 'localhost' ? currentPageUrl : inputValue
+    const showApprovalDialog = this.state.showApprovalDialog && showApprovalDialogHostname === new URL(url).hostname
     return (
       <Modal
         isVisible={showApprovalDialog}
@@ -1715,53 +1739,52 @@ export class BrowserTab extends React.Component {
         animationOutTiming={300}
         onSwipeComplete={this.onAccountsReject}
         onBackdropPress={this.onAccountsReject}
-        swipeDirection={'down'}
-      >
+        swipeDirection={'down'}>
         <AccountApproval
           onCancel={this.onAccountsReject}
           onConfirm={this.onAccountsConfirm}
           currentPageInformation={{ title: currentPageTitle, url, icon: currentPageIcon }}
         />
       </Modal>
-    );
-  };
+    )
+  }
 
   goToETHPhishingDetector = () => {
-    this.setState({ showPhishingModal: false });
-    this.go(`https://github.com/metamask/eth-phishing-detect`);
-  };
+    this.setState({ showPhishingModal: false })
+    this.go(`https://github.com/metamask/eth-phishing-detect`)
+  }
 
   continueToPhishingSite = () => {
-    const urlObj = new URL(this.blockedUrl);
-    this.props.addToWhitelist(urlObj.hostname);
-    this.setState({ showPhishingModal: false });
+    const urlObj = new URL(this.blockedUrl)
+    this.props.addToWhitelist(urlObj.hostname)
+    this.setState({ showPhishingModal: false })
     this.blockedUrl !== this.state.inputValue &&
       setTimeout(() => {
-        this.go(this.blockedUrl);
-        this.blockedUrl = undefined;
-      }, 1000);
-  };
+        this.go(this.blockedUrl)
+        this.blockedUrl = undefined
+      }, 1000)
+  }
 
   goToEtherscam = () => {
-    this.setState({ showPhishingModal: false });
-    this.go(`https://etherscamdb.info/domain/meta-mask.com`);
-  };
+    this.setState({ showPhishingModal: false })
+    this.go(`https://etherscamdb.info/domain/meta-mask.com`)
+  }
 
   goToFilePhishingIssue = () => {
-    this.setState({ showPhishingModal: false });
-    this.go(`https://github.com/metamask/eth-phishing-detect/issues/new`);
-  };
+    this.setState({ showPhishingModal: false })
+    this.go(`https://github.com/metamask/eth-phishing-detect/issues/new`)
+  }
 
   goBackToSafety = () => {
-    this.blockedUrl === this.state.inputValue && this.goBack();
+    this.blockedUrl === this.state.inputValue && this.goBack()
     setTimeout(() => {
-      this.mounted && this.setState({ showPhishingModal: false });
-      this.blockedUrl = undefined;
-    }, 500);
-  };
+      this.mounted && this.setState({ showPhishingModal: false })
+      this.blockedUrl = undefined
+    }, 500)
+  }
 
   renderPhishingModal() {
-    const { showPhishingModal } = this.state;
+    const { showPhishingModal } = this.state
     return (
       <Modal
         isVisible={showPhishingModal}
@@ -1772,8 +1795,7 @@ export class BrowserTab extends React.Component {
         backdropColor={colors.red}
         animationInTiming={300}
         animationOutTiming={300}
-        useNativeDriver
-      >
+        useNativeDriver>
         <PhishingModal
           fullUrl={this.blockedUrl}
           goToETHPhishingDetector={this.goToETHPhishingDetector}
@@ -1783,135 +1805,122 @@ export class BrowserTab extends React.Component {
           goBackToSafety={this.goBackToSafety}
         />
       </Modal>
-    );
+    )
   }
 
-  getENSHostnameForUrl = url => this.sessionENSNames[url];
+  getENSHostnameForUrl = url => this.sessionENSNames[url]
 
   setENSHostnameForUrl = (url, host) => {
-    this.sessionENSNames[url] = host;
-  };
+    this.sessionENSNames[url] = host
+  }
 
   onFrameLoadStarted = url => {
-    url && this.initializeBackgroundBridge(url, false);
-  };
+    url && this.initializeBackgroundBridge(url, false)
+  }
 
-  webviewRefIsReady = () =>
-    this.webview &&
-    this.webview.current &&
-    this.webview.current.webViewRef &&
-    this.webview.current.webViewRef.current;
+  webviewRefIsReady = () => this.webview && this.webview.current && this.webview.current.webViewRef && this.webview.current.webViewRef.current
 
   onLoadStart = async ({ nativeEvent }) => {
     // Handle the scenario when going back
     // from an ENS name
     if (nativeEvent.navigationType === 'backforward' && nativeEvent.url === this.state.inputValue) {
-      setTimeout(() => this.goBack(), 500);
+      setTimeout(() => this.goBack(), 500)
     } else if (nativeEvent.url.indexOf(this.props.ipfsGateway) !== -1) {
-      const currentEnsName = this.getENSHostnameForUrl(nativeEvent.url);
+      const currentEnsName = this.getENSHostnameForUrl(nativeEvent.url)
       if (currentEnsName) {
         this.props.navigation.setParams({
           ...this.props.navigation.state.params,
-          currentEnsName
-        });
+          currentEnsName,
+        })
       }
     }
 
-    let i = 0;
+    let i = 0
     while (!this.webviewRefIsReady() && i < 10) {
       await new Promise(res =>
         setTimeout(() => {
-          res();
+          res()
         }, 500)
-      );
-      i++;
+      )
+      i++
     }
 
     if (this.webviewRefIsReady()) {
       // Reset the previous bridges
 
       if (Device.isAndroid()) {
-        const { current } = this.webview;
-        current && current.injectJavaScript(this.state.entryScriptWeb3);
+        const { current } = this.webview
+        current && current.injectJavaScript(this.state.entryScriptWeb3)
       }
-      this.backgroundBridges.length && this.backgroundBridges.forEach(bridge => bridge.onDisconnect());
-      this.backgroundBridges = [];
-      const origin = new URL(nativeEvent.url).origin;
-      this.initializeBackgroundBridge(origin, true);
+      this.backgroundBridges.length && this.backgroundBridges.forEach(bridge => bridge.onDisconnect())
+      this.backgroundBridges = []
+      const origin = new URL(nativeEvent.url).origin
+      this.initializeBackgroundBridge(origin, true)
     }
-  };
+  }
 
-  canGoForward = () => this.state.forwardEnabled;
+  canGoForward = () => this.state.forwardEnabled
 
   canGoBack = () => {
     if (this.isHomepage()) {
-      return !!this.state.lastUrlBeforeHome && !this.isHomepage(this.state.lastUrlBeforeHome);
+      return !!this.state.lastUrlBeforeHome && !this.isHomepage(this.state.lastUrlBeforeHome)
     }
 
-    return true;
-  };
+    return true
+  }
 
   isTabActive = () => {
-    const { activeTab, id } = this.props;
-    return activeTab === id;
-  };
+    const { activeTab, id } = this.props
+    return activeTab === id
+  }
 
   isBookmark = () => {
-    const { bookmarks, navigation } = this.props;
-    const currentUrl = navigation.getParam('url', null);
-    return bookmarks.some(({ url }) => url === currentUrl);
-  };
+    const { bookmarks, navigation } = this.props
+    const currentUrl = navigation.getParam('url', null)
+    return bookmarks.some(({ url }) => url === currentUrl)
+  }
 
   isHomepage = (url = null) => {
-    const currentPage = url || this.state.inputValue;
-    const { host: currentHost, pathname: currentPathname } = getUrlObj(currentPage);
-    return currentHost === HOMEPAGE_HOST && currentPathname === '/';
-  };
+    const currentPage = url || this.state.inputValue
+    const { host: currentHost, pathname: currentPathname } = getUrlObj(currentPage)
+    return currentHost === HOMEPAGE_HOST && currentPathname === '/'
+  }
 
   renderOnboardingWizard = () => {
-    const { wizardStep } = this.props;
+    const { wizardStep } = this.props
     if ([6].includes(wizardStep)) {
       if (!this.wizardScrollAdjusted) {
         setTimeout(() => {
-          this.forceReload();
-        }, 1);
-        this.wizardScrollAdjusted = true;
+          this.forceReload()
+        }, 1)
+        this.wizardScrollAdjusted = true
       }
-      return <OnboardingWizard navigation={this.props.navigation} coachmarkRef={this.homepageRef} />;
+      return <OnboardingWizard navigation={this.props.navigation} coachmarkRef={this.homepageRef} />
     }
-    return null;
-  };
+    return null
+  }
 
   backupAlertPress = () => {
-    this.props.navigation.navigate('AccountBackupStep1');
-  };
+    this.props.navigation.navigate('AccountBackupStep1')
+  }
 
   render() {
-    const { entryScriptWeb3, entryScriptjs, url, forceReload, activated, lastError, currentPageTitle } = this.state;
-    const isHidden = !this.isTabActive();
+    const { entryScriptWeb3, entryScriptjs, url, forceReload, activated, lastError, currentPageTitle } = this.state
+    const isHidden = !this.isTabActive()
 
     return (
-      <View
-        style={[styles.wrapper, isHidden && styles.hide]}
-        {...(Device.isAndroid() ? { collapsable: false } : {})}
-      >
+      <View style={[styles.wrapper, isHidden && styles.hide]} {...(Device.isAndroid() ? { collapsable: false } : {})}>
         <TitleBar
           title={(typeof currentPageTitle === 'string' && currentPageTitle) || 'Loading..'}
-          renderLeft={() => (
-            <DrawerIcon dot={false} />
-          )}
-          renderRight={() => (
-            null
-          )}
+          renderLeft={() => <DrawerIcon dot={false} />}
+          renderRight={() => null}
         />
         <View style={styles.webview}>
           {url && activated && !forceReload && !!entryScriptWeb3 && (
             <WebView
-              renderError={() => (
-                <WebviewError error={lastError} onReload={this.forceReload} />
-              )}
+              renderError={() => <WebviewError error={lastError} onReload={this.forceReload} />}
               injectedJavaScript={entryScriptjs}
-              injectedJavaScriptBeforeContentLoaded={Device.isIos() ? entryScriptWeb3: ''}
+              injectedJavaScriptBeforeContentLoaded={Device.isIos() ? entryScriptWeb3 : ''}
               onLoadProgress={this.onLoadProgress}
               onLoadStart={this.onLoadStart}
               onLoadEnd={this.onLoadEnd}
@@ -1931,7 +1940,7 @@ export class BrowserTab extends React.Component {
               useWebkit
               onShouldStartLoadWithRequest={this.onShouldStartLoadWithRequest}
               testID={'browser-webview'}
-              mixedContentMode='always'
+              mixedContentMode="always"
               cacheEnabled={false}
             />
           )}
@@ -1945,7 +1954,7 @@ export class BrowserTab extends React.Component {
         {!isHidden && this.renderBottomBar()}
         {!isHidden && this.renderOnboardingWizard()}
       </View>
-    );
+    )
   }
 }
 
@@ -1970,6 +1979,5 @@ export default inject(({ store: state }) => ({
   addToBrowserHistory: state.browser.addToHistory,
   addToWhitelist: url => state.browser.addToWhitelist(url),
   toggleNetworkModal: () => state.modals.toggleNetworkModal(),
-  setOnboardingWizardStep: step => state.wizard.setOnboardingWizardStep(step)
-
+  setOnboardingWizardStep: step => state.wizard.setOnboardingWizardStep(step),
 }))(observer(withNavigation(BrowserTab)))

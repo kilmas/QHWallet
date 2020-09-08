@@ -15,8 +15,8 @@ export default function RenderScatter(accounts, publicKey = '') {
       },
       eos: (e, t, r, n) => {
         return new Proxy(t({
-          chainId: r.chainId || "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906",
-          signProvider: ({sign, buf, transaction})=> {
+          chainId: (r && r.chainId) || "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906",
+          signProvider: ({sign, buf, transaction}) => {
             return new Promise((resolve, reject) => {
               var key = new Date().getTime();
               if (window.ReactNativeWebView) {
@@ -24,8 +24,10 @@ export default function RenderScatter(accounts, publicKey = '') {
                 document.addEventListener("message", function (msg) {
                   document.removeEventListener("message", this);
                   var obj = eval("(" + msg.data + ")");
-                  if (obj.scatter === "signProvider" && obj.key === key) {
+                  if (obj.scatter === "signProvider" && obj.key === key && obj.data) {
                     resolve(obj.data);
+                  } else {
+                    reject(obj.msg)
                   }
                 });
               } else {
@@ -33,17 +35,17 @@ export default function RenderScatter(accounts, publicKey = '') {
               }
             })
           },
-          httpEndpoint: e.host ? (e.protocol + "://" + e.host + ":" + e.port) : "https://to-rpc.fibos.io",
+          httpEndpoint: e.host ? (e.protocol + "://" + e.host + ":" + e.port) : "https://api.eoslaomao.com",
           logger: {
             log: null,
             error: null
           }
         }), {
-          get: (_fibos, key) => {
-            return _fibos[key]
+          get: (_eos, key) => {
+            return _eos[key]
           },
-          set: (_fibos, key, value) => {
-            _fibos[key] = value
+          set: (_eos, key, value) => {
+            _eos[key] = value
           },
         })
       }

@@ -208,7 +208,7 @@ class AccountStore {
 
   @action
   setPwd(pwd) {
-    this.pwd = true
+    this.pwd = pwd
   }
 
   getPwd() {

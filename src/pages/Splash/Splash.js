@@ -31,6 +31,7 @@ class Splash extends React.Component {
           if (credentials) {
             const { accountStore } = this.props.store
             accountStore.setPwd(true)
+            accountStore.checkHdAccount()
             const { KeyringController } = Engine.context
             KeyringController.submitPassword(credentials.password)
             GlobalNavigation.reset('TabDrawer')

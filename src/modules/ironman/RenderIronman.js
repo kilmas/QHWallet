@@ -15,7 +15,7 @@ export default function RenderIronman(accounts, publicKey = '') {
       },
       fibos: (e, t, r, n) => {
         return new Proxy(t({
-          chainId: r.chainId || "6aa7bd33b6b45192465afa3553dedb531acaaff8928cf64b70bd4c5e49b7ec6a",
+          chainId: (r && r.chainId) || "6aa7bd33b6b45192465afa3553dedb531acaaff8928cf64b70bd4c5e49b7ec6a",
           signProvider: ({sign, buf, transaction})=> {
             return new Promise((resolve, reject) => {
               var key = new Date().getTime();
@@ -24,8 +24,10 @@ export default function RenderIronman(accounts, publicKey = '') {
                 document.addEventListener("message", function (msg) {
                   document.removeEventListener("message", this);
                   var obj = eval("(" + msg.data + ")");
-                  if (obj.ironman === "signProvider" && obj.key === key) {
+                  if (obj.ironman === "signProvider" && obj.key === key && obj.data) {
                     resolve(obj.data);
+                  } else {
+                    reject(obj.msg)
                   }
                 });
               } else {

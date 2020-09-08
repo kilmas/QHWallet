@@ -238,7 +238,7 @@ class Defi extends React.Component {
       if (transaction) {
         const { actions } = transaction
         const cancel = () => {
-          this.webview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+          this.webview.postMessage(JSON.stringify({ ...data, msg: 'cancel' }))
         }
         const confirm = async (pwd, password) => {
           if (pwd === password) {
@@ -253,7 +253,7 @@ class Defi extends React.Component {
             this.webview.postMessage(JSON.stringify({ ...data, data: signatures }))
           } else {
             Toast.fail('password fail')
-            currentWebview.postMessage(JSON.stringify({ ...data, data: 'fail' }))
+            currentWebview.postMessage(JSON.stringify({ ...data, msg: 'password fail' }))
           }
         }
         const actionsBtn = [{ text: 'Cancel', style: 'cancel', onPress: cancel }, {
@@ -262,7 +262,7 @@ class Defi extends React.Component {
               const { password } = await SecureKeychain.getGenericPassword();
               confirm(pwd !== undefined ? pwd : password, password)
             } catch (error) {
-              cancel()
+              currentWebview.postMessage(JSON.stringify({ ...data, msg: 'sign fail' }))
             }
           }
         }]
