@@ -83,7 +83,7 @@ class History extends React.Component {
     } else if (coin.name === 'EOS') {
       return accountStore.EOSAccounts
     }
-    return []
+    return accountStore.accounts
   }
 
   @computed get accountID() {
@@ -100,7 +100,7 @@ class History extends React.Component {
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
     } 
-    return null
+    return accountStore.currentAccountID
   }
 
   /**
@@ -290,6 +290,10 @@ class History extends React.Component {
         console.warn(error)
       }
     }
+  }
+
+  componentWillUnmount () {
+    Toast.removeAll()
   }
 
   onCopyPubKey = async () => {
@@ -648,7 +652,7 @@ class History extends React.Component {
             type="primary"
             style={{ margin: 20 }}
             onPress={async () => {
-              Toast.loading('loading..')
+              Toast.loading('loading..', 0)
               if (!this.state.isFibosAccountValid) {
                 // register account to eth
                 this.registerApprove()

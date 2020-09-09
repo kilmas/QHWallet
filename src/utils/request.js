@@ -66,11 +66,11 @@ btcComInstance.interceptors.response.use(
   }
 )
 
-
-const prepareResult = function (feeByBlockTarget) {
+const prepareResult = function(feeByBlockTarget) {
   var kb = 1000
-  var list = Object.keys(feeByBlockTarget).
-    map(function (k) { return Math.floor(feeByBlockTarget[k] / kb) })
+  var list = Object.keys(feeByBlockTarget).map(function(k) {
+    return Math.floor(feeByBlockTarget[k] / kb)
+  })
   return list
 }
 
@@ -133,7 +133,9 @@ export const btcRequest = {
     var spb2 = list.length > n ? list[n++] : spb1
     var spb3 = list.length > n ? list[n++] : spb2
     return {
-      "fastestFee": spb1, "halfHourFee": spb2, "hourFee": spb3
+      fastestFee: spb1,
+      halfHourFee: spb2,
+      hourFee: spb3,
     }
   },
   broadcast: async rawhex => {
@@ -147,25 +149,29 @@ export const btcRequest = {
     }
     return false
   },
-  multiaddr: async (addresses) => {
+  multiaddr: async addresses => {
     try {
-      const { data: { addresses } } = await axios.post(`https://blockchain.info/multiaddr?active=${addresses}`)
+      const {
+        data: { addresses },
+      } = await axios.post(`https://blockchain.info/multiaddr?active=${addresses}`)
       return addresses
     } catch (error) {
       console.warn(error)
     }
     return []
   },
-  unspentByAddrs: async (addresses) => {
+  unspentByAddrs: async addresses => {
     console.log(addresses)
     try {
-      const { data: { addresses } } = await axios.post(`https://blockchain.info/unspent?active=${addresses}`)
+      const {
+        data: { addresses },
+      } = await axios.post(`https://blockchain.info/unspent?active=${addresses}`)
       return addresses
     } catch (error) {
       console.warn(error)
     }
     return []
-  }
+  },
 }
 
 //响应拦截器即异常处理
@@ -347,31 +353,28 @@ export const fibosRequest = {
 }
 
 export const eosRequest = {
-  getAddressByKey: async (key) => {
+  getAddressByKey: async key => {
     try {
-      const {
-        data,
-      } = await axios.get(`https://eospark.com/api/v2/permission/address/${key}`)
+      const { data } = await axios.get(`https://eospark.com/api/v2/permission/address/${key}`)
       return data
     } catch (err) {
       console.warn(err)
     }
   },
-  getPrice: async () => {
-    let price = 0
+  getBalance: async account => {
     try {
       const {
-        data: { data },
-      } = await fibosApi.post('/1.0/app/tokenpair/getSwapRankOnChain', { tokenx: 'FO@eosio', tokeny: 'FOUSDT@eosio' })
-      if (Array.isArray(data)) {
-        const totalWeights = data[data.length - 1]
-        const { tokenx_quantity, tokeny_quantity } = totalWeights
-        price = tokenx_quantity / tokeny_quantity
+        data: {
+          data: { tokens },
+        },
+      } = await axios.get(`https://eospark.com/api/v2/account/${account}/tokens`)
+      if (Array.isArray(tokens)) {
+        return tokens
       }
     } catch (err) {
       console.warn(err)
     }
-    return price
+    return []
   },
 }
 

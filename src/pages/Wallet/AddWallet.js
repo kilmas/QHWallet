@@ -1,13 +1,12 @@
-import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { Flex, Icon } from '@ant-design/react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { styles, LGColor, SecondaryColor } from '../../theme';
-import TitleBar from '../../components/TitleBar';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import { strings } from '../../locales/i18n';
-import Container from '../../components/Container';
-import ClearTitleBar from '../../components/ClearTitleBar';
+import React from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
+import { Icon } from '@ant-design/react-native'
+import LinearGradient from 'react-native-linear-gradient'
+import { styles, LGColor, SecondaryColor } from '../../theme'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import { strings } from '../../locales/i18n'
+import Container from '../../components/Container'
+import ClearTitleBar from '../../components/ClearTitleBar'
 
 export default class AddWallet extends React.Component {
   render() {
@@ -21,13 +20,13 @@ export default class AddWallet extends React.Component {
           style={{
             flex: 1,
             alignItems: 'center',
-            justifyContent: "space-between"
+            justifyContent: 'space-between',
           }}>
           <ClearTitleBar title="" />
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <TouchableOpacity
               onPress={() => {
-                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'create' });
+                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'create' })
               }}>
               <View
                 style={{
@@ -37,7 +36,7 @@ export default class AddWallet extends React.Component {
                   backgroundColor: '#419EFF',
                   ...styles.center,
                 }}>
-                <Icon name="credit-card" size={50}/>
+                <Icon name="credit-card" size={50} />
                 <Text
                   style={{
                     fontSize: 20,
@@ -52,7 +51,7 @@ export default class AddWallet extends React.Component {
             <TouchableOpacity
               style={{ marginVertical: 60 }}
               onPress={() => {
-                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'import' });
+                GlobalNavigation.navigate('PrivacyPolicies', { mode: 'import' })
               }}>
               <View
                 style={{
@@ -74,9 +73,8 @@ export default class AddWallet extends React.Component {
               </View>
             </TouchableOpacity>
           </View>
-
         </LinearGradient>
       </Container>
-    );
+    )
   }
 }

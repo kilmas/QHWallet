@@ -1,24 +1,24 @@
-import React from 'react';
-import { Text, TextInput } from 'react-native';
+import React from 'react'
+import { Text, TextInput } from 'react-native'
 import _ from 'lodash'
-import { Flex, Toast, Button } from '@ant-design/react-native';
-import { computed } from 'mobx';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { inject, observer } from 'mobx-react';
-import Container from '../../components/Container';
-import { strings } from '../../locales/i18n';
-import TitleBar from '../../components/TitleBar';
-import { styles as themeStyles } from '../../theme';
-import GlobalNavigation from '../../utils/GlobalNavigation';
+import { Flex, Toast, Button } from '@ant-design/react-native'
+import { computed } from 'mobx'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { inject, observer } from 'mobx-react'
+import Container from '../../components/Container'
+import { strings } from '../../locales/i18n'
+import TitleBar from '../../components/TitleBar'
+import { styles as themeStyles } from '../../theme'
+import GlobalNavigation from '../../utils/GlobalNavigation'
 
 @inject('store')
 @observer
 class DeleteWallet extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       list: new Array(12).fill(''),
-    };
+    }
   }
 
   @computed get mnemonics() {
@@ -36,13 +36,12 @@ class DeleteWallet extends React.Component {
     return navigation.getParam('privateKey')
   }
 
-
   render() {
     return (
       <Container>
         <TitleBar title={strings('wallet.deleteWallet')} />
         <KeyboardAwareScrollView style={themeStyles.pt26}>
-          {this.mnemonics &&
+          {this.mnemonics && (
             <>
               <Text
                 style={{
@@ -51,10 +50,7 @@ class DeleteWallet extends React.Component {
                 }}>
                 {strings('wallet.notesInput')}
               </Text>
-              <Flex
-                style={{ marginBottom: 20 }}
-                justify={'between'}
-                wrap={'wrap'}>
+              <Flex style={{ marginBottom: 20 }} justify={'between'} wrap={'wrap'}>
                 {this.state.list.map((item, index) => (
                   <Flex
                     key={index}
@@ -78,17 +74,18 @@ class DeleteWallet extends React.Component {
                       numberOfLines={1}
                       onChangeText={e => {
                         if (e.substr(-1, 1) === ' ') {
-                          return;
+                          return
                         }
-                        this.state.list[index] = e.toLowerCase();
-                        this.setState({});
+                        this.state.list[index] = e.toLowerCase()
+                        this.setState({})
                       }}
                     />
                   </Flex>
                 ))}
               </Flex>
-            </>}
-          {this.privateKey &&
+            </>
+          )}
+          {this.privateKey && (
             <>
               <Text
                 style={{
@@ -108,10 +105,11 @@ class DeleteWallet extends React.Component {
                 value={this.state.prikey}
                 numberOfLines={4}
                 onChangeText={text => {
-                  this.setState({ prikey: _.trim(text) });
+                  this.setState({ prikey: _.trim(text) })
                 }}
               />
-            </>}
+            </>
+          )}
           <Text
             style={{
               fontSize: 14,
@@ -127,7 +125,7 @@ class DeleteWallet extends React.Component {
               this.setState({ loading: true })
               try {
                 if (this.mnemonics) {
-                  const mnemonics = this.state.list.join(' ').toLowerCase();
+                  const mnemonics = this.state.list.join(' ').toLowerCase()
                   if (this.mnemonics === mnemonics) {
                     const { accountStore } = this.props.store
                     const success = await accountStore.drop(this.account)
@@ -139,7 +137,7 @@ class DeleteWallet extends React.Component {
                       Toast.fail('Delete fail')
                     }
                   } else {
-                    Toast.fail('Mnemonics incorrect');
+                    Toast.fail('Mnemonics incorrect')
                   }
                 } else if (this.privateKey) {
                   if (this.privateKey === this.state.prikey) {
@@ -153,11 +151,11 @@ class DeleteWallet extends React.Component {
                       Toast.fail('Delete fail')
                     }
                   } else {
-                    Toast.fail('privateKey incorrect');
+                    Toast.fail('privateKey incorrect')
                   }
                 }
               } catch (e) {
-                Toast.info('Delete failed');
+                Toast.info('Delete failed')
               } finally {
                 this.setState({ loading: false })
               }
@@ -166,7 +164,7 @@ class DeleteWallet extends React.Component {
           </Button>
         </KeyboardAwareScrollView>
       </Container>
-    );
+    )
   }
 }
 

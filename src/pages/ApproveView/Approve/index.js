@@ -26,12 +26,12 @@ import { strings } from '../../../locales/i18n'
 
 import TransactionsNotificationManager from '../../../modules/metamask/core/TransactionsNotificationManager'
 import Engine from '../../../modules/metamask/core/Engine'
+import TitleBar from '../../../components/TitleBar'
 
 
 const { BNToHex, hexToBN } = util
 const styles = StyleSheet.create({
   wrapper: {
-    paddingTop: 50,
     backgroundColor: colors.white,
     flex: 1,
   },
@@ -712,6 +712,7 @@ class Approve extends React.Component {
     const amount = decodeTransferData('transfer', data)[1]
     return (
       <SafeAreaView style={styles.wrapper}>
+        <TitleBar title={strings('approve.title')}/>
         <TransactionDirection />
         <ActionView
           cancelText={strings('spend_limit_edition.cancel')}

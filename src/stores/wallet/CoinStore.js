@@ -1,7 +1,7 @@
 import { observable, reaction, computed, action } from 'mobx'
 import { persist, create } from 'mobx-persist'
 import { toSignificanceNumber } from '../../utils/NumberUtil'
-import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT } from '../../config/const'
+import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT, COIN_ID_EOS } from '../../config/const'
 import storage from '../../utils/Storage'
 import { fibosRequest, request } from '../../utils/request'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -57,6 +57,9 @@ class CoinStore {
     if (!this.map.get(COIN_ID_OKT)) {
       this.map.set(COIN_ID_OKT, new CoinPrice({ tokenId: COIN_ID_OKT }))
     }
+    if (!this.map.get(COIN_ID_EOS)) {
+      this.map.set(COIN_ID_EOS, new CoinPrice({ tokenId: COIN_ID_EOS }))
+    }
   }
   get BTCPrice() {
     return this.getPrice(COIN_ID_BTC)
@@ -76,6 +79,10 @@ class CoinStore {
 
   get OKTPrice() {
     return this.getPrice(COIN_ID_OKT)
+  }
+
+  get EOSPrice() {
+    return this.getPrice(COIN_ID_EOS)
   }
 
   @observable CNYRate = 7
@@ -134,6 +141,8 @@ class CoinStore {
       BTCCoin.USD = await request.getPrice('BTC')
       const ETHCoin = this.map.get(COIN_ID_ETH)
       ETHCoin.USD = await request.getPrice('ETH')
+      const EOSCoin = this.map.get(COIN_ID_EOS)
+      EOSCoin.USD = await request.getPrice('EOS')
     } catch (error) {}
   }
 

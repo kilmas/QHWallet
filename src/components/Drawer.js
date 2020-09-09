@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, Text, TouchableOpacity, View, StyleSheet, InteractionManager } from 'react-native';
-import { Badge, Flex, Modal, Icon } from '@ant-design/react-native';
+import { Badge, Flex, Modal, Icon, Toast } from '@ant-design/react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { inject, observer } from 'mobx-react';
 import GlobalNavigation from '../utils/GlobalNavigation';
@@ -263,6 +263,7 @@ class Drawer extends React.Component {
 
   onUnapprovedTransaction = async transactionMeta => {
     console.log(transactionMeta)
+    Toast.removeAll()
     if (transactionMeta.origin === TransactionTypes.MMM) return
     // Check if it's a payment channel deposit transaction to sign
     const to = safeToChecksumAddress(transactionMeta.transaction.to)

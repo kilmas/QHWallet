@@ -306,6 +306,7 @@ class AccountStore {
           break
         case 'OKT':
           this.currentOKTID = account.id
+          break
         case 'EOS':
           this.currentEOSID = account.id
           break

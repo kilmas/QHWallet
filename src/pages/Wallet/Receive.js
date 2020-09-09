@@ -29,8 +29,10 @@ class Receive extends React.Component {
       return accountStore.OKTAccounts
     } else if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
-    }
-    return []
+    } else if (coin.name === 'EOS') {
+      return accountStore.EOSAccounts
+    } 
+    return accountStore.accounts
   }
 
   @computed get accountID() {
@@ -44,6 +46,8 @@ class Receive extends React.Component {
       return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
+    } else if (coin.name === 'EOS') {
+      return accountStore.currentEOSID
     }
     return null
   }
@@ -85,7 +89,7 @@ class Receive extends React.Component {
   @computed get address() {
     if (this.coin.name === 'BTC') {
       return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
-    } else if (this.coin.name === 'FO') {
+    } else if (this.coin.name === 'FO' || this.coin.name === 'EOS') {
       return this.wallet.name || this.account.name
     }
     return this.wallet && this.wallet.address
@@ -101,7 +105,7 @@ class Receive extends React.Component {
     super(props)
   }
 
-  async componentDidMount() {}
+  componentDidMount() {}
 
   render() {
     const { coin, onSave } = this.props.navigation.state.params

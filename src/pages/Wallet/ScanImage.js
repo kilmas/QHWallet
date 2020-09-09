@@ -1,14 +1,10 @@
 import React from 'react'
-import { Image, TouchableOpacity, View } from 'react-native'
 import { RNCamera } from 'react-native-camera'
 import { inject, observer } from 'mobx-react'
-import { Toast, Icon } from '@ant-design/react-native'
+import { Toast } from '@ant-design/react-native'
 import BarcodeMask from 'react-native-barcode-mask'
-import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
 import TitleBar from '../../components/TitleBar'
-import { styles } from '../../theme'
-import GlobalNavigation from '../../utils/GlobalNavigation'
 
 @inject('store')
 @observer

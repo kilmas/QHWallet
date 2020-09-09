@@ -26,6 +26,7 @@ import CoinStore from '../../stores/wallet/CoinStore'
 import { goBrowser } from '../../utils/common'
 import { authSubmit } from '../../utils/keychain'
 import { colors } from '../../styles/common'
+import Scatter from '../../modules/scatter'
 
 const { BNToHex } = util
 
@@ -56,8 +57,10 @@ class SendCoin extends React.Component {
       return accountStore.OKTAccounts
     } else if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
-    }
-    return []
+    } else if (coin.name === 'EOS') {
+      return accountStore.EOSAccounts
+    } 
+    return accountStore.accounts
   }
 
   @computed get accountID() {
@@ -71,6 +74,8 @@ class SendCoin extends React.Component {
       return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
+    } else if (coin.name === 'EOS') {
+      return accountStore.currentEOSID
     }
     return null
   }
@@ -99,7 +104,7 @@ class SendCoin extends React.Component {
   @computed get address() {
     if (this.coin.name === 'BTC') {
       return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
-    } else if(this.coin.name === 'FO') {
+    } else if(this.coin.name === 'FO' || this.coin.name === 'EOS') {
       return (this.wallet && this.wallet.name) || (this.account && this.account.name)
     }
     return this.wallet && this.wallet.address
@@ -143,13 +148,15 @@ class SendCoin extends React.Component {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = transaction => { }
+  validateAmount = () => { }
 
   sendAction = async (coin) => {
     try {
       this.setState({ sending: true })
       if (coin.name === 'FO') {
         this.transferFO()
+      } if (coin.name === 'EOS') {
+        this.transferEOS()
       } else if (coin.name === 'OKT') {
         this.transferOKT()
       } else if (coin.name === 'BTC') {
@@ -184,6 +191,18 @@ class SendCoin extends React.Component {
     const fibos = Ironman.fibos
     const { receiver, memo, amount } = this.state
     const transaction = await fibos.transfer(this.address, receiver, `${Number(amount).toFixed(4)} ${coin.name}`, memo)
+    const { transaction_id: transactionId = '' } = transaction
+    if (transactionId) {
+      this.setState({ transactionId, sending: false })
+      Toast.success(strings('transfer successfully'))
+    }
+  }, 10000)
+
+  transferEOS = _.throttle(async () => {
+    const coin = this.props.navigation.getParam('coin')
+    const eosjs = Scatter.eosjs
+    const { receiver, memo, amount } = this.state
+    const transaction = await eosjs.transfer(this.address, receiver, `${Number(amount).toFixed(4)} ${coin.name}`, memo)
     const { transaction_id: transactionId = '' } = transaction
     if (transactionId) {
       this.setState({ transactionId, sending: false })
