@@ -12,6 +12,7 @@ import Engine from '../../modules/metamask/core/Engine';
 import TransactionsNotificationManager from '../../modules/metamask/core/TransactionsNotificationManager';
 import { strings } from '../../locales/i18n';
 import { withNavigation } from 'react-navigation';
+import TitleBar from '../../components/TitleBar';
 
 
 const REVIEW = 'review';
@@ -20,7 +21,6 @@ const APPROVAL = 'Approval';
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingTop: 50,
     backgroundColor: colors.white,
     flex: 1
   }
@@ -228,7 +228,8 @@ class Approval extends React.Component {
     const { transaction } = this.props;
     const { mode } = this.state;
     return (
-      <SafeAreaView style={styles.wrapper} testID={'confirm-transaction-screen'}>
+      <SafeAreaView style={styles.wrapper}>
+        <TitleBar title={strings('approval.title')}/>
         <TransactionEditor
           promptedFromApproval
           mode={mode}
