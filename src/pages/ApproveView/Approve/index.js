@@ -4,9 +4,8 @@ import Clipboard from '@react-native-community/clipboard'
 import { Icon, Toast } from '@ant-design/react-native'
 import PropTypes from 'prop-types'
 import contractMap from 'eth-contract-metadata'
-import { withNavigation } from 'react-navigation'
 import { util } from '@metamask/controllers'
-import { inject, observer } from 'mobx-react';
+import { inject, observer } from 'mobx-react'
 
 import { colors, fontStyles, baseStyles } from '../../../styles/common'
 import WebsiteIcon from '../../../components/UI/WebsiteIcon'
@@ -27,7 +26,7 @@ import { strings } from '../../../locales/i18n'
 import TransactionsNotificationManager from '../../../modules/metamask/core/TransactionsNotificationManager'
 import Engine from '../../../modules/metamask/core/Engine'
 import TitleBar from '../../../components/TitleBar'
-
+import Container from '../../../components/Container'
 
 const { BNToHex, hexToBN } = util
 const styles = StyleSheet.create({
@@ -284,7 +283,6 @@ const styles = StyleSheet.create({
  * Component that manages ERC20 approve from the dapp browser
  */
 class Approve extends React.Component {
-
   static propTypes = {
     /**
      * List of accounts from the AccountTrackerController
@@ -698,8 +696,8 @@ class Approve extends React.Component {
 
   copyContractAddress = async () => {
     const { transaction } = this.props
-	await Clipboard.setString(transaction.to)
-	Toast.show(strings('transactions.address_copied_to_clipboard'), 1500);
+    await Clipboard.setString(transaction.to)
+    Toast.show(strings('transactions.address_copied_to_clipboard'), 1500)
   }
 
   render() {
@@ -711,123 +709,124 @@ class Approve extends React.Component {
     const { host, tokenSymbol, viewDetails, totalGas, totalGasFiat, ticker, gasError } = this.state
     const amount = decodeTransferData('transfer', data)[1]
     return (
-      <SafeAreaView style={styles.wrapper}>
-        <TitleBar title={strings('approve.title')}/>
-        <TransactionDirection />
-        <ActionView
-          cancelText={strings('spend_limit_edition.cancel')}
-          confirmText={strings('spend_limit_edition.approve')}
-          onCancelPress={this.onCancel}
-          onConfirmPress={this.onConfirm}
-          confirmButtonMode={'primary'}>
-          <View>
-            <View style={styles.section} testID={'approve-screen'}>
-              <View style={styles.websiteIconWrapper}>
-                <WebsiteIcon style={styles.icon} url={transaction.origin} title={host} />
-              </View>
-              <Text style={styles.title} testID={'allow-access'}>
-                {strings('spend_limit_edition.allow_to_access', { host, tokenSymbol })}
-              </Text>
-              <Text style={styles.explanation}>
-                {strings('spend_limit_edition.you_trust_this_site_1')}
-                <Text style={fontStyles.bold}> {host} </Text>
-                {strings('spend_limit_edition.you_trust_this_site_2', { tokenSymbol })}
-              </Text>
-              <TouchableOpacity style={styles.actionTouchable} onPress={this.toggleEditPermissionModal}>
-                <Text style={styles.editPermissionText}>{strings('spend_limit_edition.edit_permission')}</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.section}>
-              <View style={styles.sectionTitleRow}>
-                <Icon name={'tag'} size={20} color={colors.grey500} />
-                <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('transaction.transaction_fee')}</Text>
-                <TouchableOpacity style={styles.sectionRight} onPress={this.toggleCustomGasModal}>
-                  <Text style={styles.editText}>{strings('transaction.edit')}</Text>
+      <Container>
+        <TitleBar title={strings('approve.title')} />
+        <SafeAreaView style={styles.wrapper}>
+          <TransactionDirection />
+          <ActionView
+            cancelText={strings('spend_limit_edition.cancel')}
+            confirmText={strings('spend_limit_edition.approve')}
+            onCancelPress={this.onCancel}
+            onConfirmPress={this.onConfirm}
+            confirmButtonMode={'primary'}>
+            <View>
+              <View style={styles.section} testID={'approve-screen'}>
+                <View style={styles.websiteIconWrapper}>
+                  <WebsiteIcon style={styles.icon} url={transaction.origin} title={host} />
+                </View>
+                <Text style={styles.title} testID={'allow-access'}>
+                  {strings('spend_limit_edition.allow_to_access', { host, tokenSymbol })}
+                </Text>
+                <Text style={styles.explanation}>
+                  {strings('spend_limit_edition.you_trust_this_site_1')}
+                  <Text style={fontStyles.bold}> {host} </Text>
+                  {strings('spend_limit_edition.you_trust_this_site_2', { tokenSymbol })}
+                </Text>
+                <TouchableOpacity style={styles.actionTouchable} onPress={this.toggleEditPermissionModal}>
+                  <Text style={styles.editPermissionText}>{strings('spend_limit_edition.edit_permission')}</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.row}>
-                <View style={styles.sectionLeft}>
-                  <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.transaction_fee_explanation')}</Text>
-                </View>
-                <View style={[styles.column, styles.sectionRight]}>
-                  <Text style={styles.fiatFeeText}>{`${totalGasFiat} ${currentCurrency}`}</Text>
-                  <Text style={styles.feeText}>{`${totalGas} ${ticker}`}</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.actionTouchable} onPress={this.onViewDetails}>
-                <View style={styles.viewDetailsWrapper}>
-                  <Text style={styles.viewDetailsText}>{strings('spend_limit_edition.view_details')}</Text>
-                  <Icon name={`ios-arrow-${viewDetails ? 'up' : 'down'}`} size={16} color={colors.blue} style={styles.copyIcon} />
-                </View>
-              </TouchableOpacity>
-              {gasError && (
-                <View style={styles.errorMessageWrapper}>
-                  <ErrorMessage errorMessage={gasError} />
-                </View>
-              )}
-            </View>
-
-            {viewDetails && (
               <View style={styles.section}>
                 <View style={styles.sectionTitleRow}>
-                  <Icon name={'user-check'} size={20} color={colors.grey500} onPress={this.toggleEditPermissionModal} />
-                  <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('spend_limit_edition.permission_request')}</Text>
-                  <TouchableOpacity style={styles.sectionRight} onPress={this.toggleEditPermissionModal}>
-                    <Text style={styles.editText}>{strings('spend_limit_edition.edit')}</Text>
+                  <Icon name={'tag'} size={20} color={colors.grey500} />
+                  <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('transaction.transaction_fee')}</Text>
+                  <TouchableOpacity style={styles.sectionRight} onPress={this.toggleCustomGasModal}>
+                    <Text style={styles.editText}>{strings('transaction.edit')}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.details_explanation', { host })}</Text>
+                  <View style={styles.sectionLeft}>
+                    <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.transaction_fee_explanation')}</Text>
+                  </View>
+                  <View style={[styles.column, styles.sectionRight]}>
+                    <Text style={styles.fiatFeeText}>{`${totalGasFiat} ${currentCurrency}`}</Text>
+                    <Text style={styles.feeText}>{`${totalGas} ${ticker}`}</Text>
+                  </View>
                 </View>
-                <Text style={styles.permissionDetails}>
-                  <Text style={fontStyles.bold}>{strings('spend_limit_edition.amount')}</Text> {`${amount} ${tokenSymbol}`}
-                </Text>
-                <View style={styles.row}>
-                  <Text style={styles.permissionDetails}>
-                    <Text style={fontStyles.bold}>{strings('spend_limit_edition.to')}</Text>{' '}
-                    {strings('spend_limit_edition.contract', {
-                      address: renderShortAddress(transaction.to),
-                    })}
-                  </Text>
-                  <Icon name="copy" size={16} color={colors.blue} style={styles.copyIcon} onPress={this.copyContractAddress} />
-                </View>
+                <TouchableOpacity style={styles.actionTouchable} onPress={this.onViewDetails}>
+                  <View style={styles.viewDetailsWrapper}>
+                    <Text style={styles.viewDetailsText}>{strings('spend_limit_edition.view_details')}</Text>
+                    <Icon name={`ios-arrow-${viewDetails ? 'up' : 'down'}`} size={16} color={colors.blue} style={styles.copyIcon} />
+                  </View>
+                </TouchableOpacity>
+                {gasError && (
+                  <View style={styles.errorMessageWrapper}>
+                    <ErrorMessage errorMessage={gasError} />
+                  </View>
+                )}
               </View>
-            )}
 
-            {viewDetails && (
-              <View style={styles.section}>
-                <View style={styles.sectionTitleRow}>
-                  <Icon solid name={'file-alt'} size={20} color={colors.grey500} />
-                  <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('spend_limit_edition.data')}</Text>
+              {viewDetails && (
+                <View style={styles.section}>
+                  <View style={styles.sectionTitleRow}>
+                    <Icon name={'user-check'} size={20} color={colors.grey500} onPress={this.toggleEditPermissionModal} />
+                    <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('spend_limit_edition.permission_request')}</Text>
+                    <TouchableOpacity style={styles.sectionRight} onPress={this.toggleEditPermissionModal}>
+                      <Text style={styles.editText}>{strings('spend_limit_edition.edit')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.row}>
+                    <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.details_explanation', { host })}</Text>
+                  </View>
+                  <Text style={styles.permissionDetails}>
+                    <Text style={fontStyles.bold}>{strings('spend_limit_edition.amount')}</Text> {`${amount} ${tokenSymbol}`}
+                  </Text>
+                  <View style={styles.row}>
+                    <Text style={styles.permissionDetails}>
+                      <Text style={fontStyles.bold}>{strings('spend_limit_edition.to')}</Text>{' '}
+                      {strings('spend_limit_edition.contract', {
+                        address: renderShortAddress(transaction.to),
+                      })}
+                    </Text>
+                    <Icon name="copy" size={16} color={colors.blue} style={styles.copyIcon} onPress={this.copyContractAddress} />
+                  </View>
                 </View>
-                <View style={styles.row}>
-                  <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.function_approve')}</Text>
+              )}
+
+              {viewDetails && (
+                <View style={styles.section}>
+                  <View style={styles.sectionTitleRow}>
+                    <Icon solid name={'file-alt'} size={20} color={colors.grey500} />
+                    <Text style={[styles.sectionTitleText, styles.sectionLeft]}>{strings('spend_limit_edition.data')}</Text>
+                  </View>
+                  <View style={styles.row}>
+                    <Text style={styles.sectionExplanationText}>{strings('spend_limit_edition.function_approve')}</Text>
+                  </View>
+                  <Text style={styles.sectionExplanationText}>{transaction.data}</Text>
                 </View>
-                <Text style={styles.sectionExplanationText}>{transaction.data}</Text>
-              </View>
-            )}
-            {this.renderCustomGasModal()}
-            {this.renderEditPermissionModal()}
-          </View>
-        </ActionView>
-      </SafeAreaView>
+              )}
+              {this.renderCustomGasModal()}
+              {this.renderEditPermissionModal()}
+            </View>
+          </ActionView>
+        </SafeAreaView>
+      </Container>
     )
   }
 }
 
 export default inject(({ store: state }) => ({
-	accounts: state.engine.backgroundState.AccountTrackerController.accounts,
-	conversionRate: state.engine.backgroundState.CurrencyRateController.conversionRate,
-	contractBalances: state.engine.backgroundState.TokenBalancesController.contractBalances,
-	currentCurrency: state.engine.backgroundState.CurrencyRateController.currentCurrency,
-	identities: state.engine.backgroundState.PreferencesController.identities,
-	ticker: state.engine.backgroundState.NetworkController.provider.ticker,
-	transaction: getNormalizedTxState(state),
-	transactions: state.engine.backgroundState.TransactionController.transactions,
-	accountsLength: Object.keys(state.engine.backgroundState.AccountTrackerController.accounts).length,
-	tokensLength: state.engine.backgroundState.AssetsController.tokens.length,
-	providerType: state.engine.backgroundState.NetworkController.provider.type,
-  
-	setTransactionObject: state.transaction.setTransactionObject,
-  
-  }))(observer(withNavigation(Approve)))
+  accounts: state.engine.backgroundState.AccountTrackerController.accounts,
+  conversionRate: state.engine.backgroundState.CurrencyRateController.conversionRate,
+  contractBalances: state.engine.backgroundState.TokenBalancesController.contractBalances,
+  currentCurrency: state.engine.backgroundState.CurrencyRateController.currentCurrency,
+  identities: state.engine.backgroundState.PreferencesController.identities,
+  ticker: state.engine.backgroundState.NetworkController.provider.ticker,
+  transaction: getNormalizedTxState(state),
+  transactions: state.engine.backgroundState.TransactionController.transactions,
+  accountsLength: Object.keys(state.engine.backgroundState.AccountTrackerController.accounts).length,
+  tokensLength: state.engine.backgroundState.AssetsController.tokens.length,
+  providerType: state.engine.backgroundState.NetworkController.provider.type,
+
+  setTransactionObject: state.transaction.setTransactionObject,
+}))(observer(Approve))
