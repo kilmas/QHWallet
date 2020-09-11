@@ -652,12 +652,15 @@ class History extends React.Component {
             type="primary"
             style={{ margin: 20 }}
             onPress={async () => {
-              Toast.loading('loading..', 0)
-              if (!this.state.isFibosAccountValid) {
-                // register account to eth
-                this.registerApprove()
-              } else {
-                goBrowser(this.props.navigation, `https://cross.fo/transfer`)
+              if (this.state.crossType === 'FO') {
+                Toast.loading('loading..', 0)
+                if (!this.state.isFibosAccountValid) {
+                  // register account to eth
+                  this.registerApprove()
+                } else {
+                  const symbol = crossTokens[this.state.crossToken].symbol
+                  goBrowser(this.props.navigation, `https://cross.fo/transfer?account=${this.state.fibosAccount}&amount=${this.state.crossAmount}&symbol=${symbol}`)
+                }
               }
             }}>
             {!!this.state.crossInfo ? 'Register' : 'Confirm'}

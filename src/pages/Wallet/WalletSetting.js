@@ -1,7 +1,7 @@
 import React from 'react'
 import { TouchableOpacity, InteractionManager } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { Icon, List, Button, Toast } from '@ant-design/react-native'
+import { Icon, List, Button, Modal } from '@ant-design/react-native'
 import { inject, observer } from 'mobx-react'
 import { computed } from 'mobx'
 import TitleBar from '../../components/TitleBar'
@@ -28,16 +28,22 @@ class WalletSetting extends React.Component {
   }
 
   @computed get current() {
-    const { accountStore: {
-      currentETHID, currentFOID, currentOKTID, currentEOSID
-    } } = this.props
+    const {
+      accountStore: { currentETHID, currentFOID, currentOKTID, currentEOSID },
+    } = this.props
     const { id } = this.account
-    if (id === currentFOID
-      || id === currentETHID
-      || id === currentOKTID
-      || id === currentEOSID
-      || this.props.navigation.getParam('type') === 'current')
+    if (id === currentFOID || id === currentETHID || id === currentOKTID || id === currentEOSID || this.props.navigation.getParam('type') === 'current')
       return true
+  }
+
+  @computed get wallet() {
+    if (this.account.walletType === 'FO') {
+      return this.account.FOWallet
+    }
+    if (this.account.walletType === 'EOS') {
+      return this.account.EOSWallet
+    }
+    return this.account.ETHWallet
   }
 
   _refresh = async () => {
@@ -70,43 +76,38 @@ class WalletSetting extends React.Component {
   }
 
   isImported(allKeyrings, address) {
-    let ret = false;
+    let ret = false
     for (const keyring of allKeyrings) {
       if (keyring.accounts.includes(address)) {
-        ret = keyring.type !== 'HD Key Tree';
-        break;
+        ret = keyring.type !== 'HD Key Tree'
+        break
       }
     }
 
-    return ret;
+    return ret
   }
 
-
   onAccountChange = async address => {
-    const { PreferencesController } = Engine.context;
-    const { keyrings } = this.props;
-    console.log(keyrings)
-
+    const { PreferencesController } = Engine.context
     requestAnimationFrame(async () => {
       try {
-        console.log(address)
-        PreferencesController.setSelectedAddress(address);
+        PreferencesController.setSelectedAddress(address)
 
         InteractionManager.runAfterInteractions(async () => {
           setTimeout(() => {
-            Engine.refreshTransactionHistory();
-          }, 1000);
-        });
+            Engine.refreshTransactionHistory()
+          }, 1000)
+        })
       } catch (e) {
-        console.error(e, 'error while trying change the selected account'); // eslint-disable-line
+        console.error(e, 'error while trying change the selected account') // eslint-disable-line
       }
-    });
-  };
+    })
+  }
 
-  componentDidMount () {
+  componentDidMount() {
     this._refresh()
   }
-  
+
   render() {
     if (!this.account) {
       return null
@@ -129,10 +130,22 @@ class WalletSetting extends React.Component {
           )}
         />
         <KeyboardAwareScrollView>
-          <List renderHeader={this.account.name}>
-            <List.Item arrow="horizontal" extra="" onPress={() => {
-              Toast.info('Coming soon')
-            }}>
+          <List renderHeader={`${this.account.name}`} renderFooter={this.wallet.alias ? `alias:${this.wallet.alias}` : ''}>
+            <List.Item
+              arrow="horizontal"
+              extra=""
+              onPress={() => {
+                Modal.prompt(
+                  'Change Account Name',
+                  '',
+                  name => {
+                    this.account.changeName(name)
+                  },
+                  'default',
+                  null,
+                  ['please input name']
+                )
+              }}>
               {strings('wallet.changeWalletName')}
             </List.Item>
             <List.Item
@@ -210,7 +223,6 @@ class WalletSetting extends React.Component {
   }
 }
 
-
 export default inject(({ store: state }) => ({
   settings: state.settings,
   accounts: state.engine.backgroundState.AccountTrackerController.accounts,
@@ -221,5 +233,4 @@ export default inject(({ store: state }) => ({
   identities: state.engine.backgroundState.PreferencesController.identities,
   keyrings: state.engine.backgroundState.KeyringController.keyrings,
   // identities: state.engine.backgroundState.PreferencesController.identities,
-
 }))(observer(WalletSetting))

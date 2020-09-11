@@ -14,6 +14,8 @@ import {
   HDACCOUNT_FIND_WALELT_TYPE_ID,
   HDACCOUNT_FIND_WALELT_TYPE_ADDRESS,
   HDACCOUNT_FIND_WALELT_TYPE_COINID,
+  COIN_TYPE_EOS,
+  COIN_TYPE_FO,
 } from '../../config/const'
 import AccountStorage from './AccountStorage'
 import Coin from '../wallet/Coin'
@@ -227,6 +229,19 @@ class HDAccount extends Account {
       console.log(error)
     }
   }
+
+  @action
+  changeName (name) {
+    this.name = name
+    this.wallets.forEach(wallet => {
+      if(wallet.type === COIN_TYPE_FO || wallet.type === COIN_TYPE_EOS) {
+        wallet.alias = name
+      } else {
+        wallet.name = name
+      }
+    })
+  }
+
   drop = async pwd => {
     if (!this.wallets.length) {
       throw new Error('请先创建钱包')

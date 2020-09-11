@@ -10,7 +10,7 @@ import Account from './Account'
 import AccountStorage from './AccountStorage'
 import Coin from '../wallet/Coin'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
-import { HDACCOUNT_FIND_WALELT_TYPE_ID, HDACCOUNT_FIND_WALELT_TYPE_ADDRESS, HDACCOUNT_FIND_WALELT_TYPE_COINID, ACCOUNT_TYPE_COMMON } from '../../config/const'
+import { HDACCOUNT_FIND_WALELT_TYPE_ID, HDACCOUNT_FIND_WALELT_TYPE_ADDRESS, HDACCOUNT_FIND_WALELT_TYPE_COINID, ACCOUNT_TYPE_COMMON, COIN_TYPE_EOS, COIN_TYPE_FO } from '../../config/const'
 import OKTWallet from '../wallet/OKTWallet'
 import EOSWallet from '../wallet/EOSWallet'
 
@@ -248,6 +248,20 @@ class CommonAccount extends Account {
     }
 
     return wallet
+  }
+
+  @action
+  changeName (name) {
+    if (this.walletType === 'EOS' && this.walletType !== 'FO') {
+      this.name = name
+    }
+    this.wallets.forEach(wallet => {
+      if(wallet.type === COIN_TYPE_FO || wallet.type === COIN_TYPE_EOS) {
+        wallet.alias = name
+      } else {
+        wallet.name = name
+      }
+    })
   }
 
   /**
