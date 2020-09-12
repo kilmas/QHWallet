@@ -34,12 +34,9 @@ class SendCoin extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      fromSelectedAddress: this.props.transaction.transaction.from,
       receiver: '',
       coin: '',
       amount: '',
-      assetId: '',
-      balance: 0,
       memo: '',
       gasFee: 1,
       maxFee: 4,
@@ -120,18 +117,6 @@ class SendCoin extends React.Component {
       coin = this.wallet.findCoin(this.selectedCoinID);
     }
     return coin
-  }
-
-  prepareTransactionToSend = () => {
-    const {
-      transaction: { transaction },
-    } = this.props
-    const { fromSelectedAddress } = this.state
-    const transactionToSend = { ...transaction }
-    transactionToSend.gas = BNToHex(transaction.gas)
-    transactionToSend.gasPrice = BNToHex(transaction.gasPrice)
-    transactionToSend.from = fromSelectedAddress
-    return transactionToSend
   }
 
   validateGas = () => { }
@@ -470,7 +455,6 @@ const styles = StyleSheet.create({
 
 export default inject(({ store: state }) => ({
   accountStore: state.accountStore,
-  transaction: state.transaction,
 
   createNewTab: url => state.browser.createNewTab(url),
   setActiveTab: id => state.browser.setActiveTab(id),

@@ -542,6 +542,7 @@ class History extends React.Component {
                       accountStore.setCurrentOKTID(item.id)
                     } else if (coin.name === 'ETH') {
                       accountStore.setCurrentETHID(item.id)
+                      accountStore.selectEthAccount(item.ETHWallet.address)
                     }
                   }
                 }}>

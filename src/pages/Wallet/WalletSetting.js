@@ -88,19 +88,9 @@ class WalletSetting extends React.Component {
   }
 
   onAccountChange = async address => {
-    const { PreferencesController } = Engine.context
+    const { accountStore } = this.props
     requestAnimationFrame(async () => {
-      try {
-        PreferencesController.setSelectedAddress(address)
-
-        InteractionManager.runAfterInteractions(async () => {
-          setTimeout(() => {
-            Engine.refreshTransactionHistory()
-          }, 1000)
-        })
-      } catch (e) {
-        console.error(e, 'error while trying change the selected account') // eslint-disable-line
-      }
+      accountStore.selectEthAccount(address)
     })
   }
 

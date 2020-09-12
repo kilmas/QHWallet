@@ -282,6 +282,20 @@ class AccountStore {
     }
   }
 
+  selectEthAccount (address) {
+    try {
+      const { PreferencesController } = Engine.context
+      PreferencesController.setSelectedAddress(address)
+      InteractionManager.runAfterInteractions(async () => {
+        setTimeout(() => {
+          Engine.refreshTransactionHistory()
+        }, 1000)
+      })
+    } catch (e) {
+      console.warn(e, 'error while trying change the selected account') // eslint-disable-line
+    }
+  }
+
   @action
   insert = account => {
     if (this.match(account.id)) {
@@ -305,17 +319,7 @@ class AccountStore {
           break
         case 'ETH':
           this.currentETHID = account.id
-          try {
-            const { PreferencesController } = Engine.context
-            PreferencesController.setSelectedAddress(account.ETHWallet.address)
-            InteractionManager.runAfterInteractions(async () => {
-              setTimeout(() => {
-                Engine.refreshTransactionHistory()
-              }, 1000)
-            })
-          } catch (e) {
-            console.warn(e, 'error while trying change the selected account') // eslint-disable-line
-          }
+          this.selectEthAccount(account.ETHWallet.address)
           break
         case 'OKT':
           this.currentOKTID = account.id

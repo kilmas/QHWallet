@@ -59,7 +59,7 @@ class TransactionReviewData extends React.Component {
 
   render() {
     const {
-      transaction: { data },
+      transaction: { transaction: { data } },
       actionKey
     } = this.props;
     return (
