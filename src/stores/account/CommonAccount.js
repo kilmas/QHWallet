@@ -252,7 +252,7 @@ class CommonAccount extends Account {
 
   @action
   changeName (name) {
-    if (this.walletType === 'EOS' && this.walletType !== 'FO') {
+    if (this.walletType !== 'EOS' && this.walletType !== 'FO') {
       this.name = name
     }
     this.wallets.forEach(wallet => {

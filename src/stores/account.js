@@ -1,3 +1,4 @@
+import { InteractionManager } from 'react-native'
 import _ from 'lodash'
 import { observable, computed, action, reaction } from 'mobx'
 import { persist } from 'mobx-persist'
@@ -22,6 +23,7 @@ import SecureKeychain from '../modules/metamask/core/SecureKeychain'
 import OKClient from '../modules/okchain'
 import Scatter from '../modules/scatter'
 import EOSWallet from './wallet/EOSWallet'
+import Engine from '../modules/metamask/core/Engine'
 
 class AccountStore {
   @persist @observable isHiddenPrice = false
@@ -303,6 +305,17 @@ class AccountStore {
           break
         case 'ETH':
           this.currentETHID = account.id
+          try {
+            const { PreferencesController } = Engine.context
+            PreferencesController.setSelectedAddress(account.ETHWallet.address)
+            InteractionManager.runAfterInteractions(async () => {
+              setTimeout(() => {
+                Engine.refreshTransactionHistory()
+              }, 1000)
+            })
+          } catch (e) {
+            console.warn(e, 'error while trying change the selected account') // eslint-disable-line
+          }
           break
         case 'OKT':
           this.currentOKTID = account.id
