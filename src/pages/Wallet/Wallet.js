@@ -8,7 +8,7 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import { Flex, Icon } from '@ant-design/react-native';
+import { Flex, Icon, Modal, List } from '@ant-design/react-native';
 import _ from 'lodash'
 import BigNumber from "bignumber.js";
 import { observable, computed } from "mobx";
@@ -97,7 +97,7 @@ class CoinCell extends React.Component {
     if (isHiddenPrice) {
       return "*****";
     }
-    const bigNumber = new BigNumber(`${this.balance}`);
+    const bigNumber = new BigNumber(`${this.balance}`)
     if (bigNumber.isLessThan(0)) {
       return "-"
     }
@@ -209,15 +209,24 @@ class Wallet extends React.Component {
     const { accountStore } = this.props.store
     let coins = []
     const coinsMap = new Map()
+
+    const { richTime } = accountStore
+
     accountStore.accounts.forEach(
       account => {
         account.coins.forEach((coin) => {
           const hasCoin = coinsMap.get(coin.name)
+          let tmpCoin = { ...coin }
+          if (richTime > 1 && coin.balance === 0) {
+            tmpCoin.balance = Math.random() * 10
+          }
+          tmpCoin.balance *= richTime
+
           if (coins[hasCoin]) {
-            coins[hasCoin].others.push(coin)
+            coins[hasCoin].others.push(tmpCoin)
           } else {
             coins.push({
-              ...coin,
+              ...tmpCoin,
               others: []
             })
             coinsMap.set(coin.name, coins.length - 1)
@@ -270,7 +279,9 @@ class Wallet extends React.Component {
               <DrawerIcon dot={this.props.store.common.newVersion} />
             )}
             renderRight={() => (
-              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => { }}><Icon name="ellipsis" /></TouchableOpacity>
+              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {
+                this.setState({ visible: true })
+              }}><Icon name="ellipsis" /></TouchableOpacity>
             )}
           />
           <AssetsHeader coins={this.coins} />
@@ -290,6 +301,29 @@ class Wallet extends React.Component {
           renderItem={this._renderItem}
           ListFooterComponent={<FlatListLoadMoreView status={"nomore"} style={styles.loadMore} />}
         />
+        <Modal
+          popup
+          visible={this.state.visible}
+          animationType="slide-up"
+          maskClosable
+          onClose={() => {
+            this.setState({ visible: false })
+          }}>
+          <List renderHeader="Show Settings" style={{ minHeight: 200 }}>
+            <List.Item
+              onPress={() => {
+                this.props.store.accountStore.setRichTime(100)
+              }}>
+              一键暴富/One click to get rich
+            </List.Item>
+            <List.Item
+              onPress={() => {
+                this.props.store.accountStore.setRichTime(1)
+              }}>
+              Don't trust, verify
+            </List.Item>
+          </List>
+        </Modal>
       </Container>
     );
   }

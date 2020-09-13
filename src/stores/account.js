@@ -33,6 +33,8 @@ class AccountStore {
 
   @observable pwd = false
 
+  @observable richTime = 1
+
   @persist @observable currentAccountID = null
   /**
    *
@@ -207,6 +209,10 @@ class AccountStore {
     this.isInit = true
   }
 
+  @action
+  setRichTime(time) {
+    this.richTime = time
+  }
 
   @action
   setPwd(pwd) {

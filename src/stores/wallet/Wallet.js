@@ -8,9 +8,6 @@ import WalletTxStore from "./WalletTxStore";
 const STORAGE_KEY_WALLET_LIST = "STORAGE_KEY_WALLET_LIST_v1";
 
 export default class Wallet {
-  static WALLET_TYPE_ETH = 1;
-  static WALLET_TYPE_BTC = 2;
-  static WALLET_TYPE_FO = 8;
   hdId;
 
     /**

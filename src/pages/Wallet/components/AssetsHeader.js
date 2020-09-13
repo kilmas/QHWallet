@@ -18,6 +18,7 @@ class AssetsHeader extends React.Component {
 
   @computed get balance() {
     const { coins } = this.props
+
     const balance = coins.reduce((total, coin) => {
       return total + (_.get(coin, 'others', []).reduce((ban, other) => ban + other.balance, coin.balance) * (CoinStore[`${coin.name}Price`] || 0))
     }, 0);
