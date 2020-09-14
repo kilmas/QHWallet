@@ -10,16 +10,21 @@ const COINSTORE_PRICE_STORAGE_KEY = 'COINSTORE-PRICE-STORAGE-KEY'
 const COINSTORE_CURRENCY_STORAGE_KEY = 'COINSTORE-CURRENCY-STORAGE-KEY'
 class CoinPrice {
   @persist @observable id
-  @persist @observable USD
+  @persist @observable USD = 0
   // @observable CNY = 0;
 
   constructor({ tokenId, priceUSD } = {}) {
     if (tokenId !== undefined) {
-      this.id = tokenId
+      this.id = `${tokenId}`
     }
-    if (priceUSD !== undefined) {
+    if (priceUSD) {
       this.USD = toSignificanceNumber(priceUSD, 8)
     }
+  }
+
+  @action
+  setUSD(USD) {
+    this.USD = USD
   }
 }
 
@@ -42,27 +47,27 @@ class CoinStore {
   }
 
   @action init() {
-    if (!this.map.get(COIN_ID_BTC)) {
+    if (!this.map.get(`${COIN_ID_BTC}`)) {
       this.map.set(COIN_ID_BTC, new CoinPrice({ tokenId: COIN_ID_BTC }))
     }
-    if (!this.map.get(COIN_ID_USDT)) {
-      this.map.set(COIN_ID_USDT, new CoinPrice({ tokenId: COIN_ID_USDT, priceUSD: 1 }))
+    if (!this.map.get(`${COIN_ID_USDT}`)) {
+      this.map.set(`${COIN_ID_USDT}`, new CoinPrice({ tokenId: COIN_ID_USDT, priceUSD: 1 }))
     }
-    if (!this.map.get(COIN_ID_ETH)) {
-      this.map.set(COIN_ID_ETH, new CoinPrice({ tokenId: COIN_ID_ETH }))
+    if (!this.map.get(`${COIN_ID_ETH}`)) {
+      this.map.set(`${COIN_ID_ETH}`, new CoinPrice({ tokenId: COIN_ID_ETH }))
     }
-    if (!this.map.get(COIN_ID_FO)) {
-      this.map.set(COIN_ID_FO, new CoinPrice({ tokenId: COIN_ID_FO }))
+    if (!this.map.get(`${COIN_ID_FO}`)) {
+      this.map.set(`${COIN_ID_FO}`, new CoinPrice({ tokenId: COIN_ID_FO }))
     }
-    if (!this.map.get(COIN_ID_OKT)) {
-      this.map.set(COIN_ID_OKT, new CoinPrice({ tokenId: COIN_ID_OKT }))
+    if (!this.map.get(`${COIN_ID_OKT}`)) {
+      this.map.set(`${COIN_ID_OKT}`, new CoinPrice({ tokenId: COIN_ID_OKT }))
     }
-    if (!this.map.get(COIN_ID_EOS)) {
-      this.map.set(COIN_ID_EOS, new CoinPrice({ tokenId: COIN_ID_EOS }))
+    if (!this.map.get(`${COIN_ID_EOS}`)) {
+      this.map.set(`${COIN_ID_EOS}`, new CoinPrice({ tokenId: COIN_ID_EOS }))
     }
   }
   get BTCPrice() {
-    return this.getPrice(COIN_ID_BTC)
+    return this.getPrice(`${COIN_ID_BTC}`)
   }
 
   get ETHPrice() {
@@ -122,27 +127,52 @@ class CoinStore {
     if (this.currency === CURRENCY_TYPE_CNY) {
       rate = this.CNYRate
     }
-    return (this.map.get(id) && this.map.get(id).USD) * rate || 0
+    return (this.map.get(`${id}`) && this.map.get(`${id}`).USD) * rate || 0
   }
   getFloatingPrice(id) {
-    return (this.map.get(id) && this.map.get(id)[`${this.currency}Floating`]) || 0
+    return (this.map.get(`${id}`) && this.map.get(`${id}`)[`${this.currency}Floating`]) || 0
   }
 
   @action
   fetchPrice = async () => {
     try {
       this.init()
-      this.CNYRate = await request.getExchangerate()
-      const FOCoin = this.map.get(COIN_ID_FO)
-      FOCoin.USD = await fibosRequest.getPrice()
-      const OKBCoin = this.map.get(COIN_ID_OKT)
-      OKBCoin.USD = await request.getPrice('OKB')
-      const BTCCoin = this.map.get(COIN_ID_BTC)
-      BTCCoin.USD = await request.getPrice('BTC')
-      const ETHCoin = this.map.get(COIN_ID_ETH)
-      ETHCoin.USD = await request.getPrice('ETH')
-      const EOSCoin = this.map.get(COIN_ID_EOS)
-      EOSCoin.USD = await request.getPrice('EOS')
+      request.getExchangerate().then(rate => {
+        if (rate) {
+          this.CNYRate = rate
+        }
+      })
+      fibosRequest.getPrice().then(usd => {
+        if (usd) {
+          const FOCoin = this.map.get(`${COIN_ID_FO}`)
+          FOCoin && FOCoin.setUSD(usd)
+        }
+      })
+      request.getPrice('OKB').then(usd => {
+        if (usd) {
+          const OKBCoin = this.map.get(`${COIN_ID_OKT}`)
+          OKBCoin && OKBCoin.setUSD(usd)
+        }
+      })
+      request.getPrice('BTC').then(usd => {
+        if (usd) {
+          const BTCCoin = this.map.get(`${COIN_ID_BTC}`)
+          BTCCoin && BTCCoin.setUSD(usd)
+        }
+      })
+      request.getPrice('ETH').then(usd => {
+        if (usd) {
+          console.log(usd)
+          const ETHCoin = this.map.get(`${COIN_ID_ETH}`)
+          ETHCoin && ETHCoin.setUSD(usd)
+        }
+      })
+      request.getPrice('EOS').then(usd => {
+        if (usd) {
+          const EOSCoin = this.map.get(`${COIN_ID_EOS}`)
+          EOSCoin && EOSCoin.setUSD(usd)
+        }
+      })
     } catch (error) {}
   }
 

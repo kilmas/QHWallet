@@ -43,7 +43,6 @@ const cellStyles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
     paddingLeft: 10,
-    width: 125,
   },
   coinName: {
     fontSize: 14,
@@ -57,7 +56,6 @@ const cellStyles = StyleSheet.create({
     color: '#3D3D3D',
     flex: 1,
     fontWeight: '500',
-    maxWidth: 110,
   },
   coinBalance: {
     fontSize: 12,
@@ -71,7 +69,6 @@ const cellStyles = StyleSheet.create({
     ...themeStyles.subTitle,
     color: '#49A303',
     textAlign: 'left',
-    maxWidth: 110,
   },
   rightView: {
     alignItems: 'flex-end',

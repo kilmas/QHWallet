@@ -263,10 +263,10 @@ export const request = {
     } catch (err) {
       console.warn(err)
     }
-    return 7
   },
+
   getPrice: async coin => {
-    let price = 1
+    let price = 0
     try {
       const {
         data: {

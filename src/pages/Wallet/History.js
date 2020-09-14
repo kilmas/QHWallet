@@ -660,7 +660,7 @@ class History extends React.Component {
                   this.registerApprove()
                 } else {
                   const symbol = crossTokens[this.state.crossToken].symbol
-                  goBrowser(this.props.navigation, `https://cross.fo/transfer?account=${this.state.fibosAccount}&amount=${this.state.crossAmount}&symbol=${symbol}`)
+                  goBrowser(this.props.navigation, `https://cross.fo/transfer?account=${this.state.fibosAccount}&amount=${this.state.crossAmount}&token=${symbol}`)
                 }
               }
             }}>
