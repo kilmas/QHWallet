@@ -1,31 +1,20 @@
-import React from 'react';
-import {
-  FlatList,
-  Image,
-  Text,
-  TouchableOpacity,
-  RefreshControl,
-  View,
-  StyleSheet,
-} from 'react-native';
-import { Flex, Icon, Modal, List } from '@ant-design/react-native';
+import React from 'react'
+import { FlatList, Image, Text, TouchableOpacity, RefreshControl, View, StyleSheet } from 'react-native'
+import { Flex, Icon, Modal, List } from '@ant-design/react-native'
 import _ from 'lodash'
-import BigNumber from "bignumber.js";
-import { observable, computed } from "mobx";
-import { inject, observer, Observer } from 'mobx-react';
-import LinearGradient from 'react-native-linear-gradient';
-import { toPriceString, toFixedLocaleString, toFixedNumber } from "../../utils/NumberUtil";
-import { BTCCoin, ETH } from '../../stores/wallet/Coin';
-import { styles as themeStyles, MainColor } from '../../theme';
-import GlobalNavigation from '../../utils/GlobalNavigation';
-import Container from '../../components/Container';
-import FlatListLoadMoreView from "../../components/FlatListLoadMoreView";
-import DrawerIcon from '../../components/DrawerIcon';
-import CoinStore from '../../stores/wallet/CoinStore';
+import BigNumber from 'bignumber.js'
+import { observable, computed } from 'mobx'
+import { inject, observer, Observer } from 'mobx-react'
+import LinearGradient from 'react-native-linear-gradient'
+import { toPriceString, toFixedLocaleString, toFixedNumber } from '../../utils/NumberUtil'
+import { styles as themeStyles, MainColor } from '../../theme'
+import GlobalNavigation from '../../utils/GlobalNavigation'
+import Container from '../../components/Container'
+import FlatListLoadMoreView from '../../components/FlatListLoadMoreView'
+import DrawerIcon from '../../components/DrawerIcon'
+import CoinStore from '../../stores/wallet/CoinStore'
 import AssetsHeader from './components/AssetsHeader'
-import TitleBar from '../../components/TitleBar';
-import CommonAccount from '../../stores/account/CommonAccount';
-import HDAccount from '../../stores/account/HDAccount';
+import TitleBar from '../../components/TitleBar'
 
 const cellStyles = StyleSheet.create({
   cellFlex: {
@@ -76,9 +65,8 @@ const cellStyles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
     marginRight: 8,
-  }
-});
-
+  },
+})
 
 @inject('store')
 @observer
@@ -92,39 +80,39 @@ class CoinCell extends React.Component {
   @computed get showBalance() {
     const { isHiddenPrice, coin } = this.props
     if (isHiddenPrice) {
-      return "*****";
+      return '*****'
     }
     const bigNumber = new BigNumber(`${this.balance}`)
     if (bigNumber.isLessThan(0)) {
-      return "-"
+      return '-'
     }
     return toFixedLocaleString(bigNumber, coin.name === 'BTC' || coin.name === 'ETH' ? 8 : 4, true)
   }
 
   @computed get price() {
     const { coin } = this.props
-    return (CoinStore[`${coin.name}Price`] || 0)
+    return CoinStore[`${coin.name}Price`] || 0
   }
 
   @computed get totalPrice() {
     const { isHiddenPrice } = this.props
     if (isHiddenPrice) {
-      return "*****";
+      return '*****'
     }
-    if (this.balance === "-") {
-      return "-";
+    if (this.balance === '-') {
+      return '-'
     }
-    const balance = new BigNumber(`${this.balance}`);
+    const balance = new BigNumber(`${this.balance}`)
     if (balance.isLessThan(0)) {
-      return 0;
+      return 0
     }
-    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.price}`), 2);
+    const totalPrice = toFixedNumber(balance.multipliedBy(`${this.price}`), 2)
     // this.props.coin.totalPrice
-    return `≈ ${CoinStore.currencySymbol} ${toPriceString(totalPrice, 2, 4, true)}`;
+    return `≈ ${CoinStore.currencySymbol} ${toPriceString(totalPrice, 2, 4, true)}`
   }
 
   render() {
-    const { coin } = this.props;
+    const { coin } = this.props
     return (
       <TouchableOpacity
         style={{ marginBottom: 10 }}
@@ -136,24 +124,16 @@ class CoinCell extends React.Component {
         }>
         <Flex justify="between" style={cellStyles.cellFlex}>
           <Flex>
-            <Image
-              source={{ uri: coin.icon }}
-              resizeMode="contain"
-              style={cellStyles.cellCoin}
-            />
+            <Image source={{ uri: coin.icon }} resizeMode="contain" style={cellStyles.cellCoin} />
             <View style={cellStyles.nameView}>
-              <Text style={cellStyles.coinName}>
-                {this.props.coin.name}
-              </Text>
+              <Text style={cellStyles.coinName}>{this.props.coin.name}</Text>
               <Text ellipsizeMode={'tail'} style={cellStyles.coinPrice}>
                 {CoinStore.currencySymbol} {toPriceString(this.price, 2, 4, true)}
               </Text>
             </View>
           </Flex>
           <View style={cellStyles.rightView}>
-            <Text style={cellStyles.coinBalance}>
-              {this.showBalance}
-            </Text>
+            <Text style={cellStyles.coinBalance}>{this.showBalance}</Text>
             <Text ellipsizeMode={'tail'} style={cellStyles.coinTotal}>
               {this.totalPrice}
             </Text>
@@ -165,11 +145,6 @@ class CoinCell extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  touchAction: {
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-  },
   flat: {
     margin: 26,
   },
@@ -177,9 +152,9 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
   },
   loadMore: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
-});
+})
 
 @inject('store')
 @observer
@@ -188,13 +163,13 @@ class Wallet extends React.Component {
     name: '',
     showSavingComing: false,
     showBorrowComing: false,
-  };
+  }
 
-  @observable isRefreshing = false;
+  @observable isRefreshing = false
 
   @computed get account() {
     const { accountStore } = this.props.store
-    return accountStore.currentAccount;
+    return accountStore.currentAccount
     // return accountStore.defaultHDAccount;
   }
 
@@ -209,29 +184,27 @@ class Wallet extends React.Component {
 
     const { richTime } = accountStore
 
-    accountStore.accounts.forEach(
-      account => {
-        account.coins.forEach((coin) => {
-          const hasCoin = coinsMap.get(coin.name)
-          let tmpCoin = { ...coin }
-          if (richTime > 1 && coin.balance === 0) {
-            tmpCoin.balance = Math.random() * 10
-          }
-          tmpCoin.balance *= richTime
+    accountStore.accounts.forEach(account => {
+      account.coins.forEach(coin => {
+        const hasCoin = coinsMap.get(coin.name)
+        let tmpCoin = { ...coin }
+        if (richTime > 1 && coin.balance === 0) {
+          tmpCoin.balance = Math.random() * 10
+        }
+        tmpCoin.balance *= richTime
 
-          if (coins[hasCoin]) {
-            coins[hasCoin].others.push(tmpCoin)
-          } else {
-            coins.push({
-              ...tmpCoin,
-              others: []
-            })
-            coinsMap.set(coin.name, coins.length - 1)
-          }
-        })
-      }
-    )
-    return coins;
+        if (coins[hasCoin]) {
+          coins[hasCoin].others.push(tmpCoin)
+        } else {
+          coins.push({
+            ...tmpCoin,
+            others: [],
+          })
+          coinsMap.set(coin.name, coins.length - 1)
+        }
+      })
+    })
+    return coins
     // if (this.account && this.account.displayChange) {
     //   return this.account.coins
     // }
@@ -240,22 +213,20 @@ class Wallet extends React.Component {
 
   _onRefresh = async () => {
     if (this.isRefreshing) {
-      return;
+      return
     }
 
-    this.isRefreshing = true;
+    this.isRefreshing = true
     try {
       // await this.account.update();
     } catch (error) { }
 
     setTimeout(() => {
-      this.isRefreshing = false;
-    }, 100);
-  };
+      this.isRefreshing = false
+    }, 100)
+  }
 
-  _renderItem = ({ item }) => (
-    <Observer>{() => <CoinCell coin={item} isHiddenPrice={this.props.store.accountStore.isHiddenPrice} />}</Observer>
-  );
+  _renderItem = ({ item }) => <Observer>{() => <CoinCell coin={item} isHiddenPrice={this.props.store.accountStore.isHiddenPrice} />}</Observer>
 
   render() {
     return (
@@ -268,35 +239,32 @@ class Wallet extends React.Component {
           style={{
             borderBottomLeftRadius: 6,
             borderBottomRightRadius: 6,
-            height: 230,
+            height: 200,
           }}>
           <TitleBar
             title={this.username}
-            renderLeft={() => (
-              <DrawerIcon dot={this.props.store.common.newVersion} />
-            )}
+            renderLeft={() => <DrawerIcon dot={this.props.store.common.newVersion} />}
             renderRight={() => (
-              <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {
-                this.setState({ visible: true })
-              }}><Icon name="ellipsis" /></TouchableOpacity>
+              <TouchableOpacity
+                style={{ marginRight: 20 }}
+                onPress={() => {
+                  this.setState({ visible: true })
+                }}>
+                <Icon name="ellipsis" />
+              </TouchableOpacity>
             )}
           />
           <AssetsHeader coins={this.coins} />
         </LinearGradient>
         <FlatList
-          refreshControl={
-            <RefreshControl
-              refreshing={this.isRefreshing}
-              onRefresh={this._onRefresh}
-            />
-          }
+          refreshControl={<RefreshControl refreshing={this.isRefreshing} onRefresh={this._onRefresh} />}
           showsVerticalScrollIndicator={false}
           data={this.coins}
           keyExtractor={(item, index) => index.toString()}
           style={styles.flat}
           contentContainerStyle={styles.flatContent}
           renderItem={this._renderItem}
-          ListFooterComponent={<FlatListLoadMoreView status={"nomore"} style={styles.loadMore} />}
+          ListFooterComponent={<FlatListLoadMoreView status={'nomore'} style={styles.loadMore} />}
         />
         <Modal
           popup
@@ -322,8 +290,8 @@ class Wallet extends React.Component {
           </List>
         </Modal>
       </Container>
-    );
+    )
   }
 }
 
-export default Wallet;
+export default Wallet

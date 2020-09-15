@@ -38,7 +38,7 @@ class ClearTitleBar extends React.PureComponent {
         <View style={{ flex: 1, alignItems: 'center', }}>
           <Text
             style={{
-              fontSize: 19,
+              fontSize: 18,
               color: '#FFF',
               maxWidth: '65%'
             }}>

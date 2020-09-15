@@ -159,9 +159,8 @@ class CoinHeader extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  backImg: { width: 15, height: 41 },
   lineGrad: {
-    height: 210,
+    height: 200,
   },
   hisChart: {
     position: 'absolute',
