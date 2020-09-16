@@ -162,7 +162,6 @@ class CoinStore {
       })
       request.getPrice('ETH').then(usd => {
         if (usd) {
-          console.log(usd)
           const ETHCoin = this.map.get(`${COIN_ID_ETH}`)
           ETHCoin && ETHCoin.setUSD(usd)
         }
