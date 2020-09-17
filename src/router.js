@@ -46,6 +46,7 @@ import SendTo from './pages/SendFlow/SendTo'
 import VoteList from './pages/Wallet/VoteList'
 import AddBookmark from './pages/AddBookmark'
 import ScanImage from './pages/Wallet/ScanImage'
+import QRScanner from './pages/QRScanner'
 
 let RouterContainer
 
@@ -169,6 +170,7 @@ const routerFun = (initialRouteName) => {
         })
       },
       ScanImage,
+      QRScanner,
     },
     {
       headerMode: 'none',

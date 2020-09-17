@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { Radio } from '@ant-design/react-native'
-import { inject, observer } from 'mobx-react';
+import { Radio, Icon } from '@ant-design/react-native'
+import { inject, observer } from 'mobx-react'
 import { BN } from 'ethereumjs-util'
 import { colors, fontStyles } from '../../../styles/common'
 import { getRenderableEthGasFee, getRenderableFiatGasFee, apiEstimateModifiedToWEI, getBasicGasEstimates } from '../../../utils/custom-gas'
@@ -98,6 +98,7 @@ const styles = StyleSheet.create({
     ...fontStyles.bold,
     backgroundColor: colors.white,
     borderColor: colors.grey100,
+    color: colors.black,
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 14,
@@ -507,10 +508,10 @@ class CustomGas extends React.Component {
         <View style={styles.root}>
           <View style={styles.customGasHeader}>
             <TouchableOpacity onPress={toggleCustomGasModal}>
-              <Icon name={'ios-arrow-back'} size={24} color={colors.black} />
+              <Icon name="left" size={24} color={colors.black} />
             </TouchableOpacity>
             <Text style={styles.customGasModalTitleText}>{strings('transaction.edit_network_fee')}</Text>
-            <Icon name={'ios-arrow-back'} size={24} color={colors.white} />
+            <Icon name="left" size={24} color={colors.white} />
           </View>
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={[styles.basicButton, advancedCustomGas ? null : styles.optionSelected]} onPress={this.onAdvancedOptions}>
@@ -534,11 +535,8 @@ class CustomGas extends React.Component {
   }
 }
 
-
 export default inject(({ store: state }) => ({
   conversionRate: state.engine.backgroundState.CurrencyRateController.conversionRate,
   currentCurrency: state.engine.backgroundState.CurrencyRateController.currentCurrency,
   ticker: state.engine.backgroundState.NetworkController.provider.ticker,
-    
-  }))(observer(CustomGas))
-
+}))(observer(CustomGas))

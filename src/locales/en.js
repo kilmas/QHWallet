@@ -539,5 +539,16 @@ export default {
 		"url_label": "Url",
 		"add_button": "Add",
 		"cancel_button": "Cancel"
+  },
+  "qr_scanner": {
+		"invalid_qr_code_title": "Invalid QR Code",
+		"invalid_qr_code_message": "The QR code that you are trying to scan it is not valid.",
+		"allow_camera_dialog_title": "Allow camera access",
+		"allow_camera_dialog_message": "We need your permission to scan QR codes",
+		"scanning": "scanning...",
+		"ok": "Ok",
+		"cancel": "Cancel",
+		"error": "Error",
+		"attempting_sync_from_wallet_error": "Looks like you're trying to sync with the extension. In order to do that, Please go to Settings > Advanced > Sync with MetaMask Extension"
 	},
 };

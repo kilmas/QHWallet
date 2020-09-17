@@ -81,7 +81,7 @@ export default function ActionContent({
             <Button
               type="primary"
               onPress={onConfirmPress}
-              containerStyle={[styles.button, displayCancelButton ? styles.confirm : {}]}
+              style={[styles.button, displayCancelButton ? styles.confirm : {}]}
               disabled={confirmDisabled}>
               {confirmText}
             </Button>

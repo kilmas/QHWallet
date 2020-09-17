@@ -28,9 +28,9 @@ const styles = StyleSheet.create({
     ...fontStyles.normal,
     backgroundColor: colors.white,
     color: colors.black,
-    flex: 1,
+    // flex: 1,
     fontSize: 12,
-    minHeight: 64,
+    minHeight: 100,
     padding: 16
   },
   topOverviewRow: {

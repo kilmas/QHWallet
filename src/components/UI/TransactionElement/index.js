@@ -130,14 +130,14 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   actionStyle: {
-    fontSize: 10,
-    padding: 0,
-    paddingHorizontal: 10
+    minWidth: 120
   },
   transactionActionsContainer: {
     flexDirection: 'row',
     paddingTop: 10,
-    paddingLeft: 40
+    paddingLeft: 40,
+    justifyContent: 'space-around',
+    width: '100%'
   },
   modalContainer: {
     backgroundColor: colors.white,
@@ -390,7 +390,7 @@ class TransactionElement extends React.Component {
   renderCancelButton = () => (
     <Button
       type="warning"
-      // style={styles.actionStyle}
+      style={styles.actionStyle}
       onPress={this.showCancelModal}
     >
       {strings('transaction.cancel')}
@@ -418,6 +418,7 @@ class TransactionElement extends React.Component {
   renderSpeedUpButton = () => (
     <Button
       type="primary"
+      style={styles.actionStyle}
       onPress={this.showSpeedUpModal}
     >
       {strings('transaction.speedup')}

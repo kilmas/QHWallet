@@ -41,7 +41,7 @@ export default function ActionModal({
     <Modal
       visible={modalVisible}
       transparent
-      closable
+      closable={!onRequestClose}
       onClose={onRequestClose}
       style={[styles.modal, modalStyle]}
       onBackdropPress={onRequestClose}

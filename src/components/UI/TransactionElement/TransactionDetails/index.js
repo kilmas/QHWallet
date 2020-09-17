@@ -20,7 +20,7 @@ import AppConstants from '../../../../modules/metamask/core/AppConstants';
 
 const styles = StyleSheet.create({
   detailRowWrapper: {
-    paddingHorizontal: 15
+    paddingHorizontal: 5
   },
   detailRowTitle: {
     fontSize: 10,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     marginVertical: 8
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     ...fontStyles.normal
   },
   actionContainerStyle: {
@@ -75,13 +75,12 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   actionStyle: {
-    fontSize: 10,
-    padding: 0,
-    paddingHorizontal: 10
+    minWidth: 110,
   },
   transactionActionsContainer: {
     flexDirection: 'row',
-    paddingTop: 10
+    paddingTop: 10,
+    justifyContent: 'space-around'
   }
 });
 
@@ -234,12 +233,6 @@ class TransactionDetails extends React.Component {
             <View style={baseStyles.flexRow}>
               <Text style={styles.detailRowTitle}>{strings('transactions.status')}</Text>
               {this.renderStatusText(status)}
-              {!!renderTxActions && (
-                <View style={styles.transactionActionsContainer}>
-                  {renderSpeedUpAction && this.renderSpeedUpButton()}
-                  {this.renderCancelButton()}
-                </View>
-              )}
             </View>
             <View style={styles.flexEnd}>
               <Text style={styles.detailRowTitle}>{strings('transactions.date')}</Text>
@@ -247,6 +240,12 @@ class TransactionDetails extends React.Component {
             </View>
           </View>
         </View>
+        {!!renderTxActions && (
+          <View style={styles.transactionActionsContainer}>
+            {renderSpeedUpAction && this.renderSpeedUpButton()}
+            {this.renderCancelButton()}
+          </View>
+        )}
         <View style={[styles.section, styles.flexRow, !!nonce && styles.sectionBorderBottom]}>
           <View style={[baseStyles.flexGrow, styles.flexRow]}>
             <View style={baseStyles.flexRow}>

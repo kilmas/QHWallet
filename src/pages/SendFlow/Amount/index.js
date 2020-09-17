@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     fontWeight: fontStyles.light.fontWeight,
     fontSize: 44,
     textAlign: 'center',
+    color: colors.black,
   },
   switch: {
     flex: 1,
