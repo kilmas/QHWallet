@@ -243,6 +243,17 @@ class AccountStore {
         })
       }
     })
+    this.CommonAccounts.forEach(hdAccount => {
+      if (hdAccount.OKTWallet && hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1]) {
+        AccountStorage.getDataByID(hdAccount.id, password).then(({ privateKey }) => {
+          if (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1]) {
+            OKTWallet.importPK(privateKey, password, hdAccount.name).then(wallet => {
+              hdAccount.OKTWallet = wallet
+            })
+          }
+        })
+      }
+    })
   }
 
   setIronman = async () => {
