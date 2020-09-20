@@ -3,12 +3,11 @@ import { persist } from 'mobx-persist'
 import { observable, computed, action, reaction, when } from 'mobx'
 import _ from 'lodash'
 import CryptoJS from 'crypto-js'
-import { crypto } from '@okchain/javascript-sdk'
+import { crypto } from '@okexchain/javascript-sdk'
 import Wallet from './Wallet'
 import { WALLET_SOURCE_PK, WALLET_SOURCE_MW, COIN_TYPE_OKT, COIN_ID_OKT } from '../../config/const'
 import { OKT } from './Coin'
 import OKClient from '../../modules/okchain'
-import { request } from '../../utils/request'
 
 export default class OKTWallet extends Wallet {
   @persist @observable index = 0

@@ -363,14 +363,16 @@ export const eosRequest = {
   },
   getBalance: async account => {
     try {
+      const data = await axios.post(`https://api.eoslaomao.com/v1/chain/get_account`, { account_name: account })
       const {
-        data: {
-          data: { tokens },
+        data: { core_liquid_balance },
+      } = data
+      return [
+        {
+          balance: core_liquid_balance.split(' ')[0],
+          symbol: 'EOS',
         },
-      } = await axios.get(`https://eospark.com/api/v2/account/${account}/tokens`)
-      if (Array.isArray(tokens)) {
-        return tokens
-      }
+      ]
     } catch (err) {
       console.warn(err)
     }

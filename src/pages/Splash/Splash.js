@@ -7,6 +7,7 @@ import GlobalNavigation from '../../utils/GlobalNavigation'
 import { styles as themeStyles } from '../../theme'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import Engine from '../../modules/metamask/core/Engine'
+import AppInfo from '../../modules/common/AppInfo'
 
 @inject('store')
 @observer
@@ -21,6 +22,7 @@ class Splash extends React.Component {
       }
     )
     this.goNext(accountStore.isInit, accountStore.currentAccount)
+    AppInfo.checkUpdate()
   }
 
   goNext = async (isInit, currentAccount) => {
@@ -35,14 +37,11 @@ class Splash extends React.Component {
             const { KeyringController } = Engine.context
             KeyringController.submitPassword(credentials.password)
             GlobalNavigation.reset('TabDrawer')
-            return
-          } else {
-            return
           }
         } catch (error) {
           console.warn(error)
-          return
         }
+        return
       }
       GlobalNavigation.reset('Welcome')
     }

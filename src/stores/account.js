@@ -2,7 +2,7 @@ import { InteractionManager } from 'react-native'
 import _ from 'lodash'
 import { observable, computed, action, reaction } from 'mobx'
 import { persist } from 'mobx-persist'
-import { crypto } from '@okchain/javascript-sdk'
+import { crypto } from '@okexchain/javascript-sdk'
 import {
   ACCOUNT_TYPE_HD,
   ACCOUNT_TYPE_MULTISIG,
@@ -23,6 +23,7 @@ import SecureKeychain from '../modules/metamask/core/SecureKeychain'
 import OKClient from '../modules/okchain'
 import Scatter from '../modules/scatter'
 import EOSWallet from './wallet/EOSWallet'
+import OKTWallet from './wallet/OKTWallet'
 import Engine from '../modules/metamask/core/Engine'
 
 class AccountStore {
@@ -227,11 +228,18 @@ class AccountStore {
   checkHdAccount() {
     const password = this.getPwd()
     this.HDAccounts.forEach(hdAccount => {
-      if (!hdAccount.EOSWallet) {
+      if (!hdAccount.EOSWallet || (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1])) {
         AccountStorage.getDataByID(hdAccount.id, password).then(({ mnemonic }) => {
-          EOSWallet.import(mnemonic, password, hdAccount.name, fetch).then(wallet => {
-            hdAccount.EOSWallet = wallet
-          })
+          if (!hdAccount.EOSWallet) {
+            EOSWallet.import(mnemonic, password, hdAccount.name).then(wallet => {
+              hdAccount.EOSWallet = wallet
+            })
+          }
+          if (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1]) {
+            OKTWallet.import(mnemonic, password, hdAccount.name).then(wallet => {
+              hdAccount.OKTWallet = wallet
+            })
+          }
         })
       }
     })
