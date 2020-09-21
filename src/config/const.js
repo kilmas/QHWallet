@@ -57,6 +57,7 @@ export const COIN_ID_BSV = 236
 export const COIN_ID_USDT = 200
 export const COIN_ID_FO = 10000
 export const COIN_ID_EOS = 194
+export const COIN_ID_TRX = 195
 
 export const COIN_ID_OKT = 996
 
@@ -65,6 +66,8 @@ export const COIN_TYPE_ETH = 60
 export const COIN_TYPE_ETC = 61
 export const COIN_TYPE_BCH = 145
 export const COIN_TYPE_BSV = 236
+export const COIN_TYPE_TRX = 195
+
 
 export const COIN_TYPE_OKT = 996
 

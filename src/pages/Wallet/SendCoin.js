@@ -74,7 +74,7 @@ class SendCoin extends React.Component {
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
     }
-    return null
+    return accountStore.currentAccountID
   }
 
   @computed get account() {

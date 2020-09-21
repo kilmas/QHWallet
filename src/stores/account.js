@@ -25,6 +25,7 @@ import Scatter from '../modules/scatter'
 import EOSWallet from './wallet/EOSWallet'
 import OKTWallet from './wallet/OKTWallet'
 import Engine from '../modules/metamask/core/Engine'
+import TRXWallet from './wallet/TRXWallet'
 
 class AccountStore {
   @persist @observable isHiddenPrice = false
@@ -53,6 +54,9 @@ class AccountStore {
   @persist @observable currentOKTID = null
 
   @persist @observable currentEOSID = null
+
+  @persist @observable currentTRXID = null
+
 
   /**
    *
@@ -117,6 +121,15 @@ class AccountStore {
   @computed get OKTAccounts() {
     const CommonOKT = this.CommonAccounts.filter(item => item.walletType === 'OKT')
     return _.compact([...this.HDAccounts, ...CommonOKT])
+  }
+
+    /**
+   *
+   * @type { Array.<Account> }
+   * @memberof AccountStore
+   */
+  @computed get TRXAccounts() {
+    return this.HDAccounts
   }
 
 
@@ -228,7 +241,7 @@ class AccountStore {
   checkHdAccount() {
     const password = this.getPwd()
     this.HDAccounts.forEach(hdAccount => {
-      if (!hdAccount.EOSWallet || (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1])) {
+      if (!hdAccount.TRXWallet || !hdAccount.EOSWallet || (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1])) {
         AccountStorage.getDataByID(hdAccount.id, password).then(({ mnemonic }) => {
           if (!hdAccount.EOSWallet) {
             EOSWallet.import(mnemonic, password, hdAccount.name).then(wallet => {
@@ -238,6 +251,11 @@ class AccountStore {
           if (hdAccount.OKTWallet.address && !hdAccount.OKTWallet.address.indexOf('okexchain')[1]) {
             OKTWallet.import(mnemonic, password, hdAccount.name).then(wallet => {
               hdAccount.OKTWallet = wallet
+            })
+          }
+          if (!hdAccount.TRXWallet) {
+            TRXWallet.import(mnemonic, password, hdAccount.name).then(wallet => {
+              hdAccount.TRXWallet = wallet
             })
           }
         })
@@ -351,6 +369,9 @@ class AccountStore {
           break
         case 'EOS':
           this.currentEOSID = account.id
+          break
+        case 'TRX':
+          this.currentTRXID = account.id
           break
         default:
           console.log('walletType fail')

@@ -22,6 +22,7 @@ import Coin from '../wallet/Coin'
 import { mnemonicGenerate } from '../../utils/bip39Util'
 import OKTWallet from '../wallet/OKTWallet'
 import EOSWallet from '../wallet/EOSWallet'
+import TRXWallet from '../wallet/TRXWallet'
 // import { request } from "../../utils/request";
 
 class HDAccount extends Account {
@@ -97,13 +98,20 @@ class HDAccount extends Account {
    */
   @persist('object', OKTWallet) @observable OKTWallet
 
+   /**
+   *
+   * @type { TRXWallet }
+   * @memberof HDAccount
+   */
+  @persist('object', TRXWallet) @observable TRXWallet
+
   /**
    *
    * @type { Array.<Wallet> }
    * @memberof HDAccount
    */
   @computed get wallets() {
-    return _.compact([this.OKTWallet, this.BTCWallet, this.ETHWallet, this.FOWallet, this.EOSWallet])
+    return _.compact([this.OKTWallet, this.BTCWallet, this.ETHWallet, this.FOWallet, this.EOSWallet, this.TRXWallet])
   }
 
   @persist @observable isExtendedPublicKeyUploaded = false
@@ -132,7 +140,7 @@ class HDAccount extends Account {
   @computed get allCoins() {
     const ERC20s = this.ETHWallet && this.ETHWallet.coins.slice()
     ERC20s.shift()
-    return _.compact([this.OKTWallet.defaultCoin, ...this.BTCWallet.coins, this.ETHWallet.defaultCoin, this.FOWallet.defaultCoin, this.EOSWallet && this.EOSWallet.defaultCoin, ...ERC20s])
+    return _.compact([this.OKTWallet.defaultCoin, ...this.BTCWallet.coins, this.ETHWallet.defaultCoin, this.FOWallet.defaultCoin, this.EOSWallet && this.EOSWallet.defaultCoin, this.TRXWallet && this.TRXWallet.defaultCoin, ...ERC20s])
   }
 
   @computed get addresss() {
@@ -158,13 +166,15 @@ class HDAccount extends Account {
     const account = new HDAccount()
     account.BTCWallet = await BTCWallet.import(mnemonicStr, pwd, name, fetch)
 
-    account.ETHWallet = await ETHWallet.import(mnemonicStr, pwd, name, fetch)
+    account.ETHWallet = await ETHWallet.import(mnemonicStr, pwd, name)
 
-    account.FOWallet = await FOWallet.import(mnemonicStr, pwd, name, fetch)
+    account.FOWallet = await FOWallet.import(mnemonicStr, pwd, name)
 
-    account.OKTWallet = await OKTWallet.import(mnemonicStr, pwd, name, fetch)
+    account.OKTWallet = await OKTWallet.import(mnemonicStr, pwd, name)
 
-    account.EOSWallet = await EOSWallet.import(mnemonicStr, pwd, name, fetch)
+    account.EOSWallet = await EOSWallet.import(mnemonicStr, pwd, name)
+
+    account.TRXWallet = await TRXWallet.import(mnemonicStr, pwd, name)
 
     const hdId = account.generateWalletID(mnemonicStr)
 

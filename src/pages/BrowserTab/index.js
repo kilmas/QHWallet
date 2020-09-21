@@ -55,7 +55,9 @@ import DrawerIcon from '../../components/DrawerIcon'
 import TitleBar from '../../components/TitleBar'
 import { isBiometry } from '../../utils/keychain'
 import RenderScatter from '../../modules/scatter/RenderScatter'
+import RenderTronWeb from '../../modules/tronweb/RenderTronWeb'
 import Scatter from '../../modules/scatter'
+import EntryScriptTronWeb from '../../modules/tronweb/EntryScriptTronWeb'
 
 const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants
 const HOMEPAGE_HOST = 'dapp.qingah.com'
@@ -709,7 +711,7 @@ export class BrowserTab extends React.Component {
 
     let publicKey
     let accounts = []
-    const { FOAccounts, currentFOID, EOSAccounts, currentEOSID } = this.props.accountStore
+    const { FOAccounts, currentFOID, EOSAccounts, currentEOSID, TRXAccounts, currentAccountID } = this.props.accountStore
 
     let entryScriptjs = ''
     if (FOAccounts.length) {
@@ -761,8 +763,29 @@ export class BrowserTab extends React.Component {
       })
       entryScriptjs += RenderScatter(accounts, publicKey)
     }
+    if (TRXAccounts.length) {
+      TRXAccounts.forEach(item => {
+        if (item.TRXWallet) {
+          if (currentAccountID === item.id) {
+            accounts = [
+              item.TRXWallet.address,
+              ...accounts,
+            ]
+          } else {
+            accounts.push(item.TRXWallet.address)
+          }
+        }
+      })
+      entryScriptjs += RenderTronWeb(accounts)
+    }
 
-    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: entryScriptWeb3, homepageScripts })
+    const tronweb = `
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "https://cdn.jsdelivr.net/npm/tronweb@3.0.0/dist/TronWeb.js";
+      document.head.appendChild(script);
+    `
+    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: tronweb + entryScriptWeb3, homepageScripts })
     Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
       if (!this.isTabActive()) return false
       this.setState({ watchAsset: true, suggestedAssetMeta })

@@ -49,15 +49,13 @@ class Receive extends React.Component {
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
     }
-    return null
+    return accountStore.currentAccountID
   }
 
   @computed get account() {
     return this.accounts.find(item => item.id === this.accountID)
   }
 
-  @observable amount = -1
-  @observable reason = ''
   @observable selectedCoinID = this.props.navigation.state.params.coinID !== undefined ? this.props.navigation.state.params.coinID : this.wallet.defaultCoin.id
 
   @computed get wallet() {

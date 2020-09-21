@@ -15,6 +15,7 @@ import {
   COIN_ID_OKT,
   COIN_ID_EOS,
   COIN_TYPE_EOS,
+  COIN_ID_TRX,
 } from '../../config/const'
 import { observable, computed, action } from 'mobx'
 import { toFixedNumber } from '../../utils/NumberUtil'
@@ -183,6 +184,17 @@ class ETH extends Coin {
   }
 }
 
+class TRX extends Coin {
+  id = COIN_ID_TRX
+  name = 'TRX'
+  decimals = 18
+  icon = `${DEFAULT_ICON_URL}/TRX.png`
+  constructor(obj = {}) {
+    super(obj)
+    // CoinStore.observePrice(this.id);
+  }
+}
+
 class ERC20Coin extends Coin {
   contract
   decimals
@@ -276,4 +288,4 @@ class FOToken extends Coin {
 }
 
 export default Coin
-export { BTCCoin, BCH, BSV, USDT, ETH, ERC20Coin, ETC, FO, EOS, OKT, FOToken }
+export { BTCCoin, BCH, BSV, USDT, ETH, ERC20Coin, ETC, FO, EOS, OKT, FOToken, TRX }
