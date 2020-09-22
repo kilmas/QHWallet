@@ -1,6 +1,8 @@
 import OKChainClient from '@okexchain/javascript-sdk'
+import httpProxy from '@okexchain/javascript-sdk/lib/httpProxy'
+import { getUrl } from '../../utils/request'
 
-let instance = new OKChainClient('https://www.okex.me')
+let instance = new OKChainClient(getUrl.OK_API_URL)
 const nativeDenom = 'tokt'
 const defaultFee = {
   amount: [
@@ -23,10 +25,22 @@ const OKClient = {
     instance.setAccountInfo(config.privateKey)
     return instance
   },
+  setUrl(uri) {
+    let url = uri
+    if (!url) {
+      if (getUrl.OK_API_URL === 'https://www.okex.me') {
+        url = 'https://www.okex.com'
+      } else {
+        url = 'https://www.okex.me'
+      }
+    }
+    getUrl.setOK_API_URL(url)
+    instance.httpClient = new httpProxy(url);
+  },
   delegate: async amount => {
     const msg = [
       {
-        type: 'okchain/staking/MsgDeposit',
+        type: 'okexchain/staking/MsgDeposit',
         value: {
           delegator_address: instance.address,
           quantity: { amount: amount, denom: 'tokt' },
@@ -41,7 +55,7 @@ const OKClient = {
   vote: async validator_addresses => {
     const msg = [
       {
-        type: 'okchain/staking/MsgAddShares',
+        type: 'okexchain/staking/MsgAddShares',
         value: { delegator_address: instance.address, validator_addresses: validator_addresses },
       },
     ]
@@ -53,7 +67,7 @@ const OKClient = {
   unBond: async amount => {
     const msg = [
       {
-        type: 'okchain/staking/MsgWithdraw',
+        type: 'okexchain/staking/MsgWithdraw',
         value: {
           delegator_address: instance.address,
           quantity: { amount: amount, denom: 'tokt' },

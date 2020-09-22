@@ -46,7 +46,7 @@ export default class VoteList extends React.Component {
 
   gotoTxHash = () => {
     if (this.state.transactionId) {
-      const browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
+      const browserUrl = `https://www.oklink.com/okexchain-test/tx/${this.state.transactionId}`
       goBrowser(this.props.navigation, browserUrl)
     }
   }

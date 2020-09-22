@@ -57,7 +57,7 @@ import { isBiometry } from '../../utils/keychain'
 import RenderScatter from '../../modules/scatter/RenderScatter'
 import RenderTronWeb from '../../modules/tronweb/RenderTronWeb'
 import Scatter from '../../modules/scatter'
-import EntryScriptTronWeb from '../../modules/tronweb/EntryScriptTronWeb'
+import Tronweb from '../../modules/tronweb'
 
 const { HOMEPAGE_URL, USER_AGENT, NOTIFICATION_NAMES } = AppConstants
 const HOMEPAGE_HOST = 'dapp.qingah.com'
@@ -740,6 +740,7 @@ export class BrowserTab extends React.Component {
     }
 
     if (EOSAccounts.length) {
+      accounts = []
       EOSAccounts.forEach(item => {
         if (item.EOSWallet.hasCreated) {
           if (currentEOSID === item.id) {
@@ -764,6 +765,7 @@ export class BrowserTab extends React.Component {
       entryScriptjs += RenderScatter(accounts, publicKey)
     }
     if (TRXAccounts.length) {
+      accounts = []
       TRXAccounts.forEach(item => {
         if (item.TRXWallet) {
           if (currentAccountID === item.id) {
@@ -831,7 +833,7 @@ export class BrowserTab extends React.Component {
   handleDeeplinks = async ({ error, params }) => {
     if (!this.isTabActive()) return false
     if (error) {
-      console.error(error, 'Error from Branch')
+      console.warn(error, 'Error from Branch')
       return
     }
     if (params['+non_branch_link']) {
@@ -848,7 +850,7 @@ export class BrowserTab extends React.Component {
   }
 
   handleBranchDeeplink(deeplink_url) {
-    console.log('Branch Deeplink detected!', deeplink_url)
+    console.info('Branch Deeplink detected!', deeplink_url)
     DeeplinkManager.parse(deeplink_url, url => {
       this.openNewTab(url)
     })
@@ -1182,7 +1184,7 @@ export class BrowserTab extends React.Component {
     Share.open({
       url: this.state.inputValue,
     }).catch(err => {
-      console.log('Error while trying to share address', err)
+      console.warn('Error while trying to share address', err)
     })
   }
 
@@ -1205,7 +1207,7 @@ export class BrowserTab extends React.Component {
 
   openInBrowser = () => {
     this.toggleOptionsIfNeeded()
-    Linking.openURL(this.state.inputValue).catch(error => console.log('Error while trying to open external link: ${url}', error))
+    Linking.openURL(this.state.inputValue).catch(error => console.warn('Error while trying to open external link: ${url}', error))
   }
 
   dismissTextSelectionIfNeeded() {
@@ -1254,27 +1256,7 @@ export class BrowserTab extends React.Component {
             currentWebview.postMessage(JSON.stringify({ ...data, msg: 'password fail' }))
           }
         }
-        const actionsBtn = [
-          { text: 'Cancel', style: 'cancel', onPress: cancel },
-          {
-            text: 'Confirm',
-            onPress: async pwd => {
-              try {
-                const { password } = await SecureKeychain.getGenericPassword()
-                confirm(pwd !== undefined ? pwd : password, password)
-              } catch (error) {
-                currentWebview.postMessage(JSON.stringify({ ...data, msg: 'sign fail' }))
-              }
-            },
-          },
-        ]
-
-        const biometry = await isBiometry()
-        if (biometry) {
-          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel)
-        } else {
-          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, 'secure-text', '', ['', 'Input your password'], cancel)
-        }
+        this.actionModal(actions, this.actionsBtn(cancel, confirm), cancel)
       }
     }
   }
@@ -1303,28 +1285,61 @@ export class BrowserTab extends React.Component {
             currentWebview.postMessage(JSON.stringify({ ...data, msg: 'fail' }))
           }
         }
-        const actionsBtn = [
-          { text: 'Cancel', style: 'cancel', onPress: cancel },
-          {
-            text: 'Confirm',
-            onPress: async pwd => {
-              try {
-                const { password } = await SecureKeychain.getGenericPassword()
-                confirm(pwd !== undefined ? pwd : password, password)
-              } catch (error) {
-                cancel()
-              }
-            },
-          },
-        ]
-
-        const biometry = await isBiometry()
-        if (biometry) {
-          AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel)
-        } else {
-          AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, 'secure-text', '', ['', 'Input your password'], cancel)
-        }
+        this.actionModal(actions, this.actionsBtn(cancel, confirm), cancel)
       }
+    }
+  }
+
+  transferTRX = async data => {
+    const { tronWeb, params = {} } = data
+    if (tronWeb === 'sign') {
+      const { current: currentWebview } = this.webview
+      const { transaction } = params
+      if (transaction) {
+        const { raw_data: actions } = transaction
+        const cancel = () => {
+          currentWebview.postMessage(JSON.stringify({ key: data.key, tronWeb, msg: 'cancel' }))
+        }
+        const confirm = async (pwd, password) => {
+          if (pwd === password) {
+            const tronTeb = Tronweb.instance
+            const resp = await tronTeb.trx.sign(transaction)
+            console.log(resp)
+            Toast.success('sign success')
+            currentWebview.postMessage(JSON.stringify({ key: data.key, tronWeb, data: resp }))
+          } else {
+            Toast.fail('password fail')
+            currentWebview.postMessage(JSON.stringify({ key: data.key, tronWeb, msg: 'fail' }))
+          }
+        }
+        this.actionModal(actions, this.actionsBtn(cancel, confirm), cancel)
+      }
+    }
+  }
+
+  actionsBtn(cancel, confirm) {
+    return [
+      { text: 'Cancel', style: 'cancel', onPress: cancel },
+      {
+        text: 'Confirm',
+        onPress: async pwd => {
+          try {
+            const { password } = await SecureKeychain.getGenericPassword()
+            confirm(pwd !== undefined ? pwd : password, password)
+          } catch (error) {
+            cancel()
+          }
+        },
+      },
+    ]
+  }
+
+  async actionModal (actions, actionsBtn, cancel) {
+    const biometry = await isBiometry()
+    if (biometry) {
+      AntModal.alert('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, cancel)
+    } else {
+      AntModal.prompt('Sign transaction', `${JSON.stringify(actions)}`, actionsBtn, 'secure-text', '', ['', 'Input your password'], cancel)
     }
   }
 
@@ -1338,6 +1353,9 @@ export class BrowserTab extends React.Component {
           return
         } else if (data.scatter) {
           this.transferEOS(data)
+          return
+        } else if (data.tronWeb) {
+          this.transferTRX(data)
           return
         }
       } else if (!data || (!data.type && !data.name)) {
@@ -1388,7 +1406,7 @@ export class BrowserTab extends React.Component {
           break
       }
     } catch (e) {
-      console.error(e, `Browser::onMessage on ${this.state.inputValue}`)
+      console.warn(e, `Browser::onMessage on ${this.state.inputValue}`)
     }
   }
 

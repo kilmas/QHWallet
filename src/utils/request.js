@@ -2,8 +2,6 @@ import * as Qs from 'qs'
 import * as axios from 'axios'
 
 const baseURL = ''
-const scanURL = ''
-const rateURL = ''
 const btcComUrl = 'https://chain.api.btc.com/v3'
 
 const fibosApiUrl = 'https://api.fowallet.net'
@@ -11,6 +9,19 @@ const fibosApiUrl = 'https://api.fowallet.net'
 export const ENV = 'test' // production | test | staging
 
 const fetchTimeout = 30000
+
+const urls = {
+  okApiurl: 'https://www.okex.me'
+}
+
+export const getUrl = {
+  get OK_API_URL() {
+    return urls.okApiurl
+  },
+  setOK_API_URL(okApiurl) {
+    urls.okApiurl = okApiurl
+  }
+}
 
 const errStatusTips = {
   400: '错误请求',
@@ -272,7 +283,7 @@ export const request = {
         data: {
           data: { last },
         },
-      } = await axios.get(`https://www.okex.me/api/index/v3/${coin}-USD/constituents`)
+      } = await axios.get(`${getUrl.OK_API_URL}/api/index/v3/${coin}-USD/constituents`)
       return Number(last)
     } catch (err) {
       console.warn(err)
@@ -380,8 +391,7 @@ export const eosRequest = {
   },
 }
 
-const OK_API_URL = 'https://www.okex.me'
 export const okChainRequest = {
-  getValidators: () => axios.get(`${OK_API_URL}/okchain/v1/staking/validators?status=all`),
-  getDelegators: address => axios.get(`${OK_API_URL}/okchain/v1/staking/delegators/${address}`),
+  getValidators: () => axios.get(`${getUrl.OK_API_URL}/okexchain/v1/staking/validators?status=all`),
+  getDelegators: address => axios.get(`${getUrl.OK_API_URL}/okexchain/v1/staking/delegators/${address}`),
 }

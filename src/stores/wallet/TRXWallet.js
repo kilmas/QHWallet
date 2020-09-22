@@ -10,6 +10,8 @@ import _ from 'lodash'
 import { TRX } from './Coin'
 import TronWeb from '../../modules/tronweb'
 
+const initPath = `m/44'/${COIN_TYPE_TRX}'/0'/0/0`
+
 export default class TRXWallet extends Wallet {
   lastNonce = -1
   TRX = new TRX()
@@ -42,16 +44,16 @@ export default class TRXWallet extends Wallet {
       try {
         const seed = bip39.mnemonicToSeedSync(mnemonic)
         const node = bip32.fromSeed(seed)
-        const path = `m/44'/${COIN_TYPE_TRX}'/0'/0/0`
+        const path = initPath
         const child = node.derivePath(path)
         const { instance } = TronWeb
-        console.log()
         const address = instance.address.fromPrivateKey(child.privateKey.toString('hex'))
         const obj = {
           id: CryptoJS.MD5(address).toString(),
           name,
           address,
           pwd,
+          path,
           type: COIN_TYPE_TRX,
           source: WALLET_SOURCE_MW,
         }
@@ -85,5 +87,12 @@ export default class TRXWallet extends Wallet {
         reject(error)
       }
     })
+  }
+
+  static getPrivateKeyFromMnemonic (mnemonic, path = initPath) {
+    const seed = bip39.mnemonicToSeedSync(mnemonic)
+    const node = bip32.fromSeed(seed)
+    const child = node.derivePath(path)
+    return child
   }
 }

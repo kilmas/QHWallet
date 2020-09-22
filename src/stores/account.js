@@ -1,6 +1,6 @@
 import { InteractionManager } from 'react-native'
 import _ from 'lodash'
-import { observable, computed, action, reaction } from 'mobx'
+import { observable, computed, action, reaction, when } from 'mobx'
 import { persist } from 'mobx-persist'
 import { crypto } from '@okexchain/javascript-sdk'
 import {
@@ -26,6 +26,7 @@ import EOSWallet from './wallet/EOSWallet'
 import OKTWallet from './wallet/OKTWallet'
 import Engine from '../modules/metamask/core/Engine'
 import TRXWallet from './wallet/TRXWallet'
+import Tronweb from '../modules/tronweb'
 
 class AccountStore {
   @persist @observable isHiddenPrice = false
@@ -167,6 +168,7 @@ class AccountStore {
         if (!this.currentEOSID) {
           this.currentEOSID = currentAccountID
         }
+        this.setTronWeb()
       }
     )
 
@@ -184,10 +186,11 @@ class AccountStore {
       }
     )
 
-    reaction(() => this.pwd, () => {
+    when(() => this.pwd, () => {
       this.setIronman()
       this.setScatter()
       this.setOKClient()
+      this.setTronWeb()
     })
 
   }
@@ -320,6 +323,26 @@ class AccountStore {
         return
       }
       OKClient.init({
+        privateKey,
+      })
+    }
+  }
+
+  setTronWeb = async () =>  {
+    const password = this.getPwd()
+    if (password && this.TRXAccounts.length && this.currentAccountID) {
+      const keyObj = await AccountStorage.getDataByID(this.currentAccountID, password)
+      let privateKey
+      if (keyObj.type === 'HD') {
+        const child = TRXWallet.getPrivateKeyFromMnemonic(keyObj.mnemonic)
+        privateKey = child.privateKey.toString('hex')
+      } else if (keyObj.type === 'TRX') {
+        privateKey = keyObj.privateKey
+      } else {
+        console.warn('error')
+        return
+      }
+      Tronweb.init({
         privateKey,
       })
     }
