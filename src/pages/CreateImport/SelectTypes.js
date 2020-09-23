@@ -36,6 +36,11 @@ const btns = [
     name: 'EOS',
     type: 'EOS',
   },
+  {
+    icon: { uri: getIcon('TRX') },
+    name: 'TRX',
+    type: 'TRX',
+  },
 ]
 
 @inject('store')

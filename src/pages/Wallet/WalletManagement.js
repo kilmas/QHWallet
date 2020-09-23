@@ -15,8 +15,8 @@ class WalletManagement extends React.Component {
   componentDidMount() {
     this._refresh()
   }
-  
-  _refresh = async () => { }
+
+  _refresh = async () => {}
 
   _setPress = (type, account) => {
     GlobalNavigation.navigate('WalletSetting', {
@@ -30,22 +30,8 @@ class WalletManagement extends React.Component {
 
   extraAccount = (walletType, id) => {
     const { accountStore } = this.props
-    if (walletType === 'FO') {
-      if (id === accountStore.currentFOID) {
-        return `Current ${walletType}`
-      }
-    }  if (walletType === 'EOS') {
-      if (id === accountStore.currentEOSID) {
-        return `Current ${walletType}`
-      }
-    }  else if ((walletType === 'OKT')) {
-      if (id === accountStore.currentOKTID) {
-        return `Current ${walletType}`
-      }
-    } else if ((walletType === 'ETH')) {
-      if (id === accountStore.currentETHID) {
-        return `Current ${walletType}`
-      }
+    if (id === accountStore[`current${walletType}ID`]) {
+      return `Current ${walletType}`
     }
     return walletType || 'HD'
   }
@@ -96,5 +82,4 @@ export default inject(({ store: state }) => ({
   settings: state.settings,
   accountStore: state.accountStore,
   identities: state.engine.backgroundState.PreferencesController.identities,
-
 }))(observer(WalletManagement))

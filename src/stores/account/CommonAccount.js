@@ -13,6 +13,7 @@ import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import { HDACCOUNT_FIND_WALELT_TYPE_ID, HDACCOUNT_FIND_WALELT_TYPE_ADDRESS, HDACCOUNT_FIND_WALELT_TYPE_COINID, ACCOUNT_TYPE_COMMON, COIN_TYPE_EOS, COIN_TYPE_FO } from '../../config/const'
 import OKTWallet from '../wallet/OKTWallet'
 import EOSWallet from '../wallet/EOSWallet'
+import TRXWallet from '../wallet/TRXWallet'
 
 class CommonAccount extends Account {
   @computed get hasCreated() {
@@ -86,13 +87,20 @@ class CommonAccount extends Account {
    */
   @persist('object', OKTWallet) @observable OKTWallet
 
+   /**
+   *
+   * @type { TRXWallet }
+   * @memberof CommonAccount
+   */
+  @persist('object', TRXWallet) @observable TRXWallet
+
   /**
    *
    * @type { Array.<Wallet> }
    * @memberof CommonAccount
    */
   @computed get wallets() {
-    return _.compact([this.FOWallet, this.BTCWallet, this.ETHWallet, this.OKTWallet, this.EOSWallet])
+    return _.compact([this.FOWallet, this.BTCWallet, this.ETHWallet, this.OKTWallet, this.EOSWallet, this.TRXWallet])
   }
 
   @computed get totalAsset() {
@@ -125,6 +133,8 @@ class CommonAccount extends Account {
       return _.compact([this.OKTWallet && this.OKTWallet.defaultCoin])
     } else if (this.walletType === 'EOS') {
       return _.compact([this.EOSWallet && this.EOSWallet.defaultCoin])
+    } else if (this.walletType === 'TRX') {
+      return _.compact([this.TRXWallet && this.TRXWallet.defaultCoin])
     }
     return []
   }
@@ -161,6 +171,9 @@ class CommonAccount extends Account {
       case 'EOS':
         account.EOSWallet = await EOSWallet.importPK(pk, pwd, name, alias)
         break
+      case 'TRX':
+        account.TRXWallet = await TRXWallet.importPK(pk, pwd, name)
+        break
       default:
         return null
     }
@@ -187,6 +200,7 @@ class CommonAccount extends Account {
       }
     )
   }
+
   update = async () => {
     try {
       if (!this.hasCreated) {
@@ -197,6 +211,7 @@ class CommonAccount extends Account {
       console.log(error)
     }
   }
+  
   drop = async pwd => {
     if (!this.wallets.length) {
       throw new Error('请先创建钱包')

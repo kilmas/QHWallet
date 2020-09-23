@@ -31,16 +31,10 @@ export const getIcon = coin => {
   switch (coin) {
     case 'FO':
       return FO_ICON
-    case 'BTC':
-      return `${DEFAULT_ICON_URL}/BTC.png`
-    case 'ETH':
-      return `${DEFAULT_ICON_URL}/ETH.png`
     case 'OKT':
       return OKT_ICON
-    case 'EOS':
-      return `${DEFAULT_ICON_URL}/EOS.png`
     default:
-      return ''
+      return `${DEFAULT_ICON_URL}/${coin}.png`
   }
 }
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableOpacity, InteractionManager } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Icon, List, Button, Modal } from '@ant-design/react-native'
 import { inject, observer } from 'mobx-react'
@@ -29,21 +29,15 @@ class WalletSetting extends React.Component {
 
   @computed get current() {
     const {
-      accountStore: { currentETHID, currentFOID, currentOKTID, currentEOSID },
+      accountStore: { currentETHID, currentFOID, currentOKTID, currentEOSID, currentTRXID },
     } = this.props
     const { id } = this.account
-    if (id === currentFOID || id === currentETHID || id === currentOKTID || id === currentEOSID || this.props.navigation.getParam('type') === 'current')
+    if (id === currentFOID || id === currentETHID || id === currentOKTID || id === currentEOSID || id === currentTRXID || this.props.navigation.getParam('type') === 'current')
       return true
   }
 
   @computed get wallet() {
-    if (this.account.walletType === 'FO') {
-      return this.account.FOWallet
-    }
-    if (this.account.walletType === 'EOS') {
-      return this.account.EOSWallet
-    }
-    return this.account.ETHWallet
+    return this.account[`${this.account.walletType}Wallet`] || this.account.ETHWallet
   }
 
   _refresh = async () => {
@@ -177,6 +171,8 @@ class WalletSetting extends React.Component {
                   accountStore.setCurrentFOID(account.id)
                 } else if (account.walletType === 'EOS') {
                   accountStore.setCurrentEOSID(account.id)
+                } else if (account.walletType === 'TRX') {
+                  accountStore.setCurrentTRXID(account.id)
                 } else if (account.walletType === 'OKT') {
                   accountStore.setCurrentOKTID(account.id)
                 } else if (account.walletType === 'ETH') {

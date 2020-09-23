@@ -42,12 +42,12 @@ class Receive extends React.Component {
       return accountStore.currentFOID
     } else if (coin.name === 'ETH') {
       return accountStore.currentETHID
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
-      return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
+    } else if (coin.name === 'TRX') {
+      return accountStore.currentTRXID
     }
     return accountStore.currentAccountID
   }

@@ -130,7 +130,8 @@ class AccountStore {
    * @memberof AccountStore
    */
   @computed get TRXAccounts() {
-    return this.HDAccounts
+    const CommonTRX = this.CommonAccounts.filter(item => item.walletType === 'TRX')
+    return _.compact([...this.HDAccounts, ...CommonTRX])
   }
 
 
@@ -168,13 +169,15 @@ class AccountStore {
         if (!this.currentEOSID) {
           this.currentEOSID = currentAccountID
         }
-        this.setTronWeb()
+        if (!this.currentTRXID) {
+          this.currentTRXID = currentAccountID
+        }
       }
     )
 
     reaction(
       () => this.currentFOID,
-      currentFOID => {
+      () => {
         this.setIronman()
       }
     )
@@ -183,6 +186,13 @@ class AccountStore {
       () => this.currentEOSID,
       () => {
         this.setScatter()
+      }
+    )
+
+    reaction(
+      () => this.currentTRXID,
+      () => {
+        this.setTronWeb()
       }
     )
 
@@ -330,8 +340,8 @@ class AccountStore {
 
   setTronWeb = async () =>  {
     const password = this.getPwd()
-    if (password && this.TRXAccounts.length && this.currentAccountID) {
-      const keyObj = await AccountStorage.getDataByID(this.currentAccountID, password)
+    if (password && this.TRXAccounts.length && this.currentTRXID) {
+      const keyObj = await AccountStorage.getDataByID(this.currentTRXID, password)
       let privateKey
       if (keyObj.type === 'HD') {
         const child = TRXWallet.getPrivateKeyFromMnemonic(keyObj.mnemonic)
@@ -436,6 +446,10 @@ class AccountStore {
 
   @action setCurrentEOSID = currentEOSID => {
     this.currentEOSID = currentEOSID
+  }
+
+  @action setCurrentTRXID = currentTRXID => {
+    this.currentTRXID = currentTRXID
   }
 
   @action setHiddenPrice = isHiddenPrice => {

@@ -78,10 +78,12 @@ class History extends React.Component {
       return accountStore.ETHAccounts
     } else if (coin.name === 'OKT') {
       return accountStore.OKTAccounts
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
-      return accountStore.HDAccounts
     } else if (coin.name === 'EOS') {
       return accountStore.EOSAccounts
+    } else if (coin.name === 'TRX') {
+      return accountStore.TRXAccounts
+    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+      return accountStore.HDAccounts
     }
     return accountStore.accounts
   }
@@ -93,13 +95,13 @@ class History extends React.Component {
       return accountStore.currentFOID
     } else if (coin.name === 'ETH') {
       return accountStore.currentETHID
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
-      return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
-    } 
+    } else if (coin.name === 'TRX') {
+      return accountStore.currentTRXID
+    }
     return accountStore.currentAccountID
   }
 
@@ -212,6 +214,7 @@ class History extends React.Component {
     }
     return txs
   }
+
   @computed get title() {
     return `${this.coin.name}`
   }
@@ -435,6 +438,7 @@ class History extends React.Component {
         },
       }
     }
+
     return (
       <Container>
         <CoinHeader
@@ -529,7 +533,7 @@ class History extends React.Component {
             this.setState({ visible: false })
           }}>
           <List style={{ minHeight: 300 }} renderHeader={`${name} accounts List.`}>
-            {this.accounts.map((item, index) => (
+            {this.accounts.map((item) => (
               <RadioItem
                 key={item.id}
                 checked={item.id === this.accountID}
@@ -538,8 +542,12 @@ class History extends React.Component {
                     const { accountStore } = this.props
                     if (coin.name === 'FO') {
                       accountStore.setCurrentFOID(item.id)
+                    } else if (coin.name === 'EOS') {
+                      accountStore.setCurrentEOSID(item.id)
                     } else if (coin.name === 'OKT') {
                       accountStore.setCurrentOKTID(item.id)
+                    } else if (coin.name === 'TRX') {
+                      accountStore.setCurrentTRXID(item.id)
                     } else if (coin.name === 'ETH') {
                       accountStore.setCurrentETHID(item.id)
                       accountStore.selectEthAccount(item.ETHWallet.address)

@@ -56,7 +56,9 @@ class SendCoin extends React.Component {
       return accountStore.HDAccounts
     } else if (coin.name === 'EOS') {
       return accountStore.EOSAccounts
-    } 
+    } else if (coin.name === 'TRX') {
+      return accountStore.TRXAccounts
+    }
     return accountStore.accounts
   }
 
@@ -67,13 +69,16 @@ class SendCoin extends React.Component {
       return accountStore.currentFOID
     } else if (coin.name === 'ETH') {
       return accountStore.currentETHID
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
-      return accountStore.currentAccountID
     } else if (coin.name === 'OKT') {
       return accountStore.currentOKTID
     } else if (coin.name === 'EOS') {
       return accountStore.currentEOSID
+    } else if (coin.name === 'TRX') {
+      return accountStore.currentTRXID
     }
+    // else if (coin.name === 'BTC' || coin.name === 'USDT') {
+    //   return accountStore.currentAccountID
+    // }  
     return accountStore.currentAccountID
   }
 
@@ -122,13 +127,6 @@ class SendCoin extends React.Component {
   validateGas = () => { }
 
   /**
-   * Removes collectible in case an ERC721 asset is being sent, when not in mainnet
-   */
-  checkRemoveCollectible = () => { }
-
-  /**
-   * Validates crypto value only
-   * Independent of current internalPrimaryCurrencyIsCrypto
    *
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
@@ -241,8 +239,8 @@ class SendCoin extends React.Component {
 
   render() {
     const coin = this.props.navigation.getParam('coin')
-
     const { amount, memo } = this.state
+    
     return (
       <Container style={styles.container}>
         <CoinHeader

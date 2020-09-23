@@ -711,7 +711,7 @@ export class BrowserTab extends React.Component {
 
     let publicKey
     let accounts = []
-    const { FOAccounts, currentFOID, EOSAccounts, currentEOSID, TRXAccounts, currentAccountID } = this.props.accountStore
+    const { FOAccounts, currentFOID, EOSAccounts, currentEOSID, TRXAccounts, currentTRXID } = this.props.accountStore
 
     let entryScriptjs = ''
     if (FOAccounts.length) {
@@ -768,7 +768,7 @@ export class BrowserTab extends React.Component {
       accounts = []
       TRXAccounts.forEach(item => {
         if (item.TRXWallet) {
-          if (currentAccountID === item.id) {
+          if (currentTRXID === item.id) {
             accounts = [
               item.TRXWallet.address,
               ...accounts,
