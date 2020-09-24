@@ -189,10 +189,10 @@ class SendCoin extends React.Component {
   transferTRX = _.throttle(async () => {
     const { instance: tronWeb } = Tronweb
     const { receiver, memo, amount } = this.state
-    let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, amount * 10 ** 7)
+    let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, amount * 10 ** 6)
     transaction = await tronWeb.transactionBuilder.addUpdateData(transaction, memo)
     const id = transaction.txID;
-    // const transaction = await tronWeb.trx.sendTransaction(receiver, amount * 10 ** 7)
+    // const transaction = await tronWeb.trx.sendTransaction(receiver, amount * 10 ** 6)
     const signedTransaction = await tronWeb.trx.sign(transaction);
     const receipt = await tronWeb.trx.sendRawTransaction(signedTransaction)
 

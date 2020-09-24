@@ -59,7 +59,7 @@ export default class TRXWallet extends Wallet {
         return
       }
       if (this.coins[0]) {
-        this.coins[0].balance = Number(balance)
+        this.coins[0].balance = Number(balance / (10 ** 6))
       }
     }
   }
