@@ -72,37 +72,16 @@ class History extends React.Component {
   @computed get accounts() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH') {
-      return accountStore.ETHAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    } else if (coin.name === 'EOS') {
-      return accountStore.EOSAccounts
-    } else if (coin.name === 'TRX') {
-      return accountStore.TRXAccounts
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+    if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
     }
-    return accountStore.accounts
+    return accountStore[`${coin.name}Accounts`] || accountStore.accounts
   }
 
   @computed get accountID() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.currentFOID
-    } else if (coin.name === 'ETH') {
-      return accountStore.currentETHID
-    } else if (coin.name === 'OKT') {
-      return accountStore.currentOKTID
-    } else if (coin.name === 'EOS') {
-      return accountStore.currentEOSID
-    } else if (coin.name === 'TRX') {
-      return accountStore.currentTRXID
-    }
-    return accountStore.currentAccountID
+    return accountStore[`current${coin.name}ID`] || accountStore.currentAccountID
   }
 
   /**

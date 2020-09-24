@@ -18,38 +18,20 @@ import CommonAccount from '../../stores/account/CommonAccount'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
 
 class Receive extends React.Component {
+
   @computed get accounts() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH') {
-      return accountStore.ETHAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+    if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
-    } else if (coin.name === 'EOS') {
-      return accountStore.EOSAccounts
-    } 
-    return accountStore.accounts
+    }
+    return accountStore[`${coin.name}Accounts`] || accountStore.accounts
   }
 
   @computed get accountID() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.currentFOID
-    } else if (coin.name === 'ETH') {
-      return accountStore.currentETHID
-    } else if (coin.name === 'OKT') {
-      return accountStore.currentOKTID
-    } else if (coin.name === 'EOS') {
-      return accountStore.currentEOSID
-    } else if (coin.name === 'TRX') {
-      return accountStore.currentTRXID
-    }
-    return accountStore.currentAccountID
+    return accountStore[`current${coin.name}ID`] || accountStore.currentAccountID
   }
 
   @computed get account() {
@@ -60,7 +42,6 @@ class Receive extends React.Component {
 
   @computed get wallet() {
     const walletID = this.props.navigation.getParam('walletID')
-
     let wallet
     if (this.account instanceof HDAccount) {
       wallet = this.account.findWallet(this.coin.id, HDACCOUNT_FIND_WALELT_TYPE_COINID)

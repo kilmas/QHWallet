@@ -2,7 +2,6 @@ import { observable } from 'mobx'
 import AsyncStorage from '@react-native-community/async-storage'
 import { create } from 'mobx-persist'
 import WalletStore from './wallet'
-import price from './price'
 import common from './common'
 import Transaction from './transaction'
 import Wizard from './wizard'
@@ -85,7 +84,6 @@ const rootStore = observable({
   settings: settingStore,
   accountStore,
   wallet: walletStore,
-  price,
   common,
   engine: engineStore,
   transaction: transactionStore,

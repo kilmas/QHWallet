@@ -27,6 +27,7 @@ import { goBrowser } from '../../utils/common'
 import { authSubmit } from '../../utils/keychain'
 import { colors } from '../../styles/common'
 import Scatter from '../../modules/scatter'
+import Tronweb from '../../modules/tronweb'
 
 const { BNToHex } = util
 
@@ -46,48 +47,22 @@ class SendCoin extends React.Component {
   @computed get accounts() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.FOAccounts
-    } else if (coin.name === 'ETH') {
-      return accountStore.ETHAccounts
-    } else if (coin.name === 'OKT') {
-      return accountStore.OKTAccounts
-    } else if (coin.name === 'BTC' || coin.name === 'USDT') {
+    if (coin.name === 'BTC' || coin.name === 'USDT') {
       return accountStore.HDAccounts
-    } else if (coin.name === 'EOS') {
-      return accountStore.EOSAccounts
-    } else if (coin.name === 'TRX') {
-      return accountStore.TRXAccounts
     }
-    return accountStore.accounts
+    return accountStore[`${coin.name}Accounts`] || accountStore.accounts
   }
 
   @computed get accountID() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
-    if (coin.name === 'FO') {
-      return accountStore.currentFOID
-    } else if (coin.name === 'ETH') {
-      return accountStore.currentETHID
-    } else if (coin.name === 'OKT') {
-      return accountStore.currentOKTID
-    } else if (coin.name === 'EOS') {
-      return accountStore.currentEOSID
-    } else if (coin.name === 'TRX') {
-      return accountStore.currentTRXID
-    }
-    // else if (coin.name === 'BTC' || coin.name === 'USDT') {
-    //   return accountStore.currentAccountID
-    // }  
-    return accountStore.currentAccountID
+    return accountStore[`current${coin.name}ID`] || accountStore.currentAccountID
   }
 
   @computed get account() {
     return this.accounts.find(item => item.id === this.accountID)
   }
 
-  @observable amount = -1
-  @observable reason = ''
   @observable selectedCoinID = this.props.navigation.getParam('coinID')
 
   @computed get wallet() {
@@ -142,6 +117,8 @@ class SendCoin extends React.Component {
         this.transferEOS()
       } else if (coin.name === 'OKT') {
         this.transferOKT()
+      } else if (coin.name === 'TRX') {
+        this.transferTRX()
       } else if (coin.name === 'BTC') {
         const txHex = await this.wallet.sendTransaction(this.state.receiver, parseInt(Number(this.state.amount) * BITCOIN_SATOSHI), this.state.gasFee, password)
         if (txHex)
@@ -205,6 +182,26 @@ class SendCoin extends React.Component {
         this.wallet.getBalance()
       }
       this.setState({ transactionId, sending: false })
+      Toast.success(strings('transfer successfully'))
+    }
+  }, 10000)
+
+  transferTRX = _.throttle(async () => {
+    const { instance: tronWeb } = Tronweb
+    const { receiver, memo, amount } = this.state
+    let transaction = await tronWeb.transactionBuilder.sendTrx(receiver, amount * 10 ** 7)
+    transaction = await tronWeb.transactionBuilder.addUpdateData(transaction, memo)
+    const id = transaction.txID;
+    // const transaction = await tronWeb.trx.sendTransaction(receiver, amount * 10 ** 7)
+    const signedTransaction = await tronWeb.trx.sign(transaction);
+    const receipt = await tronWeb.trx.sendRawTransaction(signedTransaction)
+
+    if (receipt.result) {
+      const unconfirmedTx = await tronWeb.trx.getTransaction(id)
+      if (this.wallet.getBalance) {
+        this.wallet.getBalance()
+      }
+      this.setState({ transactionId: unconfirmedTx, sending: false })
       Toast.success(strings('transfer successfully'))
     }
   }, 10000)

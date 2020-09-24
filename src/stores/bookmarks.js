@@ -1,18 +1,16 @@
 import { action, observable } from 'mobx'
-import { persist, create } from 'mobx-persist'
-import AsyncStorage from '@react-native-community/async-storage';
+import { persist } from 'mobx-persist'
 
 export default class Bookmarks {
-
-  @persist('list') @observable bookmarks = [];
+  @persist('list') @observable bookmarks = []
 
   @action
   addBookmark = bookmarks => {
-    this.bookmarks.push(bookmarks);
-  };
+    this.bookmarks.push(bookmarks)
+  }
 
   @action
   removeBookmark = bookmark => {
-    this.bookmarks = this.bookmarks.filter(item => item.url !== bookmark.url);
-  };
+    this.bookmarks = this.bookmarks.filter(item => item.url !== bookmark.url)
+  }
 }

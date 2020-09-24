@@ -1,5 +1,5 @@
 import { DeviceEventEmitter } from 'react-native'
-import { observable, action } from 'mobx'
+import { observable, action, when } from 'mobx'
 import { persist } from 'mobx-persist'
 import CryptoJS from 'crypto-js'
 import * as bip32 from 'bip32'
@@ -18,6 +18,8 @@ export default class TRXWallet extends Wallet {
 
   @persist @observable index = '0'
 
+  browserRecord = 'https://tronscan.io/#/address/'
+
   get defaultCoin() {
     return this.coins[0]
   }
@@ -29,13 +31,36 @@ export default class TRXWallet extends Wallet {
         this.coins = [this.TRX]
       }
     }
-    this.startObserve()
+    when(
+      () => !!this.address,
+      () => {
+        this.getBalanceTime()
+      }
+    )
+  }
+
+  getBalanceTime = async () => {
+    await this.getBalance()
+    setTimeout(() => {
+      this.getBalanceTime()
+    }, 30000)
   }
 
   @action
-  setBalance = balance => {
-    if (this.coins[0]) {
-      this.coins[0].balance = Number(balance)
+  getBalance = async () => {
+    const { instance } = TronWeb
+    if (this.address && instance) {
+      let balance = 0
+      try {
+        balance = await instance.trx.getBalance(this.address)
+        console.log(this.address, '- Output:', balance, '\n')
+      } catch (e) {
+        console.warn(e)
+        return
+      }
+      if (this.coins[0]) {
+        this.coins[0].balance = Number(balance)
+      }
     }
   }
 
@@ -89,7 +114,7 @@ export default class TRXWallet extends Wallet {
     })
   }
 
-  static getPrivateKeyFromMnemonic (mnemonic, path = initPath) {
+  static getPrivateKeyFromMnemonic(mnemonic, path = initPath) {
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const node = bip32.fromSeed(seed)
     const child = node.derivePath(path)

@@ -1,6 +1,6 @@
 import { DeviceEventEmitter } from 'react-native'
 import { persist } from 'mobx-persist'
-import { observable, computed, action, reaction, when } from 'mobx'
+import { observable, computed, action, when } from 'mobx'
 import _ from 'lodash'
 import CryptoJS from 'crypto-js'
 import { crypto } from '@okexchain/javascript-sdk'
@@ -121,12 +121,5 @@ export default class OKTWallet extends Wallet {
         reject(error)
       }
     })
-  }
-
-  static importKS(ks, pwd, name, note) { }
-  static backupMnemonic(mnemonic) { }
-  drop = text => { }
-  async isVaildPassword(pwd) {
-    return true
   }
 }

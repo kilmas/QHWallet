@@ -1,11 +1,10 @@
-import { observable, action, toJS, reaction } from "mobx";
+import { observable, action } from 'mobx'
 import { persist } from 'mobx-persist'
-import _ from "lodash";
-import Engine from "../modules/metamask/core/Engine";
-import { renderFromWei } from "../utils/number";
+import _ from 'lodash'
+import Engine from '../modules/metamask/core/Engine'
+import { renderFromWei } from '../utils/number'
 
 export default class EngineStore {
-
   @persist('object') @observable backgroundState = {}
 
   @action
@@ -14,7 +13,7 @@ export default class EngineStore {
     if (key === 'AccountTrackerController') {
       if (this.accountStore) {
         const accounts = _.get(Engine.state[key], 'accounts')
-        this.accountStore.ETHAccounts.forEach(account=> {
+        this.accountStore.ETHAccounts.forEach(account => {
           const selectedAddress = account.ETHWallet && account.ETHWallet.address
           if (accounts[selectedAddress]) {
             const balance = renderFromWei(accounts[selectedAddress].balance)
@@ -27,13 +26,13 @@ export default class EngineStore {
 
   accountStore = null
 
-  setAccountStore (accountStore) {
+  setAccountStore(accountStore) {
     this.accountStore = accountStore
   }
 
   @action
   initBGstate() {
-    [
+    ;[
       'AccountTrackerController',
       'AddressBookController',
       'AssetsContractController',
@@ -50,7 +49,7 @@ export default class EngineStore {
       'TokenRatesController',
       'TransactionController',
       'TypedMessageManager',
-    ].forEach(key=>{
+    ].forEach(key => {
       if (!this.backgroundState[key]) {
         this.backgroundState[key] = Engine.state[key]
       }
@@ -58,20 +57,20 @@ export default class EngineStore {
   }
 
   @action importMetamask = async (mnemonic, password, reset = true) => {
-    const { KeyringController } = Engine.context;
+    const { KeyringController } = Engine.context
     if (reset) {
-      await Engine.resetState();
+      await Engine.resetState()
     }
-    return await KeyringController.createNewVaultAndRestore(password, mnemonic);
+    return await KeyringController.createNewVaultAndRestore(password, mnemonic)
   }
-  
-  @action importAccountFromPrivateKey = async (private_key) => {
-    const { KeyringController } = Engine.context;
+
+  @action importAccountFromPrivateKey = async private_key => {
+    const { KeyringController } = Engine.context
     // Import private key
-    let pkey = private_key;
+    let pkey = private_key
     // Handle PKeys with 0x
     if (pkey.length === 66 && pkey.substr(0, 2) === '0x') {
-      pkey = pkey.substr(2);
+      pkey = pkey.substr(2)
     }
     try {
       const res = await KeyringController.importAccountWithStrategy('privateKey', [private_key])

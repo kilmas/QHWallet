@@ -1,46 +1,41 @@
-import { DeviceEventEmitter } from "react-native";
+import { DeviceEventEmitter } from 'react-native'
 import { persist } from 'mobx-persist'
-import { observable, computed, action, when } from "mobx";
-import CryptoJS from 'crypto-js';
-import * as bip32 from 'bip32';
-import * as bip39 from 'bip39';
-import FIBOS from 'fibos.js';
+import { observable, computed, action, when } from 'mobx'
+import CryptoJS from 'crypto-js'
+import * as bip32 from 'bip32'
+import * as bip39 from 'bip39'
+import FIBOS from 'fibos.js'
 import _ from 'lodash'
-import Wallet from "./Wallet";
-import {
-  WALLET_SOURCE_PK,
-  WALLET_SOURCE_MW,
-  COIN_TYPE_FO,
-  COIN_ID_FO,
-} from "../../config/const";
-import { FO } from "./Coin";
+import Wallet from './Wallet'
+import { WALLET_SOURCE_PK, WALLET_SOURCE_MW, COIN_TYPE_FO, COIN_ID_FO } from '../../config/const'
+import { FO } from './Coin'
 import Ironman from '../../modules/ironman'
-import { fibosRequest } from "../../utils/request";
+import { fibosRequest } from '../../utils/request'
 
 export default class FOWallet extends Wallet {
+  @persist @observable index = 0
 
-  @persist @observable index = 0;
+  @persist @observable pubkey = ''
 
-  @persist @observable pubkey = '';
+  @persist @observable account = ''
 
-  @persist @observable account = '';
+  @persist @observable alias = ''
 
-  @persist @observable alias = '';
-
-  lastNonce = -1;
-  FO = new FO();
+  lastNonce = -1
+  FO = new FO()
 
   browserRecord = 'https://see.fo/accounts/'
 
   @computed get hasCreated() {
-    return !!this.id;
+    return !!this.id
   }
 
   get defaultCoin() {
-    return this.coins[0];
+    return this.coins[0]
   }
+  
   constructor(obj) {
-    super(obj);
+    super(obj)
     if (obj) {
       if (obj.account) {
         this.account = obj.account
@@ -55,9 +50,12 @@ export default class FOWallet extends Wallet {
     if (!this.account) {
       this.account = this.name
     }
-    when(() => !!this.id, () => {
-      this.getBalanceTime()
-    })
+    when(
+      () => !!this.id,
+      () => {
+        this.getBalanceTime()
+      }
+    )
   }
 
   getBalanceTime = async () => {
@@ -74,7 +72,7 @@ export default class FOWallet extends Wallet {
     const { fibos } = Ironman
     if (this.name && this.hasCreated && fibos) {
       try {
-        const { rows } = await fibos.getTableRows(true, "eosio.token", this.name, "accounts", "primary", 0, 5000, 5000);
+        const { rows } = await fibos.getTableRows(true, 'eosio.token', this.name, 'accounts', 'primary', 0, 5000, 5000)
         if (Array.isArray(rows)) {
           rows.forEach(item => {
             const [balance, token] = _.get(item, 'balance.quantity', '').split(' ')
@@ -92,7 +90,7 @@ export default class FOWallet extends Wallet {
   }
 
   @action
-  autoCheckAccount = async (mnemonic) => {
+  autoCheckAccount = async mnemonic => {
     if (this.address) {
       try {
         const {
@@ -102,11 +100,11 @@ export default class FOWallet extends Wallet {
           this.name = account_names[0]
           this.id = CryptoJS.MD5(this.name).toString()
           this.pubkey = this.address
-          const seed = bip39.mnemonicToSeedSync(mnemonic);
-          const node = bip32.fromSeed(seed);
+          const seed = bip39.mnemonicToSeedSync(mnemonic)
+          const node = bip32.fromSeed(seed)
           const path = `m/44'/${COIN_ID_FO}'/0'/0/${this.index}`
-          const child = node.derivePath(path);
-          const privateKey = FIBOS.modules.ecc.PrivateKey(child.privateKey).toString();
+          const child = node.derivePath(path)
+          const privateKey = FIBOS.modules.ecc.PrivateKey(child.privateKey).toString()
           return privateKey
         }
       } catch (error) {
@@ -116,13 +114,13 @@ export default class FOWallet extends Wallet {
   }
 
   @action createAccount(obj) {
-    const mnemonic = obj.mnemonic;
-    const seed = bip39.mnemonicToSeedSync(mnemonic);
-    const node = bip32.fromSeed(seed);
+    const mnemonic = obj.mnemonic
+    const seed = bip39.mnemonicToSeedSync(mnemonic)
+    const node = bip32.fromSeed(seed)
     const path = `m/44'/${COIN_ID_FO}'/0'/0/${this.index}`
-    const child = node.derivePath(path);
-    const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey); //公钥
-    const address = obj.name;
+    const child = node.derivePath(path)
+    const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey) //公钥
+    const address = obj.name
     this.address = address
     this.pubkey = pubkey
     this.name = obj.name
@@ -131,26 +129,26 @@ export default class FOWallet extends Wallet {
     this.type = COIN_TYPE_FO
   }
 
-  getPublicKey = (mnemonic) => {
-    const seed = bip39.mnemonicToSeedSync(mnemonic);
-    const node = bip32.fromSeed(seed);
+  getPublicKey = mnemonic => {
+    const seed = bip39.mnemonicToSeedSync(mnemonic)
+    const node = bip32.fromSeed(seed)
     const path = `m/44'/${COIN_ID_FO}'/0'/0/${this.index}`
     this.path = path
-    const child = node.derivePath(path);
-    const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey); // 公钥
+    const child = node.derivePath(path)
+    const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey) // 公钥
     return pubkey
   }
 
-  static import(mnemonic, pwd, name = "") {
+  static import(mnemonic, pwd, name = '') {
     this.pwd = pwd
     return new Promise(async (resolve, reject) => {
       try {
-        const seed = bip39.mnemonicToSeedSync(mnemonic);
-        const node = bip32.fromSeed(seed);
+        const seed = bip39.mnemonicToSeedSync(mnemonic)
+        const node = bip32.fromSeed(seed)
         const path = `m/44'/${COIN_ID_FO}'/0'/0/0`
-        const child = node.derivePath(path);
-        const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey); // 公钥
-        const address = pubkey;
+        const child = node.derivePath(path)
+        const pubkey = FIBOS.modules.ecc.privateToPublic(child.privateKey) // 公钥
+        const address = pubkey
         const obj = {
           pubkey,
           address,
@@ -158,21 +156,21 @@ export default class FOWallet extends Wallet {
           pwd,
           alias: name,
           type: COIN_TYPE_FO,
-          source: WALLET_SOURCE_MW
-        };
+          source: WALLET_SOURCE_MW,
+        }
 
-        const act = new FOWallet(obj);
-        resolve(act);
+        const act = new FOWallet(obj)
+        resolve(act)
       } catch (error) {
-        reject(error);
+        reject(error)
       }
-    });
+    })
   }
 
   static importPK(pk, pwd, name, alias) {
     return new Promise(async (resolve, reject) => {
       try {
-        const address = FIBOS.modules.ecc.privateToPublic(pk);
+        const address = FIBOS.modules.ecc.privateToPublic(pk)
         const obj = {
           id: CryptoJS.MD5(name).toString(),
           name,
@@ -184,25 +182,25 @@ export default class FOWallet extends Wallet {
           isBackup: true,
           pubkey: address,
           type: COIN_TYPE_FO,
-          source: WALLET_SOURCE_PK
-        };
-        let act = new FOWallet(obj);
-        DeviceEventEmitter.emit("accountOnChange");
-        resolve(act);
+          source: WALLET_SOURCE_PK,
+        }
+        const act = new FOWallet(obj)
+        DeviceEventEmitter.emit('accountOnChange')
+        resolve(act)
       } catch (error) {
-        reject(error);
+        reject(error)
       }
-    });
+    })
   }
 
   static privateToPublic(pk) {
-    return FIBOS.modules.ecc.privateToPublic(pk);
+    return FIBOS.modules.ecc.privateToPublic(pk)
   }
 
-  static importKS(ks, pwd, name, note) { }
-  static backupMnemonic(mnemonic) { };
-  drop = text => { };
+  static importKS(ks, pwd, name, note) {}
+  static backupMnemonic(mnemonic) {}
+  drop = text => {}
   async isVaildPassword(pwd) {
-    return true;
+    return true
   }
 }

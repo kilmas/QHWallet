@@ -1,10 +1,10 @@
-import { observable, computed, action } from "mobx";
-import _ from "lodash";
-import { BigNumber } from "bignumber.js"
-import DFNetwork, { HD_WEB_API } from "../../modules/common/network";
-import CoinStore from "./CoinStore";
-import { toFixedString } from "../../utils/NumberUtil";
-import { BTCCoin, ETH, FO } from "./Coin";
+import { observable, computed, action } from 'mobx'
+import _ from 'lodash'
+import { BigNumber } from 'bignumber.js'
+import DFNetwork, { HD_WEB_API } from '../../modules/common/network'
+import CoinStore from './CoinStore'
+import { toFixedString } from '../../utils/NumberUtil'
+import { BTCCoin, ETH, FO } from './Coin'
 import {
   NETWORK_ENV_TESTNET,
   WALLET_TYPE_BTC,
@@ -14,72 +14,71 @@ import {
   COIN_TYPE_ETH,
   COIN_TYPE_BTC,
   COIN_TYPE_FO,
-} from "../../config/const";
+} from '../../config/const'
 
+const TX_STATUS_SUCCESS = 3
+const TX_STATUS_FAILED = 4
+const TX_STATUS_PENDING = 1
+const TX_STATUS_CONFIRMING = 2
 
-const TX_STATUS_SUCCESS = 3;
-const TX_STATUS_FAILED = 4;
-const TX_STATUS_PENDING = 1;
-const TX_STATUS_CONFIRMING = 2;
+const TX_TYPE_IN = 1
+const TX_TYPE_OUT = 2
 
-const TX_TYPE_IN = 1;
-const TX_TYPE_OUT = 2;
+export { TX_STATUS_SUCCESS, TX_STATUS_FAILED, TX_STATUS_CONFIRMING, TX_STATUS_PENDING, TX_TYPE_IN, TX_TYPE_OUT }
 
-export { TX_STATUS_SUCCESS, TX_STATUS_FAILED, TX_STATUS_CONFIRMING, TX_STATUS_PENDING, TX_TYPE_IN, TX_TYPE_OUT };
-
-const defaultETH = new ETH();
-const defaultBTC = new BTCCoin();
-const defaultFO = new FO();
+const defaultETH = new ETH()
+const defaultBTC = new BTCCoin()
+const defaultFO = new FO()
 
 export class Transaction {
-  @observable coinType = 0;
+  @observable coinType = 0
 
-  coinID;
+  coinID
 
   get coin() {
-    return CoinStore.match(this.coinID);
+    return CoinStore.match(this.coinID)
   }
   /**
    *
    * @type {string}
    * @memberof Transaction
    */
-  @observable hash = undefined;
+  @observable hash = undefined
   /**
    *
    * @type {string}
    * @memberof Transaction
    */
-  @observable from = "";
+  @observable from = ''
   /**
    *
    * @type {string}
    * @memberof Transaction
    */
-  @observable to = "";
+  @observable to = ''
   /**
    *
    * @type {number}
    * @memberof Transaction
    */
-  @observable amount = 0;
+  @observable amount = 0
   /**
    *
    * @type {number}
    * @memberof Transaction
    */
-  @observable fee = 0;
-  @observable type = 0;
-  @observable status = 0;
+  @observable fee = 0
+  @observable type = 0
+  @observable status = 0
   @computed get feeCoin() {
     switch (this.coinType) {
       case WALLET_TYPE_BTC:
       case WALLET_TYPE_OMNI:
-        return defaultBTC;
+        return defaultBTC
       case WALLET_TYPE_ETH:
-        return defaultETH;
+        return defaultETH
       case WALLET_TYPE_FO:
-          return defaultFO;
+        return defaultFO
     }
   }
   /**
@@ -87,71 +86,69 @@ export class Transaction {
    * @type {number}
    * @memberof Transaction
    */
-  @observable confirmations = 0;
+  @observable confirmations = 0
   /**
    *
    * @type {number}
    * @memberof Transaction
    */
-  @observable blockHeight = 0;
+  @observable blockHeight = 0
 
   /**
    *
    * @type {number}
    * @memberof Transaction
    */
-  timestamp;
+  timestamp
 
-  tokenName;
+  tokenName
 
   /**
    *
    * @type {Array}
    * @memberof Transaction
    */
-  @observable froms = [];
+  @observable froms = []
 
   /**
    *
    * @type {Array}
    * @memberof Transaction
    */
-  @observable tos = [];
+  @observable tos = []
 
   get explorerURL() {
     switch (this.coinType) {
       case 2: {
-        return DFNetwork.env === NETWORK_ENV_TESTNET
-          ? `https://test-insight.bitpay.com/tx/${this.hash}`
-          : `https://btc.com/${this.hash}`;
+        return DFNetwork.env === NETWORK_ENV_TESTNET ? `https://test-insight.bitpay.com/tx/${this.hash}` : `https://btc.com/${this.hash}`
       }
       case 1: {
-        return `https://${DFNetwork.env == DFNetwork.env_debug ? "ropsten." : ""}www.etherchain.org/tx/${this.hash}`;
+        return `https://${DFNetwork.env == DFNetwork.env_debug ? 'ropsten.' : ''}www.etherchain.org/tx/${this.hash}`
       }
       default:
-        return "";
+        return ''
     }
   }
   constructor(obj) {
-    this.id = obj.id;
-    this.hash = obj.txHash;
-    if (obj.hasOwnProperty("txStatus")) {
-      this.status = obj.txStatus;
+    this.id = obj.id
+    this.hash = obj.txHash
+    if (obj.hasOwnProperty('txStatus')) {
+      this.status = obj.txStatus
     }
-    this.from = obj.fromAddress || obj.from;
-    this.to = obj.toAddress || obj.to;
-    this.amount = toFixedString(obj.amount, 18);
-    this.type = obj.orderType;
-    this.fee = obj.costFee || obj.fee;
-    this.tokenName = obj.tokenName && obj.tokenName.toUpperCase();
-    this.note = obj.remark;
-    this.timestamp = obj.txCreateTime;
-    this.coinID = obj.tokenId;
-    this.confirmations = obj.blockConfirmations;
-    this.blockHeight = obj.blockHeight;
-    this.coinType = obj.tokenType;
-    this.froms = (obj.fromAddressList && obj.fromAddressList.map(from => ({ address: from.address }))) || [];
-    this.tos = (obj.toAddressList && obj.toAddressList.map(to => ({ address: to.address }))) || [];
+    this.from = obj.fromAddress || obj.from
+    this.to = obj.toAddress || obj.to
+    this.amount = toFixedString(obj.amount, 18)
+    this.type = obj.orderType
+    this.fee = obj.costFee || obj.fee
+    this.tokenName = obj.tokenName && obj.tokenName.toUpperCase()
+    this.note = obj.remark
+    this.timestamp = obj.txCreateTime
+    this.coinID = obj.tokenId
+    this.confirmations = obj.blockConfirmations
+    this.blockHeight = obj.blockHeight
+    this.coinType = obj.tokenType
+    this.froms = (obj.fromAddressList && obj.fromAddressList.map(from => ({ address: from.address }))) || []
+    this.tos = (obj.toAddressList && obj.toAddressList.map(to => ({ address: to.address }))) || []
   }
   toJSON() {
     return {
@@ -170,7 +167,7 @@ export class Transaction {
       tokenId: this.coinID,
       blockConfirmations: this.confirmations,
       blockHeight: this.blockHeight,
-    };
+    }
   }
 
   /**
@@ -180,66 +177,66 @@ export class Transaction {
    * @memberof Transaction
    */
   merge(tx) {
-    this.status = tx.status;
-    this.blockHeight = tx.blockHeight;
-    this.confirmations = tx.confirmations;
-    this.to = tx.to;
-    this.from = tx.from;
-    this.fee = tx.fee;
-    this.amount = tx.amount;
-    this.tokenName = tx.tokenName;
-    this.timestamp = tx.timestamp;
+    this.status = tx.status
+    this.blockHeight = tx.blockHeight
+    this.confirmations = tx.confirmations
+    this.to = tx.to
+    this.from = tx.from
+    this.fee = tx.fee
+    this.amount = tx.amount
+    this.tokenName = tx.tokenName
+    this.timestamp = tx.timestamp
   }
 }
 
-const compare = (a, b) => b.timestamp - a.timestamp;
+const compare = (a, b) => b.timestamp - a.timestamp
 
 class ETHTransaction extends Transaction {
   constructor(obj) {
-    super(obj);
+    super(obj)
   }
 }
 
 class ERC20Transaction extends Transaction {
   constructor(obj) {
-    super(obj);
+    super(obj)
   }
 }
 
 class BTCTransaction extends Transaction {
   constructor(obj) {
-    super(obj);
+    super(obj)
   }
 }
 
 class TXSet {
-  lastRefreshTimeStamp = 0;
-  pageNum = 0;
-  @observable hasMore = true;
+  lastRefreshTimeStamp = 0
+  pageNum = 0
+  @observable hasMore = true
   /**
    *
    *@type {Array.<Transaction>}
    * @memberof TXSet
    */
-  @observable allTxs = [];
+  @observable allTxs = []
   /**
    *
    *@type {Array.<Transaction>}
    * @memberof TXSet
    */
-  @observable inTxs = [];
+  @observable inTxs = []
   /**
    *
    *@type {Array.<Transaction>}
    * @memberof TXSet
    */
-  @observable outTxs = [];
+  @observable outTxs = []
   /**
    *
    *@type {Array.<Transaction>}
    * @memberof TXSet
    */
-  @observable failedTxs = [];
+  @observable failedTxs = []
 
   constructor() {}
   /**
@@ -250,61 +247,61 @@ class TXSet {
    */
   @action insert(tx) {
     //TODO: 优化性能
-    let localTx = this.allTxs.find(t => t.id == tx.id);
+    let localTx = this.allTxs.find(t => t.id == tx.id)
     if (localTx) {
-      localTx.merge(tx);
+      localTx.merge(tx)
     } else {
-      this.allTxs.push(tx);
-      this.allTxs = this.allTxs.slice().sort(compare);
+      this.allTxs.push(tx)
+      this.allTxs = this.allTxs.slice().sort(compare)
       if (tx.type == 1) {
-        this.inTxs.push(tx);
-        this.inTxs = this.inTxs.slice().sort(compare);
+        this.inTxs.push(tx)
+        this.inTxs = this.inTxs.slice().sort(compare)
       } else if (tx.type == 2) {
-        this.outTxs.push(tx);
-        this.outTxs = this.outTxs.slice().sort(compare);
+        this.outTxs.push(tx)
+        this.outTxs = this.outTxs.slice().sort(compare)
       }
       if (tx.status == 4) {
-        this.failedTxs.push(tx);
-        this.failedTxs = this.failedTxs.slice().sort(compare);
+        this.failedTxs.push(tx)
+        this.failedTxs = this.failedTxs.slice().sort(compare)
       }
     }
   }
   get(txid) {
-    return this.allTxs.filter(tx => tx.id == txid);
+    return this.allTxs.filter(tx => tx.id == txid)
   }
 }
 
-const globalTxs = new TXSet();
+const globalTxs = new TXSet()
 class WalletTxStore {
-  pageNum = 1;
-  @observable hasMore = true;
-  @observable coins = new Map();
-  @observable txs = new TXSet();
+  pageNum = 1
+  @observable hasMore = true
+  @observable coins = new Map()
+  @observable txs = new TXSet()
 
   static fetchTx = async txId => {
     // let txs = globalTxs.get(txId)
-    let txs = [];
+    let txs = []
     // if (txs.length) {
     //     return txs
     // }
     try {
       let result = await DFNetwork.get(
-        "/getOrderInfo",
+        '/getOrderInfo',
         {
           orderId: txId,
         },
         HD_WEB_API
-      );
-      txs = [new Transaction(result.data)];
+      )
+      txs = [new Transaction(result.data)]
       // globalTxs.insert(txs[0])
     } catch (error) {}
-    return txs;
-  };
+    return txs
+  }
   fetchTx = async (txId, wallet) => {
-    const txs = await WalletTxStore.fetchTx(txId);
-    this.insertTxs(txs, wallet);
-    return this.txs.get(txId);
-  };
+    const txs = await WalletTxStore.fetchTx(txId)
+    this.insertTxs(txs, wallet)
+    return this.txs.get(txId)
+  }
 
   /**
    * 相同的未确认交易
@@ -312,11 +309,9 @@ class WalletTxStore {
    * @memberof WalletTxStore
    */
   similarTx = (to, coinID, amount) => {
-    to = to.toLowerCase();
-    return this.unconfirmedTxs(coinID).find(
-      tx => tx.to && tx.to.toLowerCase() === to && tx.coinID == coinID && tx.amount == amount
-    );
-  };
+    to = to.toLowerCase()
+    return this.unconfirmedTxs(coinID).find(tx => tx.to && tx.to.toLowerCase() === to && tx.coinID == coinID && tx.amount == amount)
+  }
 
   /**
    * 未确认的交易
@@ -324,10 +319,8 @@ class WalletTxStore {
    * @memberof WalletTxStore
    */
   unconfirmedTxs = coinID => {
-    return this.coinTxSet(coinID).allTxs.filter(
-      tx => !tx.blockHeight && !tx.confirmations && tx.status != TX_STATUS_FAILED && tx.status != TX_STATUS_SUCCESS
-    );
-  };
+    return this.coinTxSet(coinID).allTxs.filter(tx => !tx.blockHeight && !tx.confirmations && tx.status != TX_STATUS_FAILED && tx.status != TX_STATUS_SUCCESS)
+  }
 
   /**
    * 未确认的数量
@@ -337,15 +330,15 @@ class WalletTxStore {
   unconfirmedAmount = coinID => {
     const amount = this.unconfirmedTxs(coinID).reduce((res, tx) => {
       if (tx.type == 1) {
-        return res.plus(tx.amount + "");
+        return res.plus(tx.amount + '')
       } else if (tx.type == 2) {
-        return res.minus(tx.amount + "");
+        return res.minus(tx.amount + '')
       }
-      return res;
-    }, new BigNumber(0));
-    console.log("unconfirmedAmount", amount.toFixed());
-    return amount;
-  };
+      return res
+    }, new BigNumber(0))
+    console.log('unconfirmedAmount', amount.toFixed())
+    return amount
+  }
 
   /**
    * @return {TXSet}
@@ -353,87 +346,87 @@ class WalletTxStore {
    * @memberof WalletTxStore
    */
   coinTxSet = coinID => {
-    coinID = coinID + "";
-    let coinTxSet = this.coins.get(coinID);
+    coinID = coinID + ''
+    let coinTxSet = this.coins.get(coinID)
     if (!coinTxSet) {
-      coinTxSet = new TXSet();
-      this.coins.set(coinID, coinTxSet);
+      coinTxSet = new TXSet()
+      this.coins.set(coinID, coinTxSet)
     }
-    return coinTxSet;
-  };
+    return coinTxSet
+  }
   fetchCoinTxs = async (coin, wallet, pageIndex = 1, useXpub = false) => {
-    const pageSize = TX_PAGE_SIZE;
-    const txSet = this.coinTxSet(coin.id);
+    const pageSize = TX_PAGE_SIZE
+    const txSet = this.coinTxSet(coin.id)
 
     const params = {
       ...wallet.txListParams,
       ...coin.txListParams,
       pageSize,
       pageIndex,
-    };
+    }
 
-    let url = "/getTrade";
+    let url = '/getTrade'
     if (useXpub) {
-      url = "/getTradeV3";
-      params["v3Address"] = wallet.extendedPublicKey.key;
-      delete params.address;
+      url = '/getTradeV3'
+      params['v3Address'] = wallet.extendedPublicKey.key
+      delete params.address
     }
 
-    const data = (await DFNetwork.get(url, params, HD_WEB_API)).data;
+    const data = (await DFNetwork.get(url, params, HD_WEB_API)).data
     if (!data) {
-      return;
+      return
     }
 
-    this.insertTxs(data, wallet);
+    this.insertTxs(data, wallet)
 
     if (data.length < TX_PAGE_SIZE) {
-      txSet.hasMore = false;
+      txSet.hasMore = false
     }
 
     if (pageIndex == 1) {
-      txSet.lastRefreshTimeStamp = new Date().getTime();
+      txSet.lastRefreshTimeStamp = new Date().getTime()
       if (data.length >= TX_PAGE_SIZE) {
-        txSet.hasMore = true;
+        txSet.hasMore = true
       }
     }
 
-    txSet.pageNum = pageIndex;
-  };
+    txSet.pageNum = pageIndex
+  }
   loadMoreCoinTxs = async (coin, wallet) => {
-    const txSet = this.coinTxSet(coin.id);
-    await this.fetchCoinTxs(coin, wallet, txSet.pageNum + 1);
-  };
+    const txSet = this.coinTxSet(coin.id)
+    await this.fetchCoinTxs(coin, wallet, txSet.pageNum + 1)
+  }
   insertTxs(txs, wallet) {
     _.isArray(txs) &&
       txs.forEach(obj => {
-        obj.tokenName = obj.tokenName.toUpperCase();
-        let tx = _.isPlainObject(obj) ? new Transaction(obj) : obj;
-        correctTx(tx, wallet);
-        this.txs.insert(tx);
-        this.coinTxSet(tx.coinID + "").insert(tx);
-      });
+        obj.tokenName = obj.tokenName.toUpperCase()
+        let tx = _.isPlainObject(obj) ? new Transaction(obj) : obj
+        correctTx(tx, wallet)
+        this.txs.insert(tx)
+        this.coinTxSet(tx.coinID + '').insert(tx)
+      })
   }
 }
 // 订正数据: 去掉找零地址 和 调整交易方向
 function correctTx(tx, wallet) {
   if (!tx || !wallet) {
-    return;
+    return
   }
 
   switch (tx.coinType) {
     case COIN_TYPE_ETH: {
       if (!wallet.address || !tx.to) {
-        return;
+        return
       }
-      tx.type = tx.to.toUpperCase() === wallet.address.toUpperCase() ? TX_TYPE_IN : TX_TYPE_OUT;
-      return;
+      tx.type = tx.to.toUpperCase() === wallet.address.toUpperCase() ? TX_TYPE_IN : TX_TYPE_OUT
+      return
     }
     case COIN_TYPE_BTC:
     default:
-      return;
+      return
   }
 }
 
-export { correctTx };
+export { correctTx }
 
-export default WalletTxStore;
+export default WalletTxStore

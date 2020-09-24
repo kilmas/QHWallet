@@ -1,7 +1,7 @@
 import { observable, reaction, computed, action } from 'mobx'
 import { persist, create } from 'mobx-persist'
 import { toSignificanceNumber } from '../../utils/NumberUtil'
-import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT, COIN_ID_EOS } from '../../config/const'
+import { COIN_ID_BTC, COIN_ID_ETH, COIN_ID_USDT, CURRENCY_TYPE_CNY, CURRENCY_TYPE_USD, COIN_ID_FO, COIN_ID_OKT, COIN_ID_EOS, COIN_ID_TRX } from '../../config/const'
 import storage from '../../utils/Storage'
 import { fibosRequest, request } from '../../utils/request'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -65,6 +65,9 @@ class CoinStore {
     if (!this.map.get(`${COIN_ID_EOS}`)) {
       this.map.set(`${COIN_ID_EOS}`, new CoinPrice({ tokenId: COIN_ID_EOS }))
     }
+    if (!this.map.get(`${COIN_ID_TRX}`)) {
+      this.map.set(`${COIN_ID_TRX}`, new CoinPrice({ tokenId: COIN_ID_TRX }))
+    }
   }
   get BTCPrice() {
     return this.getPrice(`${COIN_ID_BTC}`)
@@ -88,6 +91,10 @@ class CoinStore {
 
   get EOSPrice() {
     return this.getPrice(COIN_ID_EOS)
+  }
+
+  get TRXPrice() {
+    return this.getPrice(COIN_ID_TRX)
   }
 
   @observable CNYRate = 7
@@ -170,6 +177,12 @@ class CoinStore {
         if (usd) {
           const EOSCoin = this.map.get(`${COIN_ID_EOS}`)
           EOSCoin && EOSCoin.setUSD(usd)
+        }
+      })
+      request.getPrice('TRX').then(usd => {
+        if (usd) {
+          const TRXCoin = this.map.get(`${COIN_ID_TRX}`)
+          TRXCoin && TRXCoin.setUSD(usd)
         }
       })
     } catch (error) {}
