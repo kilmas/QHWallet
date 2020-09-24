@@ -197,11 +197,11 @@ class SendCoin extends React.Component {
     const receipt = await tronWeb.trx.sendRawTransaction(signedTransaction)
 
     if (receipt.result) {
-      const unconfirmedTx = await tronWeb.trx.getTransaction(id)
+      // const unconfirmedTx = await tronWeb.trx.getTransaction(id)
       if (this.wallet.getBalance) {
         this.wallet.getBalance()
       }
-      this.setState({ transactionId: unconfirmedTx, sending: false })
+      this.setState({ transactionId: id, sending: false })
       Toast.success(strings('transfer successfully'))
     }
   }, 10000)
@@ -213,6 +213,8 @@ class SendCoin extends React.Component {
       browserUrl = `https://see.fo/transactions/${this.state.transactionId}`
     } else if (coin.name === 'OKT') {
       browserUrl = `https://www.oklink.com/okchain-test/tx/${this.state.transactionId}`
+    } else if (coin.name === 'TRX') {
+      browserUrl = `https://tronscan.io/#/transaction/${this.state.transactionId}`
     }
     if (browserUrl) {
       goBrowser(this.props.navigation, browserUrl)
