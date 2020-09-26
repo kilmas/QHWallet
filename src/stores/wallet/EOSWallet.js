@@ -24,7 +24,7 @@ export default class EOSWallet extends Wallet {
   lastNonce = -1
   EOS = new EOS()
 
-  browserRecord = 'https://see.fo/accounts/'
+  browserRecord = 'https://bloks.io/account/'
 
   @computed get hasCreated() {
     return !!this.id

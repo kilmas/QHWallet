@@ -419,7 +419,7 @@ class History extends React.Component {
     } else if (coin.name === 'TRX') {
       actions = {
         ...actions,
-        onTools: () => goBrowser(this.props.navigation, `https://tronscan.io/wallet`),
+        onTools: () => goBrowser(this.props.navigation, `https://tronscan.io/#/wallet`),
       }
     }
 
