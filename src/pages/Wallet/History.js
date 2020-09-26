@@ -363,25 +363,25 @@ class History extends React.Component {
         onSwapNetwork: () => {
           this.props.toggleNetworkModal()
         },
-        onCrossOKT: () => {
-          this.setState(state => {
-            const {
-              accountStore: { OKTAccounts, currentOKTID },
-            } = this.props
-            if (state.oktAccount === '' && OKTAccounts.length) {
-              const account = OKTAccounts.find(item => item.id === currentOKTID)
-              return {
-                oktAccount: account.OKTWallet.address,
-                showCross: true,
-                crossType: 'OKT',
-              }
-            }
-            return {
-              showCross: true,
-              crossType: 'OKT',
-            }
-          })
-        },
+        // onCrossOKT: () => {
+        //   this.setState(state => {
+        //     const {
+        //       accountStore: { OKTAccounts, currentOKTID },
+        //     } = this.props
+        //     if (state.oktAccount === '' && OKTAccounts.length) {
+        //       const account = OKTAccounts.find(item => item.id === currentOKTID)
+        //       return {
+        //         oktAccount: account.OKTWallet.address,
+        //         showCross: true,
+        //         crossType: 'OKT',
+        //       }
+        //     }
+        //     return {
+        //       showCross: true,
+        //       crossType: 'OKT',
+        //     }
+        //   })
+        // },
       }
     } else if (coin.name === 'FO') {
       if (!this.wallet.hasCreated) {
@@ -399,12 +399,12 @@ class History extends React.Component {
       if (!this.wallet.hasCreated) {
         actions = {
           onCopyPubKey: this.onCopyPubKey,
-          onCreate: () => goBrowser(this.props.navigation, `https://eospark.com/`),
+          onCreate: () => goBrowser(this.props.navigation, `https://bloks.io/wallet/create-account`),
         }
       } else {
         actions = {
           ...actions,
-          onTools: () => goBrowser(this.props.navigation, `https://eospark.com/`),
+          onTools: () => goBrowser(this.props.navigation, `https://bloks.io/wallet/transfer`),
         }
       }
     } else if (coin.name === 'OKT') {
@@ -415,6 +415,11 @@ class History extends React.Component {
             address: this.address
           })
         },
+      }
+    } else if (coin.name === 'TRX') {
+      actions = {
+        ...actions,
+        onTools: () => goBrowser(this.props.navigation, `https://tronscan.io/wallet`),
       }
     }
 

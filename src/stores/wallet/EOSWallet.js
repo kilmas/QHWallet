@@ -90,10 +90,10 @@ export default class EOSWallet extends Wallet {
     if (this.address) {
       try {
         const {
-          data: { permissions },
+          data: { account_names },
         } = await eosRequest.getAddressByKey(this.address)
         if (Array.isArray(permissions) && permissions[0]) {
-          this.name = account_names[0].account_name
+          this.name = account_names[0]
           this.id = CryptoJS.MD5(this.name).toString()
           this.pubkey = this.address
           const seed = bip39.mnemonicToSeedSync(mnemonic)

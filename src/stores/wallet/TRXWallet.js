@@ -53,7 +53,6 @@ export default class TRXWallet extends Wallet {
       let balance = 0
       try {
         balance = await instance.trx.getBalance(this.address)
-        console.log(this.address, '- Output:', balance, '\n')
       } catch (e) {
         console.warn(e)
         return

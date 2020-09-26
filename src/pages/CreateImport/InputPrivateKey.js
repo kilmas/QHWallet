@@ -66,14 +66,15 @@ class InputPrivateKey extends React.Component {
       return
     } else if (type === 'EOS') {
       try {
+        const data = await eosRequest.getAddressByKey(EOSWallet.privateToPublic(pk))
         const {
-          data: { permissions },
-        } = await eosRequest.getAddressByKey(EOSWallet.privateToPublic(pk))
-        if (_.isArray(permissions)) {
-          const operations = permissions.map(account => ({
-            text: account.account_name,
+          data: { account_names },
+        } = data
+        if (_.isArray(account_names)) {
+          const operations = account_names.map(account_name => ({
+            text: account_name,
             onPress: () => {
-              this._importPK(account.account_name, type, name)
+              this._importPK(account_name, type, name)
             },
           }))
           if (operations.length) {

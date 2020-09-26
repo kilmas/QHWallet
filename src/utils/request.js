@@ -366,7 +366,9 @@ export const fibosRequest = {
 export const eosRequest = {
   getAddressByKey: async key => {
     try {
-      const { data } = await axios.get(`https://eospark.com/api/v2/permission/address/${key}`)
+      const data = await axios.post(`https://eos.greymass.com/v1/history/get_key_accounts`, {
+        public_key: key
+      })
       return data
     } catch (err) {
       console.warn(err)
