@@ -111,31 +111,40 @@ class Asset extends React.Component {
   didTxStatusesChange = newTxsPending => this.txsPending.length !== newTxsPending.length;
 
   ethFilter = tx => {
-    const { selectedAddress, networkType } = this.props;
-    const networkId = Networks[networkType].networkId;
-    const {
-      transaction: { from, to }
-    } = tx;
-    return (
-      (safeToChecksumAddress(from) === selectedAddress || safeToChecksumAddress(to) === selectedAddress) &&
-      ((networkId && networkId.toString() === tx.networkID) ||
-        (networkType === 'rpc' && !isKnownNetwork(tx.networkID))) &&
-      tx.status !== 'unapproved'
-    );
+		const { selectedAddress, networkType } = this.props;
+		const networkId = Networks[networkType].networkId;
+		const {
+			transaction: { from, to },
+			isTransfer,
+			transferInformation
+		} = tx;
+		if (isTransfer)
+			return this.props.tokens.find(
+				({ address }) => address.toLowerCase() === transferInformation.contractAddress.toLowerCase()
+			);
+		return (
+			(safeToChecksumAddress(from) === selectedAddress || safeToChecksumAddress(to) === selectedAddress) &&
+			((networkId && networkId.toString() === tx.networkID) ||
+				(networkType === 'rpc' && !isKnownNetwork(tx.networkID))) &&
+			tx.status !== 'unapproved'
+		);
   };
 
   noEthFilter = tx => {
-    const { networkType } = this.props;
-    const networkId = Networks[networkType].networkId;
-    const {
-      transaction: { to, from }
-    } = tx;
-    return (
-      (from & (from.toLowerCase() === this.navAddress) || (to && to.toLowerCase() === this.navAddress)) &&
-      ((networkId && networkId.toString() === tx.networkID) ||
-        (networkType === 'rpc' && !isKnownNetwork(tx.networkID))) &&
-      tx.status !== 'unapproved'
-    );
+		const { networkType } = this.props;
+		const networkId = Networks[networkType].networkId;
+		const {
+			transaction: { to, from },
+			isTransfer,
+			transferInformation
+		} = tx;
+		if (isTransfer) return this.navAddress === transferInformation.contractAddress.toLowerCase();
+		return (
+			(from & (from.toLowerCase() === this.navAddress) || (to && to.toLowerCase() === this.navAddress)) &&
+			((networkId && networkId.toString() === tx.networkID) ||
+				(networkType === 'rpc' && !isKnownNetwork(tx.networkID))) &&
+			tx.status !== 'unapproved'
+		);
   };
 
   normalizeTransactions() {
@@ -274,7 +283,8 @@ export default inject(({ store: state }) => ({
   currentCurrency: state.engine.backgroundState.CurrencyRateController.currentCurrency,
   selectedAddress: state.engine.backgroundState.PreferencesController.selectedAddress,
   networkType: state.engine.backgroundState.NetworkController.provider.type,
-  transactions: state.engine.backgroundState.TransactionController.transactions
-  
+  transactions: state.engine.backgroundState.TransactionController.transactions,
+  tokens: state.engine.backgroundState.AssetsController.tokens,
+
   }))(observer(Asset))
 

@@ -1,5 +1,7 @@
 import contractMap from 'eth-contract-metadata';
+import { toChecksumAddress } from 'web3-utils';
 import { renderFullAddress, safeToChecksumAddress } from '../../../utils/address';
+import { TRANSACTION_TYPES } from "../../../utils/transactions";
 import { decodeTransferData, isCollectibleAddress, getTicker, getActionKey } from '../../../utils/transactions';
 import AppConstants from '../../../modules/metamask/core/AppConstants';
 import { strings } from '../../../locales/i18n';
@@ -230,6 +232,102 @@ function getCollectibleTransfer(args) {
   };
 
   return [transactionElement, transactionDetails];
+}
+
+function decodeIncomingTransfer(args) {
+	const {
+		tx: {
+			transaction: { to, from, value },
+			transferInformation: { symbol, decimals, contractAddress },
+			transactionHash
+		},
+		conversionRate,
+		currentCurrency,
+		contractExchangeRates,
+		totalGas,
+		actionKey,
+		primaryCurrency,
+		selectedAddress
+	} = args;
+
+	const amount = toBN(value);
+	const token = { symbol, decimals, address: contractAddress };
+
+	const renderTokenAmount = token
+		? `${renderFromTokenMinimalUnit(amount, token.decimals)} ${token.symbol}`
+		: undefined;
+	const exchangeRate = token ? contractExchangeRates[toChecksumAddress(token.address)] : undefined;
+
+	let renderTokenFiatAmount, renderTokenFiatNumber;
+	if (exchangeRate) {
+		renderTokenFiatAmount = balanceToFiat(
+			fromTokenMinimalUnit(amount, token.decimals) || 0,
+			conversionRate,
+			exchangeRate,
+			currentCurrency
+		);
+		renderTokenFiatNumber = balanceToFiatNumber(
+			fromTokenMinimalUnit(amount, token.decimals) || 0,
+			conversionRate,
+			exchangeRate
+		);
+	}
+
+	const renderToken = token
+		? `${renderFromTokenMinimalUnit(amount, token.decimals)} ${token.symbol}`
+		: strings('transaction.value_not_available');
+	const totalFiatNumber = renderTokenFiatNumber
+		? weiToFiatNumber(totalGas, conversionRate) + renderTokenFiatNumber
+		: weiToFiatNumber(totalGas, conversionRate);
+
+	const ticker = getTicker(args.ticker);
+
+	const { SENT_TOKEN, RECEIVED_TOKEN } = TRANSACTION_TYPES;
+	const transactionType = renderFullAddress(from) === selectedAddress ? SENT_TOKEN : RECEIVED_TOKEN;
+
+	let transactionDetails = {
+		renderTotalGas: `${renderFromWei(totalGas)} ${ticker}`,
+		renderValue: renderToken,
+		renderFrom: renderFullAddress(from),
+		renderTo: renderFullAddress(to),
+		transactionHash,
+		transactionType
+	};
+	if (primaryCurrency === 'ETH') {
+		transactionDetails = {
+			...transactionDetails,
+			summaryAmount: renderToken,
+			summaryFee: `${renderFromWei(totalGas)} ${ticker}`,
+			summaryTotalAmount: `${renderToken} ${strings('unit.divisor')} ${renderFromWei(totalGas)} ${ticker}`,
+			summarySecondaryTotalAmount: totalFiatNumber
+				? `${addCurrencySymbol(totalFiatNumber, currentCurrency)}`
+				: undefined
+		};
+	} else {
+		transactionDetails = {
+			...transactionDetails,
+			summaryAmount: renderTokenFiatAmount
+				? `${renderTokenFiatAmount}`
+				: `${addCurrencySymbol(0, currentCurrency)}`,
+			summaryFee: weiToFiat(totalGas, conversionRate, currentCurrency),
+			summaryTotalAmount: totalFiatNumber ? `${addCurrencySymbol(totalFiatNumber, currentCurrency)}` : undefined,
+			summarySecondaryTotalAmount: `${renderToken} ${strings('unit.divisor')} ${renderFromWei(
+				totalGas
+			)} ${ticker}`
+		};
+	}
+
+	const transactionElement = {
+		actionKey,
+		renderFrom: renderFullAddress(from),
+		renderTo: renderFullAddress(to),
+		value: !renderTokenAmount ? strings('transaction.value_not_available') : renderTokenAmount,
+		fiatValue: renderTokenFiatAmount ? `${renderTokenFiatAmount}` : renderTokenFiatAmount,
+		isIncomingTransfer: true,
+		transactionType
+	};
+
+	return [transactionElement, transactionDetails];
 }
 
 async function decodeTransferTx(args) {
@@ -478,7 +576,7 @@ function decodeConfirmTx(args, paymentChannelTransaction) {
 export default async function decodeTransaction(args) {
   const {
     tx,
-    tx: { paymentChannelTransaction },
+    tx: { paymentChannelTransaction, isTransfer },
     selectedAddress,
     ticker
   } = args;
@@ -486,7 +584,9 @@ export default async function decodeTransaction(args) {
   let transactionElement, transactionDetails;
   if (paymentChannelTransaction) {
     [transactionElement, transactionDetails] = decodePaymentChannelTx({ ...args, actionKey });
-  } else {
+  } else if (isTransfer) {
+		[transactionElement, transactionDetails] = decodeIncomingTransfer({ ...args, actionKey });
+	} else {
     switch (actionKey) {
       case strings('transactions.sent_tokens'):
         [transactionElement, transactionDetails] = await decodeTransferTx({ ...args, actionKey });

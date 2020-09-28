@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Alert, Image, TouchableOpacity, StyleSheet, Text, View } from 'react-native';
+import { BigNumber } from "bignumber.js";
 import { List, Icon, ActionSheet } from '@ant-design/react-native';
 import { inject, observer } from 'mobx-react';
 import TokenImage from '../TokenImage';
@@ -138,9 +139,10 @@ class Tokens extends React.Component {
     const itemAddress = safeToChecksumAddress(asset.address);
     const logo = asset.logo || ((contractMap[itemAddress] && contractMap[itemAddress].logo) || undefined);
     const exchangeRate = itemAddress in tokenExchangeRates ? tokenExchangeRates[itemAddress] : undefined;
+
     const balance =
       asset.balance ||
-      (itemAddress in tokenBalances ? renderFromTokenMinimalUnit(tokenBalances[itemAddress], asset.decimals) : 0);
+      (itemAddress in tokenBalances ? renderFromTokenMinimalUnit(new BigNumber(tokenBalances[itemAddress]), asset.decimals) : 0);
     const balanceFiat = asset.balanceFiat || balanceToFiat(balance, conversionRate, exchangeRate, currentCurrency);
     const balanceValue = `${balance} ${asset.symbol}`;
 

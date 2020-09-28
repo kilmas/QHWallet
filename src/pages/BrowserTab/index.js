@@ -1304,7 +1304,6 @@ export class BrowserTab extends React.Component {
           if (pwd === password) {
             const tronTeb = Tronweb.instance
             const resp = await tronTeb.trx.sign(transaction)
-            console.log(resp)
             Toast.success('sign success')
             currentWebview.postMessage(JSON.stringify({ key: data.key, tronWeb, data: resp }))
           } else {
