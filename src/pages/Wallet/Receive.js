@@ -5,7 +5,7 @@ import Clipboard from '@react-native-community/clipboard'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { observable, computed } from 'mobx'
 import { inject, observer } from 'mobx-react'
-import { Flex, Icon } from '@ant-design/react-native'
+import { Flex, Icon, List, Modal } from '@ant-design/react-native'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import { Toast } from '@ant-design/react-native'
 import Container from '../../components/Container'
@@ -18,7 +18,6 @@ import CommonAccount from '../../stores/account/CommonAccount'
 import MultiSigAccount from '../../stores/account/MultiSigAccount'
 
 class Receive extends React.Component {
-
   @computed get accounts() {
     const coin = this.props.navigation.getParam('coin')
     const { accountStore } = this.props
@@ -82,6 +81,9 @@ class Receive extends React.Component {
 
   constructor(props) {
     super(props)
+    this.state = {
+      showOptions: false,
+    }
   }
 
   componentDidMount() {}
@@ -97,6 +99,16 @@ class Receive extends React.Component {
             GlobalNavigation.goBack()
             onSave && onSave()
           }}
+          renderRight={() => (
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  showOptions: true,
+                })
+              }}>
+              <Icon name="ellipsis" />
+            </TouchableOpacity>
+          )}
         />
         <KeyboardAwareScrollView scrollEnabled={true} contentContainerStyle={styles.content}>
           <Flex justify="center" style={styles.QRCode}>
@@ -118,6 +130,34 @@ class Receive extends React.Component {
             </TouchableOpacity>
           </Flex>
         </KeyboardAwareScrollView>
+        <Modal
+          transparent
+          visible={this.state.showOptions}
+          maskClosable
+          onClose={() => {
+            this.setState({ showOptions: false })
+          }}>
+          <List style={{ minHeight: 300 }}>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.newAddress')}
+            </List.Item>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.myAddress')}
+            </List.Item>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.formatList')}
+            </List.Item>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.signMessage')}
+            </List.Item>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.showPrivateKey')}
+            </List.Item>
+            <List.Item arrow="horizontal" extra="" onPress={() => {}}>
+              {strings('receive.autoGenAddress')}
+            </List.Item>
+          </List>
+        </Modal>
       </Container>
     )
   }

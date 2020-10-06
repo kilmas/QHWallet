@@ -50,7 +50,7 @@ export default class BTCWallet extends Wallet {
 
   index49 = 0
 
-  index81 = 0
+  index84 = 0
 
   pAccount
 
@@ -398,8 +398,8 @@ export default class BTCWallet extends Wallet {
     if (change === 0) {
       if (address.bip === '49') {
         this.index49 = Number(index)
-      } else if (address.bip === '81') {
-        this.index81 = Number(index)
+      } else if (address.bip === '84') {
+        this.index84 = Number(index)
       } else if (address.bip === '44') {
         this.index44 = Number(index)
       }
@@ -472,7 +472,7 @@ export default class BTCWallet extends Wallet {
 
   getIndex = (type, change = 0) => {
     if (change === 0) {
-      if (type === BTC_ADDRESS_TYPE_KH && this.index81) return this.index81
+      if (type === BTC_ADDRESS_TYPE_KH && this.index84) return this.index84
       if (type === BTC_ADDRESS_TYPE_PKH && this.index44) return this.index44
       if (type === BTC_ADDRESS_TYPE_SH && this.index49) return this.index49
     }

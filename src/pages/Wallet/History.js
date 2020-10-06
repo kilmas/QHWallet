@@ -64,6 +64,7 @@ class History extends React.Component {
       crossToken: 0,
       fibosAccount: '',
       oktAccount: '',
+      showAddressType: '44',
     }
   }
 
@@ -131,8 +132,8 @@ class History extends React.Component {
 
   @computed get address() {
     if (this.coin.name === 'BTC') {
-      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address;
-    } else if(this.coin.name === 'FO' || this.coin.name === 'EOS') {
+      return this.wallet.currentAddress ? this.wallet.currentAddress.address : this.wallet.address
+    } else if (this.coin.name === 'FO' || this.coin.name === 'EOS') {
       return (this.wallet && this.wallet.name) || (this.account && this.account.name)
     }
     return this.wallet && this.wallet.address
@@ -198,7 +199,7 @@ class History extends React.Component {
     return `${this.coin.name}`
   }
 
-  onSave = () => { }
+  onSave = () => {}
 
   register = () => {
     this.props.resetTransaction()
@@ -274,7 +275,7 @@ class History extends React.Component {
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     Toast.removeAll()
   }
 
@@ -412,7 +413,7 @@ class History extends React.Component {
         ...actions,
         onVote: () => {
           GlobalNavigation.navigate('VoteList', {
-            address: this.address
+            address: this.address,
           })
         },
       }
@@ -446,50 +447,81 @@ class History extends React.Component {
           )}
         />
         <AssetsAction {...actions} />
-        <Tabs swipeable={false} usePaged={false} tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]}>
+        <Tabs
+          swipeable={false}
+          usePaged={false}
+          tabs={[{ title: coin.name === 'BTC' ? 'Address' : 'Tokens' }, { title: coin.name === 'ETH' ? 'Collectibles' : 'Records' }]}>
           <View>
             <KeyboardAwareScrollView>
-              {coin.name === 'ETH' ? <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />
-                : coin.name === 'OKT' ? (
+              {coin.name === 'ETH' ? (
+                <Tokens navigation={navigation} tabLabel={strings('wallet.tokens')} tokens={assets} />
+              ) : coin.name === 'OKT' ? (
+                <List>
+                  {this.wallet &&
+                    this.wallet.coins.map((item, index) => (
+                      <List.Item
+                        key={item.id}
+                        checked={index === 0}
+                        onPress={() => {
+                          console.log(item)
+                        }}>
+                        {item.name}
+                        <List.Item.Brief>{item.balance}</List.Item.Brief>
+                      </List.Item>
+                    ))}
+                </List>
+              ) : (
+                coin.name === 'BTC' && (
                   <List>
-                    {this.wallet &&
-                      this.wallet.coins.map((item, index) => (
-                        <List.Item
-                          key={item.id}
-                          checked={index === 0}
-                          onPress={() => {
-                            console.log(item)
-                          }}>
-                          {item.name}
-                          <List.Item.Brief>{item.balance}</List.Item.Brief>
-                        </List.Item>
-                      ))}
+                    <Modal visible={this.state.visibleAddress} transparent maskClosable onClose={() => {
+                      this.setState({ visibleAddress: false })
+                    }}>
+                      {this.account instanceof HDAccount &&
+                        this.wallet.addresses
+                          .filter(item => {
+                            return item.path.indexOf(this.state.showAddressType) > 0
+                          })
+                          .map((item, index) => (
+                            <List.Item
+                              extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check" /> : ''}
+                              key={index.toString()}
+                              checked={index === 0}
+                              onPress={() => {
+                                Clipboard.setString(item.address)
+                                Toast.info(`copy ${item.address} successfully`)
+                              }}
+                              onLongPress={() => {
+                                this.wallet.setCurrentAddress(item)
+                              }}>
+                              {item.address}
+                              <List.Item.Brief>{item.path}</List.Item.Brief>
+                            </List.Item>
+                          ))}
+                    </Modal>
+                    <List.Item
+                      onPress={() => {
+                        this.setState({ visibleAddress: true, showAddressType: '44' })
+                      }}>
+                      普通地址
+                    </List.Item>
+                    <List.Item
+                      onPress={() => {
+                        this.setState({ visibleAddress: true, showAddressType: '49' })
+                      }}>
+                      隔离验证(兼容)
+                    </List.Item>
+                    <List.Item
+                      onPress={() => {
+                        this.setState({ visibleAddress: true, showAddressType: '84' })
+                      }}>
+                      隔离验证(原生)
+                    </List.Item>
+                    <List.Item styles={{ column: { alignItems: 'center' } }} onPress={() => {}}>
+                      + Reflesh
+                    </List.Item>
                   </List>
                 )
-                  : coin.name === 'BTC' && (
-                    <List>
-                      {this.account instanceof HDAccount &&
-                        this.wallet.addresses.map((item, index) => (
-                          <List.Item
-                            extra={this.wallet.currentAddress && this.wallet.currentAddress.address === item.address ? <Icon name="check" /> : ''}
-                            key={index.toString()}
-                            checked={index === 0}
-                            onPress={() => { }}
-                            onLongPress={() => {
-                              this.wallet.setCurrentAddress(item)
-                            }}>
-                            {item.address}
-                            <List.Item.Brief>{item.path}</List.Item.Brief>
-                          </List.Item>
-                        ))}
-                      <List.Item
-                        styles={{ column: { alignItems: 'center' } }}
-                        onPress={() => {
-                        }}>
-                        + Reflesh
-                      </List.Item>
-                    </List>
-                  )}
+              )}
             </KeyboardAwareScrollView>
           </View>
           <View style={styles.tabView}>
@@ -517,7 +549,7 @@ class History extends React.Component {
             this.setState({ visible: false })
           }}>
           <List style={{ minHeight: 300 }} renderHeader={`${name} accounts List.`}>
-            {this.accounts.map((item) => (
+            {this.accounts.map(item => (
               <RadioItem
                 key={item.id}
                 checked={item.id === this.accountID}
@@ -555,8 +587,8 @@ class History extends React.Component {
               paddingTop: 0,
             },
             body: {
-              paddingHorizontal: 1
-            }
+              paddingHorizontal: 1,
+            },
           }}
           maskClosable
           onClose={() => {
@@ -637,7 +669,7 @@ class History extends React.Component {
                 </Picker>
               }
               placeholder={strings('Please input crosss amount')}
-              onBlur={() => { }}>
+              onBlur={() => {}}>
               Amount:
             </InputItem>
           </List>
@@ -652,7 +684,10 @@ class History extends React.Component {
                   this.registerApprove()
                 } else {
                   const symbol = crossTokens[this.state.crossToken].symbol
-                  goBrowser(this.props.navigation, `https://cross.fo/transfer?account=${this.state.fibosAccount}&amount=${this.state.crossAmount}&token=${symbol}`)
+                  goBrowser(
+                    this.props.navigation,
+                    `https://cross.fo/transfer?account=${this.state.fibosAccount}&amount=${this.state.crossAmount}&token=${symbol}`
+                  )
                 }
               }
             }}>
