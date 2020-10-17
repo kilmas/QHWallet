@@ -135,8 +135,7 @@ const styles = StyleSheet.create({
     marginTop: Device.isAndroid() ? 0 : -5,
   },
   optionText: {
-    fontSize: 16,
-    lineHeight: 16,
+    fontSize: 15,
     alignSelf: 'center',
     justifyContent: 'center',
     marginTop: 3,

@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@ant-design/react-native": "^4.0.0",
-    "@metamask/controllers": "^2.0.0",
-    "@metamask/inpage-provider": "^5.0.2",
+    "@metamask/controllers": "^2.0.5",
+    "@metamask/inpage-provider": "^6.3.0",
     "@okexchain/javascript-sdk": "^0.0.1",
     "@react-native-community/async-storage": "^1.6.2",
     "@react-native-community/cameraroll": "^1.7.1",
