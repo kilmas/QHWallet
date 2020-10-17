@@ -252,9 +252,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionModal: {
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    width: '100%',
+    // justifyContent: 'flex-end',
+    // alignItems: 'center',
+    width: 350,
   },
   viewWrapperStyle: {
     borderTopLeftRadius: 20,
@@ -547,9 +547,10 @@ class Approve extends React.Component {
         onConfirmPress={this.handleSetSpendLimit}
         cancelButtonMode={'warring'}
         confirmButtonMode={'primary'}
+        modalStyle={styles.actionModal}
         confirmDisabled={!spendLimitUnlimitedSelected && !validSpendLimitCustomValue}
         displayCancelButton={false}>
-        <View style={baseStyles.flexGrow}>
+        <View style={[baseStyles.flexGrow]}>
           <View style={styles.customGasModalTitle}>
             <Text style={styles.customGasModalTitleText}>{strings('spend_limit_edition.title')}</Text>
           </View>
@@ -697,7 +698,7 @@ class Approve extends React.Component {
   copyContractAddress = async () => {
     const { transaction } = this.props
     await Clipboard.setString(transaction.to)
-    Toast.show(strings('transactions.address_copied_to_clipboard'), 1500)
+    Toast.show(strings('transactions.address_copied_to_clipboard'))
   }
 
   render() {

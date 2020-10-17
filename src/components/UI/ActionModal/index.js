@@ -8,7 +8,7 @@ import { strings } from '../../../locales/i18n'
 const styles = StyleSheet.create({
   modal: {
     margin: 0,
-    width: '95%',
+    width: '100%',
     padding: 0,
   },
 })
@@ -41,7 +41,8 @@ export default function ActionModal({
     <Modal
       visible={modalVisible}
       transparent
-      closable={!onRequestClose}
+      // closable={!onRequestClose}
+      closable
       onClose={onRequestClose}
       style={[styles.modal, modalStyle]}
       onBackdropPress={onRequestClose}

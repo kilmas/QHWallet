@@ -781,12 +781,14 @@ export class BrowserTab extends React.Component {
     }
 
     const tronweb = `
-      var script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = "https://cdn.jsdelivr.net/npm/tronweb@3.0.0/dist/TronWeb.js";
-      document.head.appendChild(script);
+      (function(){
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "https://cdn.jsdelivr.net/npm/tronweb@3.0.0/dist/TronWeb.js";
+        document.head.appendChild(script);
+      })();
     `
-    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: tronweb + entryScriptWeb3, homepageScripts })
+    await this.setState({ entryScriptjs: entryScriptjs + SPA_urlChangeListener, entryScriptWeb3: entryScriptWeb3 + tronweb, homepageScripts })
     Engine.context.AssetsController.hub.on('pendingSuggestedAsset', suggestedAssetMeta => {
       if (!this.isTabActive()) return false
       this.setState({ watchAsset: true, suggestedAssetMeta })
