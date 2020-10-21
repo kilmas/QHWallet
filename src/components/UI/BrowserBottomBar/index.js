@@ -22,17 +22,18 @@ const styles = StyleSheet.create({
     flex: 0,
     borderTopWidth: Device.isAndroid() ? 0 : StyleSheet.hairlineWidth,
     borderColor: colors.grey200,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    elevation: 3,
   },
   iconButton: {
-    height: 24,
-    width: 24,
+    // height: 30,
+    width: 30,
     justifyContent: 'space-around',
     alignItems: 'center',
     textAlign: 'center',
     flex: 1,
-    paddingTop: 30,
-    paddingBottom: 30
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   tabIcon: {
     marginTop: 0,
@@ -43,8 +44,8 @@ const styles = StyleSheet.create({
     color: colors.grey100
   },
   icon: {
-    width: 24,
-    height: 24,
+    // width: 24,
+    // height: 24,
     color: colors.grey500,
     textAlign: 'center'
   }
@@ -110,7 +111,7 @@ export default class BrowserBottomBar extends PureComponent {
           testID={'go-back-button'}
           disabled={!canGoBack}
         >
-          <Icon name="left" size={24} style={[styles.icon, !canGoBack ? styles.disabledIcon : {}]} />
+          <Icon name="left" size={22} style={[styles.icon, !canGoBack ? styles.disabledIcon : {}]} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={goForward}
@@ -120,23 +121,23 @@ export default class BrowserBottomBar extends PureComponent {
         >
           <Icon
             name="right"
-            size={24}
+            size={22}
             style={[styles.icon, !canGoForward ? styles.disabledIcon : {}]}
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={showUrlModal} style={styles.iconButton} testID={'search-button'}>
-          <Icon name="search" size={32} style={styles.icon} />
+          <Icon name="search" size={22} style={styles.icon} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={showTabs} style={styles.iconButton} testID={'show-tabs-button'}>
           <TabCountIcon style={styles.tabIcon} />
         </TouchableOpacity>
         <TouchableOpacity onPress={goHome} style={styles.iconButton} testID={'home-button'}>
-          <Icon name="home" size={25} style={styles.icon} />
+          <Icon name="home" size={22} style={styles.icon} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={toggleOptions} style={styles.iconButton} testID={'options-button'}>
-          <Icon name="ellipsis" size={25} style={styles.icon} />
+          <Icon name="ellipsis" size={22} style={styles.icon} />
         </TouchableOpacity>
       </ElevatedView>
     );

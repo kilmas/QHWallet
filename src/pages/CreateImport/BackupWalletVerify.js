@@ -72,8 +72,8 @@ export default class BackupWalletVerify extends React.Component {
                         style={{
                           fontSize: 13,
                           color: '#333',
-                          width: 18,
-                          marginLeft: 13,
+                          // width: 15,
+                          marginHorizontal: 6,
                         }}>
                         {index + 1}
                       </Text>

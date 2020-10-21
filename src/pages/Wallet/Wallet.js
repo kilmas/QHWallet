@@ -58,12 +58,11 @@ const cellStyles = StyleSheet.create({
     ...themeStyles.subTitle,
     color: '#49A303',
     textAlign: 'left',
+    fontSize: 12,
   },
   rightView: {
     alignItems: 'flex-end',
-    height: 60,
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingVertical: 12,
     marginRight: 8,
   },
 })

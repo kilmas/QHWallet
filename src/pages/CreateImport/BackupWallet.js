@@ -53,8 +53,7 @@ class BackupWallet extends React.Component {
                     style={{
                       fontSize: 13,
                       color: '#333',
-                      width: 30,
-                      marginLeft: 13,
+                      marginHorizontal: 6,
                     }}>
                     {index + 1}
                   </Text>
@@ -62,7 +61,6 @@ class BackupWallet extends React.Component {
                     style={{
                       fontSize: 13,
                       color: BDCoLor,
-                      width: 65,
                     }}>
                     {item}
                   </Text>
