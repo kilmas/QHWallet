@@ -387,7 +387,7 @@ class Defi extends React.Component {
 
   render() {
     const { entryScriptjs, webUri } = this.state
-    const urls = ['https://dex.fo/mobile', 'https://deotc.bitewd.com',]
+    const urls = ['https://foctc.qingah.com', 'https://dex.fo/mobile', 'https://deotc.bitewd.com',]
     return (
       <Container>
         <TitleBar
@@ -405,7 +405,7 @@ class Defi extends React.Component {
         {this.renderProgressBar()}
         <Tabs onTabClick={(index, key) => {
           this.setState({ webviewKey: key })
-        }} tabs={[{ title: 'Dex.fo' }, { title: 'DE OTC' }]} swipeable={false} usePaged={false} initialPage={0} tabBarPosition="top">
+        }} tabs={[{ title: 'CTC' }, { title: 'Swap' }, { title: 'OTC' }]} swipeable={false} usePaged={false} initialPage={0} tabBarPosition="top">
           {
             urls.map((uri, index) => (
               <View key={uri} style={{ flex: 1 }}>
@@ -414,7 +414,7 @@ class Defi extends React.Component {
                   bounces={false}
                   directionalLockEnabled
                   source={{ uri }}
-                  scrollEnabled={false}
+                  scrollEnabled={true}
                   overScrollMode={'never'}
                   ref={r => {
                     this.webview = r
