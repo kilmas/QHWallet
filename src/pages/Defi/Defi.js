@@ -85,7 +85,7 @@ class Defi extends React.Component {
       suggestedAssetMeta: undefined,
       lastError: null,
       lastUrlBeforeHome: null,
-      webUri: 'https://www.okex.me/dex-test/spot/trade',
+      webUri: 'https://www.okexcn.com/dex-test/spot/trade',
       webviewKey: 0,
     }
   }

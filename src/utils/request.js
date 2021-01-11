@@ -1,4 +1,4 @@
-import * as Qs from 'qs'
+// import * as Qs from 'qs'
 import * as axios from 'axios'
 
 const baseURL = ''
@@ -11,7 +11,7 @@ export const ENV = 'test' // production | test | staging
 const fetchTimeout = 30000
 
 const urls = {
-  okApiurl: 'https://www.okex.me'
+  okApiurl: 'https://www.okexcn.com'
 }
 
 export const getUrl = {

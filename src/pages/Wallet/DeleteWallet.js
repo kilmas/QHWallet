@@ -100,6 +100,7 @@ class DeleteWallet extends React.Component {
                   fontSize: 13,
                   borderRadius: 8,
                   backgroundColor: '#e0e0e0',
+                  minHeight: 100
                 }}
                 multiline
                 value={this.state.prikey}

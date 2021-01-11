@@ -51,7 +51,7 @@ export default class OKTWallet extends Wallet {
       try {
         balances = await oKClient.getBalance(this.address)
       } catch (e) {
-        OKClient.setUrl()
+        // OKClient.setUrl()
         console.warn(e)
         return
       }

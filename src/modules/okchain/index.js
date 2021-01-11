@@ -28,10 +28,10 @@ const OKClient = {
   setUrl(uri) {
     let url = uri
     if (!url) {
-      if (getUrl.OK_API_URL === 'https://www.okex.me') {
+      if (getUrl.OK_API_URL === 'https://www.okexcn.com') {
         url = 'https://www.okex.com'
       } else {
-        url = 'https://www.okex.me'
+        url = 'https://www.okexcn.com'
       }
     }
     getUrl.setOK_API_URL(url)
