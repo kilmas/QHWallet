@@ -82,7 +82,7 @@ class NameWallet extends React.Component {
           return
         }
         Modal.prompt(
-          'Please Confirm your transation password',
+          'Please Confirm your transaction password',
           'Save it carefully!',
           password2 => {
             if (password1 === password2) {

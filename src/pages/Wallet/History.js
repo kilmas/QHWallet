@@ -203,12 +203,12 @@ class History extends React.Component {
 
   register = () => {
     this.props.resetTransaction()
-    const transation = resolveRegister({
+    const transaction = resolveRegister({
       account: this.state.fibosAccount,
     })
-    console.log(transation)
+    console.log(transaction)
     this.props.setTransactionObject({
-      ...transation,
+      ...transaction,
       from: this.props.selectedAddress,
       value: '0x0',
     })

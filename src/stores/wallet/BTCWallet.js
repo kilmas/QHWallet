@@ -617,7 +617,7 @@ export default class BTCWallet extends Wallet {
     return this.addressesMap[address]
   }
 
-  transationData (to = this.currentAddress.address, amount = 1, feeRate) {
+  transactionData (to = this.currentAddress.address, amount = 1, feeRate) {
     const utxos = this.unspents
     let targets = [
       {
@@ -630,7 +630,7 @@ export default class BTCWallet extends Wallet {
   }
 
   sendTransaction = async (to, amount, feeRate, pwd) => {
-    const { inputs, outputs, fee } = this.transationData(to, amount, feeRate)
+    const { inputs, outputs, fee } = this.transactionData(to, amount, feeRate)
     // the accumulated fee is always returned for analysis
     console.log(inputs, outputs, fee)
 

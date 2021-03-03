@@ -226,7 +226,7 @@ class SendCoin extends React.Component {
   }
 
   get gasFee() {
-    const { fee } = this.wallet && this.wallet.transationData(this.state.receiver, this.state.amount, this.state.gasFee)
+    const { fee } = this.wallet && this.wallet.transactionData(this.state.receiver, this.state.amount, this.state.gasFee)
     const totalPrice = toFixedNumber(new BigNumber(fee).div(BITCOIN_SATOSHI).multipliedBy(`${this.price}`), 2);
     return `${fee} sat  ≈ ${toPriceString(totalPrice, 2, 4, true)} ${CoinStore.currencySymbol}`;
   }
