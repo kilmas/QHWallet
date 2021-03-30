@@ -10,7 +10,8 @@ import ClearTitleBar from './ClearTitleBar';
 import { BTCCoin, ETH } from '../stores/wallet/Coin';
 import { toFixedLocaleString, toFixedNumber, toPriceString } from '../utils/NumberUtil';
 import CoinStore from '../stores/wallet/CoinStore';
-import { strings } from '../locales/i18n';
+import { strings } from '../locales/i18n'
+import { styles as themeStyles } from '../theme'
 
 
 const bgCoin = index => ({
@@ -130,7 +131,7 @@ class CoinHeader extends React.Component {
           renderLeft={() => (
             <TouchableOpacity
               onPress={onLeftPress}
-              style={{ alignItems: 'center' }}>
+              style={{ alignItems: 'center', ...themeStyles.p8 }}>
               <Icon
                 name="left"
               />

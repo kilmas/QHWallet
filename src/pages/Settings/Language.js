@@ -7,7 +7,7 @@ import TitleBar from '../../components/TitleBar'
 import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
 import GlobalNavigation from '../../utils/GlobalNavigation'
-import { BGGray } from '../../theme'
+import { BGGray, styles as themeStyles } from '../../theme'
 
 @inject('store')
 @observer
@@ -42,6 +42,7 @@ class Language extends React.Component {
           blueBottom={true}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={async () => {
                 i18n.locale = language.locale
                 this.props.store.settings.setLanguage(language)

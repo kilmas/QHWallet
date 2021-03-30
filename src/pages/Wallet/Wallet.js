@@ -218,7 +218,7 @@ class Wallet extends React.Component {
     this.isRefreshing = true
     try {
       // await this.account.update();
-    } catch (error) { }
+    } catch (error) {}
 
     setTimeout(() => {
       this.isRefreshing = false
@@ -245,7 +245,7 @@ class Wallet extends React.Component {
             renderLeft={() => <DrawerIcon dot={this.props.store.common.newVersion} />}
             renderRight={() => (
               <TouchableOpacity
-                style={{ marginRight: 20 }}
+                style={themeStyles.p8}
                 onPress={() => {
                   this.setState({ visible: true })
                 }}>

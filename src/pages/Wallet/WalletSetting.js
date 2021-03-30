@@ -12,6 +12,7 @@ import Engine from '../../modules/metamask/core/Engine'
 import AccountStorage from '../../stores/account/AccountStorage'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import { ACCOUNT_TYPE_HD, ACCOUNT_TYPE_COMMON } from '../../config/const'
+import { styles as themeStyles } from '../../theme'
 
 class WalletSetting extends React.Component {
   constructor(props) {
@@ -102,9 +103,7 @@ class WalletSetting extends React.Component {
           title={strings('wallet.settings')}
           renderLeft={() => (
             <TouchableOpacity
-              style={{
-                paddingHorizontal: 10,
-              }}
+              style={themeStyles.p8}
               onPress={() => {
                 GlobalNavigation.goBack()
                 this.props.navigation.state.params.refresh()

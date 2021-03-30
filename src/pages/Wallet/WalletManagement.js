@@ -6,6 +6,7 @@ import TitleBar from '../../components/TitleBar'
 import GlobalNavigation from '../../utils/GlobalNavigation'
 import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
+import { styles as themeStyles } from '../../theme'
 
 class WalletManagement extends React.Component {
   constructor(props) {
@@ -43,7 +44,7 @@ class WalletManagement extends React.Component {
         <TitleBar
           title={strings('wallet.walletManagement')}
           renderRight={() => (
-            <TouchableOpacity onPress={() => GlobalNavigation.navigate('AddWallet')}>
+            <TouchableOpacity style={themeStyles.p8} onPress={() => GlobalNavigation.navigate('AddWallet')}>
               <Icon name="appstore-add" />
             </TouchableOpacity>
           )}

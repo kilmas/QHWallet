@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { Flex, Icon } from '@ant-design/react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { withNavigation } from 'react-navigation';
-import { statusBarHeight } from '../utils/device';
-import { styles, LGColor, BGGray } from '../theme';
-import GlobalNavigation from '../utils/GlobalNavigation';
+import PropTypes from 'prop-types'
+import React from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
+import { Flex, Icon } from '@ant-design/react-native'
+import LinearGradient from 'react-native-linear-gradient'
+import { withNavigation } from 'react-navigation'
+import { statusBarHeight } from '../utils/device'
+import { styles, LGColor } from '../theme'
+import GlobalNavigation from '../utils/GlobalNavigation'
 
 class TitleBar extends React.PureComponent {
   static defaultProps = {
@@ -14,20 +14,20 @@ class TitleBar extends React.PureComponent {
       <TouchableOpacity
         style={styles.center}
         onPress={() => {
-          GlobalNavigation.goBack();
+          GlobalNavigation.goBack()
         }}>
         <Icon name="left" />
       </TouchableOpacity>
     ),
     renderRight: () => null,
     title: '',
-  };
+  }
 
   static propTypes = {
     renderLeft: PropTypes.func,
     renderRight: PropTypes.func,
     title: PropTypes.string,
-  };
+  }
 
   render() {
     return (
@@ -42,28 +42,24 @@ class TitleBar extends React.PureComponent {
           borderColor: '#E0E0E0',
           overflow: 'hidden',
         }}>
-        <Flex justify="center" align="center" style={{ marginTop: statusBarHeight, marginBottom: 10 }}>
+        <Flex justify="center" align="center" style={{ minHeight: 50, marginTop: statusBarHeight, marginBottom: 5 }}>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text
               numberOfLines={1}
               style={{
                 fontSize: 16,
                 color: '#fff',
-                maxWidth: '65%'
+                maxWidth: '65%',
               }}>
               {this.props.title}
             </Text>
           </View>
-          <View style={{ position: 'absolute', left: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-            {this.props.renderLeft()}
-          </View>
-          <View style={{ position: 'absolute', right: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-            {this.props.renderRight()}
-          </View>
+          <View style={{ position: 'absolute', left: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>{this.props.renderLeft()}</View>
+          <View style={{ position: 'absolute', right: 5, height: '100%', alignItems: 'center', justifyContent: 'center' }}>{this.props.renderRight()}</View>
         </Flex>
       </LinearGradient>
-    );
+    )
   }
 }
 
-export default withNavigation(TitleBar);
+export default withNavigation(TitleBar)

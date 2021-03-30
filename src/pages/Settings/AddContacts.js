@@ -6,8 +6,9 @@ import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
 import { inject, observer } from 'mobx-react'
 import GlobalNavigation from '../../utils/GlobalNavigation'
-import { BGGray } from '../../theme'
+import { BGGray, styles as themeStyles } from '../../theme'
 import { colors } from '../../styles/common'
+
 
 @inject('store')
 @observer
@@ -28,6 +29,7 @@ class AddContacts extends React.Component {
           blueBottom={true}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={() =>
                 GlobalNavigation.navigate('ScanImage', {
                   onSave: address => {

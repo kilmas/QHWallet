@@ -6,7 +6,7 @@ import TitleBar from '../../components/TitleBar'
 import { strings } from '../../locales/i18n'
 import Container from '../../components/Container'
 import GlobalNavigation from '../../utils/GlobalNavigation'
-import { BGGray } from '../../theme'
+import { BGGray, styles as themeStyles } from '../../theme'
 import CoinStore from '../../stores/wallet/CoinStore'
 
 @inject('store')
@@ -46,6 +46,7 @@ class Currency extends React.Component {
           title={strings('settings.currency')}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={async () => {
                 // this.props.store.settings.setCurrency(this.state.currency)
                 CoinStore.setCurrency(this.state.currency.name)

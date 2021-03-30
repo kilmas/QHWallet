@@ -130,8 +130,8 @@ android {
         applicationId "com.qhwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 46
-        versionName "1.0.45"
+        versionCode 47
+        versionName "1.0.46"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
     }

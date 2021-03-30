@@ -810,7 +810,7 @@ export class BrowserTab extends React.Component {
     this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.keyboardDidHide)
 
     // Listen to network changes
-    Engine.context.TransactionController.hub.on('networkChange', this.reload)
+    Engine.context.TransactionController.hub.on('networkChange', this.onNetworkChange)
 
     BackHandler.addEventListener('hardwareBackPress', this.handleAndroidBackPress)
 
@@ -825,7 +825,19 @@ export class BrowserTab extends React.Component {
     this.props.navigation.addListener('willBlur', () => {
       BackHandler.removeEventListener('hardwareBackPress', this.handleAndroidBackPress)
     })
+    this.activeChainId = this.props.networkType === 'rpc' ? this.props.network : Networks[this.props.networkType].networkId
   }
+
+  onNetworkChange = () => {
+    const { network } = Engine.context.NetworkController.state;
+    // Wait while the network is set
+    this.activeChainId = this.props.networkType === 'rpc' ? this.props.network : Networks[this.props.networkType].networkId
+
+    if (network !== 'loading' && network !== this.activeChainId) {
+      this.activeChainId = network;
+      this.reload();
+    }
+  };
 
   drawerOpenHandler = () => {
     this.dismissTextSelectionIfNeeded()
@@ -1083,8 +1095,6 @@ export class BrowserTab extends React.Component {
   }
 
   goBackToHomepage = async () => {
-    // this.go('https://cross.fo');
-    // return
     this.toggleOptionsIfNeeded()
     const lastUrlBeforeHome = this.state.inputValue
     // await this.setState({ url: null })

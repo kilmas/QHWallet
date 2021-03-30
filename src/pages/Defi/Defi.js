@@ -1,5 +1,5 @@
 import React from 'react'
-import { TouchableOpacity, View, StyleSheet, Text, BackHandler } from 'react-native'
+import { TouchableOpacity, View, StyleSheet, BackHandler } from 'react-native'
 import URL from 'url-parse'
 import { inject, observer } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -14,7 +14,8 @@ import AppConstants from '../../modules/metamask/core/AppConstants'
 import RenderIronman from '../../modules/ironman/RenderIronman'
 import Ironman from '../../modules/ironman'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
-import Device from '../../utils/devices';
+import Device from '../../utils/devices'
+import { styles as themeStyles } from '../../theme'
 
 import { SPA_urlChangeListener, JS_WINDOW_INFORMATION, JS_DESELECT_TEXT } from '../../utils/browserScripts';
 import { isBiometry } from '../../utils/keychain'
@@ -395,6 +396,7 @@ class Defi extends React.Component {
           renderLeft={() => <DrawerIcon dot={this.props.store.common.newVersion} />}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={() => {
                 this.reload()
               }}>

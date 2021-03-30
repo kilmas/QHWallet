@@ -101,6 +101,7 @@ class Receive extends React.Component {
           }}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={() => {
                 this.setState({
                   showOptions: true,

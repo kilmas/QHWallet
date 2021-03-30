@@ -26,6 +26,7 @@ import CommonAccount from '../../stores/account/CommonAccount'
 // import { FO, BTCCoin } from '../../stores/wallet/Coin'
 import SecureKeychain from '../../modules/metamask/core/SecureKeychain'
 import { goBrowser } from '../../utils/common'
+import { styles as themeStyles } from '../../theme'
 
 const RadioItem = Radio.RadioItem
 
@@ -439,6 +440,7 @@ class History extends React.Component {
           }}
           renderRight={() => (
             <TouchableOpacity
+              style={themeStyles.p8}
               onPress={() => {
                 this.setState({ visible: true })
               }}>
@@ -473,9 +475,13 @@ class History extends React.Component {
               ) : (
                 coin.name === 'BTC' && (
                   <List>
-                    <Modal visible={this.state.visibleAddress} transparent maskClosable onClose={() => {
-                      this.setState({ visibleAddress: false })
-                    }}>
+                    <Modal
+                      visible={this.state.visibleAddress}
+                      transparent
+                      maskClosable
+                      onClose={() => {
+                        this.setState({ visibleAddress: false })
+                      }}>
                       {this.account instanceof HDAccount &&
                         this.wallet.addresses
                           .filter(item => {
